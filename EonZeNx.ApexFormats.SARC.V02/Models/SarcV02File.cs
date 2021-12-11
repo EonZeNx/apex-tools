@@ -16,29 +16,6 @@ namespace EonZeNx.ApexFormats.SARC.V02.Models;
 /// </summary>
 public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySerializable
 {
-    // TODO: Manager pass-through for AAf and SARC can use a manager memory stream-based binary-reader/writer.
-    /* eg.
-     * using var ms = new MemoryStream();
-     * using var br = new BinaryReader(ms);
-     *
-     * Aaf.FromApex(br);
-     * Sarc.FromApex(br);
-     * Sarc.ToCustomDirectory(br);
-     *
-     * ms.ToArray();
-     */
-    /* eg.
-     * Sarc.FromCustomDirectory(basePath);
-     * 
-     * using var ms = new MemoryStream();
-     * using var br = new BinaryReader(ms);
-     * 
-     * Aaf.FromCustomFile(br);
-     * Aaf.ToApex(br);
-     *
-     * ms.ToArray();
-     */
-    
     public EFourCc FourCc => EFourCc.Sarc;
     public uint Version => 0x02;
     public static string FileListName => "@files";
@@ -55,7 +32,7 @@ public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySeriali
         HeaderLength = br.ReadUInt32();
         
         var readFourCc = br.ReadBigUInt32();
-        if (readFourCc != (uint) FourCc) throw new IOException($"Character code was not valid (Expected '{(uint) FourCc}' got '{readFourCc}')");
+        if (!FileHeaderUtils.IsCharacterCode(readFourCc, FourCc)) throw new IOException($"Character code was not valid (Expected '{(uint) FourCc}' got '{readFourCc}')");
         
         var readVersion = br.ReadUInt32();
         if (readVersion != Version) throw new IOException($"Version was not valid (Expected '{Version}' got '{readVersion}')");

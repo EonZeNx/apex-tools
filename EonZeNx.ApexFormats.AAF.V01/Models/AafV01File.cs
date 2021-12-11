@@ -33,7 +33,7 @@ public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
     public void FromApex(BinaryReader br)
     {
         var readFourCc = br.ReadBigUInt32();
-        if (readFourCc != (uint) FourCc) throw new IOException($"Character code was not valid (Expected '{(uint) FourCc}' got '{readFourCc}')");
+        if (!FileHeaderUtils.IsCharacterCode(readFourCc, FourCc)) throw new IOException($"Character code was not valid (Expected '{(uint) FourCc}' got '{readFourCc}')");
         
         var readVersion = br.ReadUInt32();
         if (readVersion != Version) throw new IOException($"Version was not valid (Expected '{Version}' got '{readVersion}')");
