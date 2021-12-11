@@ -14,11 +14,11 @@ public class SarcV02Manager : IPathProcessor
 
     public void TryProcess()
     {
-        if (Path.GetExtension(FilePath) == ".sarc") FromApexToCustomFile();
-        else if (Directory.Exists(FilePath)) FromCustomFileToApex();
+        if (Path.GetExtension(FilePath) == ".sarc") FromApexToCustomDirectory();
+        else if (Directory.Exists(FilePath)) FromCustomDirectoryToApex();
     }
 
-    private void FromApexToCustomFile()
+    private void FromApexToCustomDirectory()
     {
         var sarcV02File = new SarcV02File();
         
@@ -37,7 +37,7 @@ public class SarcV02Manager : IPathProcessor
         sarcV02File.ToCustomDirectory(directoryPath);
     }
     
-    private void FromCustomFileToApex()
+    private void FromCustomDirectoryToApex()
     {
         var sarcV02File = new SarcV02File();
         sarcV02File.FromCustomDirectory(FilePath);

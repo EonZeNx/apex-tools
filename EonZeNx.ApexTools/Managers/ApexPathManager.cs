@@ -1,6 +1,7 @@
 ﻿using EonZeNx.ApexFormats.AAF.V01.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
 using EonZeNx.ApexTools.Core.Abstractions;
+using EonZeNx.ApexTools.PassThrough.Managers;
 
 namespace EonZeNx.ApexTools.Managers;
 
@@ -19,7 +20,7 @@ public class ApexPathManager
         IPathProcessor processor;
         if (Directory.Exists(Path))
         {
-            processor = new SarcV02Manager(Path);
+            processor = new AafSarcPassThroughManager(Path);
             processor.TryProcess();
             return;
         }
@@ -31,7 +32,7 @@ public class ApexPathManager
 
         if (ext is ".ee")
         {
-            processor = new AafV01Manager(Path);
+            processor = new AafSarcPassThroughManager(Path);
         }
         else if (ext is ".sarc")
         {
