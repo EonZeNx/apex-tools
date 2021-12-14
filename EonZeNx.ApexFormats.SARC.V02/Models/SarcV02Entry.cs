@@ -3,6 +3,7 @@ using System.Xml;
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 using EonZeNx.ApexTools.Core.Abstractions.Serializable;
+using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.SARC.V02.Models;
 

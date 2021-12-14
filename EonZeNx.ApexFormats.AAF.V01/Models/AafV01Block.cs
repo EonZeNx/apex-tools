@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Binary;
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
+using EonZeNx.ApexTools.Core.Utils;
 using Ionic.Zlib;
 
 namespace EonZeNx.ApexFormats.AAF.V01.Models;

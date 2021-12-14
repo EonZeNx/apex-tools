@@ -8,6 +8,27 @@ public static class Settings
         Description = "Automatically close the tool after an action",
         DefaultValue = false
     };
+    
+    public static Setting<bool> PerformHashLookUp { get; set; } = new()
+    {
+        Value = false,
+        Description = "Try lookup the hash for values where possible",
+        DefaultValue = false
+    };
+    
+    public static Setting<ushort> HashCacheSize { get; set; } = new()
+    {
+        Value = 250,
+        Description = "The maximum amount of hashes to cache",
+        DefaultValue = 250
+    };
+    
+    public static Setting<bool> AlwaysOutputHash { get; set; } = new()
+    {
+        Value = true,
+        Description = "Always output the hash even if the hash lookup was successful",
+        DefaultValue = true
+    };
 }
 
 /// <summary>
