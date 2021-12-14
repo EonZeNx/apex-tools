@@ -14,8 +14,6 @@ public class AafV01Manager : IPathProcessor
 
     public void TryProcess()
     {
-        
-
         if (System.IO.Path.GetExtension(Path) == ".ee") FromApexToCustomFile();
         else if (System.IO.Path.GetExtension(Path) == ".sarc") FromCustomFileToApex();
     }
@@ -23,18 +21,14 @@ public class AafV01Manager : IPathProcessor
     private void FromApexToCustomFile()
     {
         var aafV01File = new AafV01File();
-        
-        using var inFileStream = new FileStream(Path, FileMode.Open);
-        using var inBinaryReader = new BinaryReader(inFileStream);
-        aafV01File.FromApex(inBinaryReader);
-        inBinaryReader.Dispose();
-        inFileStream.Dispose();
 
-        using var outFileStream = new FileStream($"{Path}.sarc", FileMode.Create);
-        using var outBinaryWriter = new BinaryWriter(outFileStream);
+        using (var inBinaryReader = new BinaryReader(new FileStream(Path, FileMode.Open)))
+        {
+            aafV01File.FromApex(inBinaryReader);
+        }
+
+        using var outBinaryWriter = new BinaryWriter(new FileStream($"{Path}.sarc", FileMode.Create));
         aafV01File.ToCustomFile(outBinaryWriter);
-        outBinaryWriter.Dispose();
-        outFileStream.Dispose();
     }
     
     private void FromCustomFileToApex()
@@ -50,7 +44,5 @@ public class AafV01Manager : IPathProcessor
         using var outFileStream = new FileStream($"{Path}.ee", FileMode.Create);
         using var outBinaryWriter = new BinaryWriter(outFileStream);
         aafV01File.ToApex(outBinaryWriter);
-        outBinaryWriter.Dispose();
-        outFileStream.Dispose();
     }
 }

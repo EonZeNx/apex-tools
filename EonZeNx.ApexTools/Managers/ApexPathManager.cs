@@ -1,4 +1,5 @@
 ﻿using EonZeNx.ApexFormats.AAF.V01.Managers;
+using EonZeNx.ApexFormats.IRTPC.V01.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
 using EonZeNx.ApexTools.Core.Abstractions;
 using EonZeNx.ApexTools.PassThrough.Managers;
@@ -28,15 +29,17 @@ public class ApexPathManager
         if (!File.Exists(Path)) return;
         
         var ext = System.IO.Path.GetExtension(Path);
-        if (ext is not (".ee" or ".sarc")) return;
-
-        if (ext is ".ee")
+        if (ext is ".ee" or ".sarc")
         {
             processor = new AafSarcPassThroughManager(Path);
         }
-        else if (ext is ".sarc")
+        else if (ext is ".bin")
         {
-            processor = new SarcV02Manager(Path);
+            processor = new IrtpcV01Manager(Path);
+        }
+        else if (ext is ".xml")
+        {
+            processor = new IrtpcV01Manager(Path);
         }
         else
         {
