@@ -1,23 +1,38 @@
-﻿using System.Data.SQLite;
+﻿using System.Data;
+using System.Data.SQLite;
 using EonZeNx.ApexTools.Config;
 
 namespace EonZeNx.ApexTools.Core.Utils.Hash;
 
 public static class HashUtils
 {
+    public static SQLiteConnection? DbConnection { get; set; } = null;
     public static HashCache Cache { get; set; } = new(Settings.HashCacheSize.Value);
     
-    public static string Lookup(SQLiteConnection con, int hash)
+    
+    public static void OpenDatabaseConnection()
     {
-        if (!Settings.PerformHashLookUp.Value) return "";
-
-        if (Cache.Contains(hash)) return Cache.Get(hash);
+        var dbFile = Settings.DatabasePath.Value;
+        if (!File.Exists(dbFile)) return;
             
-        var command = con.CreateCommand();
-        command.CommandText = $"SELECT Value FROM properties WHERE Hash = {hash}";
+        var dataSource = @$"Data Source={dbFile}";
+        DbConnection = new SQLiteConnection(dataSource);
+        DbConnection.Open();
+    }
+    
+    public static string Lookup(int hash)
+    {
+        if (!Settings.PerformHashLookUp.Value) return string.Empty;
+        if (Cache.Contains(hash)) return Cache.Get(hash);
+
+        if (DbConnection == null) OpenDatabaseConnection();
+        if (DbConnection?.State != ConnectionState.Open) return string.Empty;
+            
+        var command = DbConnection.CreateCommand();
+        command.CommandText = $"SELECT Value FROM 'Global' WHERE Hash = {hash}";
         
         using var dbr = command.ExecuteReader();
-        if (!dbr.Read()) return "";
+        if (!dbr.Read()) return string.Empty;
             
         var value = dbr.GetString(0);
         Cache.Add(hash, value);

@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\EonZeNx.ApexFormats.AAF.V01\EonZeNx.ApexFormats.AAF.V01.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.IRTPC.V01\EonZeNx.ApexFormats.IRTPC.V01.csproj" />
+      <ProjectReference Include="..\EonZeNx.ApexFormats.RTPC.V01\EonZeNx.ApexFormats.RTPC.V01.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.SARC.V02\EonZeNx.ApexFormats.SARC.V02.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexTools.Config\EonZeNx.ApexTools.Config.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexTools.Core\EonZeNx.ApexTools.Core.csproj" />

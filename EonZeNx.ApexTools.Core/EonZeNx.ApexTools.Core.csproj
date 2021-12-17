@@ -14,4 +14,8 @@
       <ProjectReference Include="..\EonZeNx.ApexTools.Config\EonZeNx.ApexTools.Config.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="db" />
+    </ItemGroup>
+
 </Project>

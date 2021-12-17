@@ -1,5 +1,6 @@
 ﻿using EonZeNx.ApexFormats.AAF.V01.Managers;
 using EonZeNx.ApexFormats.IRTPC.V01.Managers;
+using EonZeNx.ApexFormats.RTPC.V01.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
 using EonZeNx.ApexTools.Core.Abstractions;
 using EonZeNx.ApexTools.PassThrough.Managers;
@@ -37,9 +38,13 @@ public class ApexPathManager
         {
             processor = new IrtpcV01Manager(Path);
         }
+        else if (ext is ".epe")
+        {
+            processor = new RtpcV01Manager(Path);
+        }
         else if (ext is ".xml")
         {
-            processor = new IrtpcV01Manager(Path);
+            processor = new RtpcV01Manager(Path);
         }
         else
         {
@@ -52,9 +57,8 @@ public class ApexPathManager
     // ProcessPath function that opens the file, reads the four character code, and returns it
     public string GetFileCharacterCode()
     {
-        var fourCharacterCode = "";
         using var reader = new BinaryReader(File.Open(Path, FileMode.Open));
-        fourCharacterCode = reader.ReadChars(4).ToString();
+        var fourCharacterCode = reader.ReadChars(4).ToString();
         
         return fourCharacterCode;
     }

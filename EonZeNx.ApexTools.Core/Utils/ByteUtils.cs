@@ -73,38 +73,6 @@ public static class ByteUtils
     #endregion
 
 
-    #region Stream Alignment
-
-    public static void Align(BinaryReader br, uint align)
-    {
-        br.BaseStream.Seek(Align(br.BaseStream.Position, align), SeekOrigin.Begin);
-    }
-        
-    public static void Align(BinaryWriter bw, long align, byte fill = 0x50)
-    {
-        var pos = bw.BaseStream.Position;
-        var alignment = Align(pos, align);
-        for (var i = 0; i < alignment - pos; i++)
-        {
-            bw.Write(fill);
-        }
-    }
-        
-    public static long Align(MemoryStream ms, long offset, long align)
-    {
-        var preAlign = Align(offset, align);
-        var alignment = preAlign - offset;
-        for (var i = 0; i < alignment; i++)
-        {
-            ms.WriteByte(0x50);
-        }
-
-        return preAlign;
-    }
-
-    #endregion
-
-
     #region To Hex
 
     public static string BytesToHex(IEnumerable<byte> bytes)
