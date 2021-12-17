@@ -27,7 +27,6 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
     public ushort PropertyCount { get; set; }
     public IrtpcV01BaseProperty[] Properties { get; set; } = Array.Empty<IrtpcV01BaseProperty>();
     
-    public SQLiteConnection? DbConnection { get; set; }
     public string Name { get; set; } = string.Empty;
     
     
@@ -41,8 +40,29 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
         PropertyCount = br.ReadUInt16();
         
         // If valid connection, attempt hash lookup
-        if (DbConnection != null) Name = HashUtils.Lookup(DbConnection, NameHash);
+        Name = HashUtils.Lookup(NameHash);
         
+        PropertiesFromApex(br);
+    }
+
+    public void ToApex(BinaryWriter bw)
+    {
+        bw.Write(NameHash);
+        bw.Write(Version01);
+        bw.Write(Version02);
+        bw.Write(PropertyCount);
+        
+        foreach (var property in Properties)
+        {
+            property.ToApex(bw);
+        }
+    }
+
+    
+    #region ApexHelpers
+
+    private void PropertiesFromApex(BinaryReader br)
+    {
         Properties = new IrtpcV01BaseProperty[PropertyCount];
         for (var i = 0; i < PropertyCount; i++)
         {
@@ -60,24 +80,14 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
                 EVariantType.Unassigned => throw new ArgumentOutOfRangeException(),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            
+
             Properties[i] = property;
             property.FromApex(br);
         }
     }
 
-    public void ToApex(BinaryWriter bw)
-    {
-        bw.Write(NameHash);
-        bw.Write(Version01);
-        bw.Write(Version02);
-        bw.Write(PropertyCount);
-        
-        foreach (var property in Properties)
-        {
-            property.ToApex(bw);
-        }
-    }
+    #endregion
+    
     
     #endregion
 

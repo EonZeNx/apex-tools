@@ -87,7 +87,7 @@ public class SarcV02Entry: IApexSerializable, ICustomPathSerializable, IToApexSe
         DataOffset = (uint) bw.Position();
         bw.Write(Data);
             
-        ByteUtils.Align(bw, 4, 0x00);
+        bw.Align(4, 0x00);
     }
 
     public void ToApex(BinaryWriter bw)
