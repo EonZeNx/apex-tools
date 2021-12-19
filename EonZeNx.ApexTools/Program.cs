@@ -12,10 +12,9 @@ public class Program
     /// Close function that calls LogUtils.Log() then closes the application
     /// </summary>
     /// <param name="message"></param>
-    public static void Close(string message)
+    public static void Close(string message = "")
     {
-        LogUtils.Log(message, LogUtils.LogType.Warning);
-
+        if (message.Length != 0) LogUtils.Log(message, LogUtils.LogType.Warning);
         if (!Config.Settings.AutoClose.Value) LogUtils.GetInput("Press any key to continue...");
         
         Environment.Exit(0);
@@ -44,5 +43,6 @@ public class Program
         
         var manager = new ApexMultiPathManager(validPaths);
         manager.ProcessPaths();
+        Close();
     }
 }

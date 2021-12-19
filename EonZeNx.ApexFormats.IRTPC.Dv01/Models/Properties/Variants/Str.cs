@@ -2,22 +2,22 @@
 using System.Xml;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties.Variants;
 
-public class Str : IrtpcV01BaseProperty
+public class Str : PropertyBase
 {
     public override string XmlName => "String";
-    
-    protected override EVariantType VariantType => EVariantType.String;
-    protected string Value { get; set; } = string.Empty;
+    public override EVariantType VariantType => EVariantType.String;
+
+    public static readonly Dictionary<string, long> StringMap = new();
+    public string Value { get; set; } = "";
 
 
     public Str() { }
-    public Str(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
-    
-    
-    #region ApexSerializable
 
+
+    #region ApexSerializable
+    
     public override void FromApex(BinaryReader br)
     {
         var length = br.ReadUInt16();
@@ -37,12 +37,12 @@ public class Str : IrtpcV01BaseProperty
         bw.Write((ushort) Value.Length);
         bw.Write(Encoding.UTF8.GetBytes(Value));
     }
-    
+
     #endregion
 
     
     #region XmlSerializable
-
+    
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);

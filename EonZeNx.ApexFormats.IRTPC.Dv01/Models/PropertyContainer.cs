@@ -1,42 +1,51 @@
-﻿using System.Data.SQLite;
-using System.Xml;
-using EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
-using EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
-using EonZeNx.ApexFormats.IRTPC.V01.Utils;
+﻿using System.Xml;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties.Variants;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Utils;
+using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Models;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models;
 
 /// <summary>
-/// The structure of an <see cref="IrtpcV01Container"/>.
+/// The structure of an <see cref="PropertyContainer"/>.
 /// <br/> Name hash - <see cref="int"/>
 /// <br/> Version 01 - <see cref="byte"/>
 /// <br/> Version 02 - <see cref="ushort"/>
 /// <br/> Property count - <see cref="ushort"/>
 /// <br/> <b>NOTE:</b> IRTPC containers only contain properties.
 /// </summary>
-public class IrtpcV01Container : XmlSerializable, IApexSerializable
+public class PropertyContainer : XmlSerializable, IApexSerializable
 {
-    public override string XmlName => "Container";
+    public override string XmlName => "PropertyContainer";
     
     public int NameHash { get; set; }
-    public byte Version01 { get; set; }
-    public ushort Version02 { get; set; }
+    public byte Flag01 { get; set; }
+    public ushort Flag02 { get; set; }
     public ushort PropertyCount { get; set; }
-    public IrtpcV01BaseProperty[] Properties { get; set; } = Array.Empty<IrtpcV01BaseProperty>();
+    public PropertyBase[] Properties { get; set; } = Array.Empty<PropertyBase>();
     
     public string Name { get; set; } = string.Empty;
     
     
     #region ApexSerializable
-    
+
     public void FromApex(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
-        Version01 = br.ReadByte();
-        Version02 = br.ReadUInt16();
+        FromApex(br, false);
+    }
+    
+    public void FromApex(BinaryReader br, bool notFirst)
+    {
+        if (!notFirst)
+        {
+            NameHash = br.ReadInt32();
+            Flag01 = br.ReadByte();
+        }
+        
+        Flag02 = br.ReadUInt16();
         PropertyCount = br.ReadUInt16();
         
         // If valid connection, attempt hash lookup
@@ -48,8 +57,8 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
     public void ToApex(BinaryWriter bw)
     {
         bw.Write(NameHash);
-        bw.Write(Version01);
-        bw.Write(Version02);
+        bw.Write(Flag01);
+        bw.Write(Flag02);
         bw.Write(PropertyCount);
         
         foreach (var property in Properties)
@@ -63,24 +72,33 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
 
     private void PropertiesFromApex(BinaryReader br)
     {
-        Properties = new IrtpcV01BaseProperty[PropertyCount];
+        Properties = new PropertyBase[PropertyCount];
         for (var i = 0; i < PropertyCount; i++)
         {
-            var loadedProperty = new IrtpcV01PropertyHeader(br);
-            IrtpcV01BaseProperty property = loadedProperty.VariantType switch
+            var nameHash = br.ReadInt32();
+            var variantType = (EVariantType) br.ReadByte();
+            PropertyBase property = variantType switch
             {
-                EVariantType.UInteger32 => new UnsignedInt32(loadedProperty),
-                EVariantType.Float32 => new F32(loadedProperty),
-                EVariantType.String => new Str(loadedProperty),
-                EVariantType.Vec2 => new Vec2(loadedProperty),
-                EVariantType.Vec3 => new Vec3(loadedProperty),
-                EVariantType.Vec4 => new Vec4(loadedProperty),
-                EVariantType.Mat3X4 => new Mat3X4(loadedProperty),
-                EVariantType.Event => new Event(loadedProperty),
+                EVariantType.UInteger32 => new UnsignedInt32(),
+                EVariantType.Float32 => new F32(),
+                EVariantType.String => new Str(),
+                EVariantType.Vec2 => new Vec2(),
+                EVariantType.Vec3 => new Vec3(),
+                EVariantType.Vec4 => new Vec4(),
+                EVariantType.Event => new Event(),
                 EVariantType.Unassigned => throw new ArgumentOutOfRangeException(),
+                EVariantType.Mat3X3 => new Mat3X3(),
+                EVariantType.Mat3X4 => new Mat3X4(),
+                EVariantType.UInteger32Array => new UInt32Array(),
+                EVariantType.Float32Array => new F32Array(),
+                EVariantType.ByteArray => new ByteArray(),
+                EVariantType.Deprecated => throw new ArgumentOutOfRangeException(),
+                EVariantType.ObjectId => new ObjectId(),
+                EVariantType.Total => throw new ArgumentOutOfRangeException(),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
+            property.NameHash = nameHash;
             Properties[i] = property;
             property.FromApex(br);
         }
@@ -97,10 +115,10 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-        Version01 = byte.Parse(XmlUtils.GetAttribute(xr, nameof(Version01)));
-        Version02 = ushort.Parse(XmlUtils.GetAttribute(xr, nameof(Version02)));
+        Flag01 = byte.Parse(XmlUtils.GetAttribute(xr, nameof(Flag01)));
+        Flag02 = ushort.Parse(XmlUtils.GetAttribute(xr, nameof(Flag02)));
         
-        var properties = new List<IrtpcV01BaseProperty>();
+        var properties = new List<PropertyBase>();
         xr.Read();
 
         while (xr.Read())
@@ -113,8 +131,8 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
                 
             if (!xr.HasAttributes) throw new XmlException("Property missing attributes");
 
-            if (!IrtpcV01Utils.XmlNameToBaseProperty.ContainsKey(tag)) throw new IOException("Unknown property type");
-            var property = IrtpcV01Utils.XmlNameToBaseProperty[tag]();
+            if (!Utils.Utils.XmlNameToPropertyBase.ContainsKey(tag)) throw new IOException("Unknown property type");
+            var property = Utils.Utils.XmlNameToPropertyBase[tag]();
             
             property.FromXml(xr);
             properties.Add(property);
@@ -131,8 +149,8 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
         // Write Name if valid
         XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
             
-        xw.WriteAttributeString(nameof(Version01), $"{Version01}");
-        xw.WriteAttributeString(nameof(Version02), $"{Version02}");
+        xw.WriteAttributeString(nameof(Flag01), $"{Flag01}");
+        xw.WriteAttributeString(nameof(Flag02), $"{Flag02}");
             
         foreach (var property in Properties)
         {

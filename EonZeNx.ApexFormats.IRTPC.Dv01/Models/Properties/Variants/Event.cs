@@ -1,22 +1,21 @@
 ﻿using System.Xml;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties.Variants;
 
-public class Event : IrtpcV01BaseProperty
+public class Event : PropertyBase
 {
     public override string XmlName => "Event";
-    
-    protected override EVariantType VariantType => EVariantType.Event;
-    protected (uint, uint)[] Value { get; set; } = Array.Empty<(uint, uint)>();
+    public override EVariantType VariantType => EVariantType.Event;
+
+    public (uint, uint)[] Value { get; set; } = Array.Empty<(uint, uint)>();
 
 
     public Event() { }
-    public Event(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
-    
-    
-    #region ApexSerializable
 
+
+    #region ApexSerializable
+    
     public override void FromApex(BinaryReader br)
     {
         var length = br.ReadUInt32();
@@ -41,36 +40,32 @@ public class Event : IrtpcV01BaseProperty
             bw.Write(Value[i].Item2);
         }
     }
-    
+
     #endregion
 
     
     #region XmlSerializable
-
+    
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-
+        Value = Array.Empty<(uint, uint)>();
+        
         var value = xr.ReadString();
-        if (value.Length == 0)
-        {
-            Value = Array.Empty<(uint, uint)>();
-            return;
-        }
+        if (value.Length == 0) return;
 
         string[] eventStringArray = {value};
         if (value.Contains(','))
         {
             eventStringArray = value.Split(", ");
         }
-
-        Value = (from eventString in eventStringArray 
-            select eventString.Split("=") into eventStrings 
-            select Array.ConvertAll(eventStrings, ByteUtils.HexToUint) into eventsArray 
-            select (eventsArray[0], eventsArray[1])
-        ).ToArray();
         
-        // var events = new List<(uint, uint)>();
+        Value = (from eventString in eventStringArray 
+                select eventString.Split("=") into eventStrings 
+                select Array.ConvertAll(eventStrings, ByteUtils.HexToUint) into eventsArray 
+                select (eventsArray[0], eventsArray[1]))
+            .ToArray();
+
         // foreach (var eventString in eventStringArray)
         // {
         //     var eventStrings = eventString.Split("=");
@@ -79,8 +74,6 @@ public class Event : IrtpcV01BaseProperty
         //         
         //     events.Add(eventsTuple);
         // }
-        //
-        // Value = events.ToArray();
     }
 
     public override void ToXml(XmlWriter xw)
@@ -102,6 +95,6 @@ public class Event : IrtpcV01BaseProperty
         xw.WriteValue(array);
         xw.WriteEndElement();
     }
-
+    
     #endregion
 }

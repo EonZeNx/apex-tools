@@ -13,7 +13,7 @@ public class IrtpcV01FloatArray : IrtpcV01BaseProperty
     
     
     public IrtpcV01FloatArray() { }
-    public IrtpcV01FloatArray(IrtpcV01LoadProperty loadProperty) : base(loadProperty) { }
+    public IrtpcV01FloatArray(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
     
     
     #region ApexSerializable

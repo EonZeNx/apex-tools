@@ -1,65 +1,64 @@
-﻿using EonZeNx.ApexFormats.AAF.V01.Managers;
+﻿using System.Xml;
+using EonZeNx.ApexFormats.AAF.V01.Managers;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Managers;
 using EonZeNx.ApexFormats.IRTPC.V01.Managers;
 using EonZeNx.ApexFormats.RTPC.V01.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
+using EonZeNx.ApexFormats.SARC.V02.Models;
+using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions;
+using EonZeNx.ApexTools.Core.Exceptions;
+using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.PassThrough.Managers;
 
 namespace EonZeNx.ApexTools.Managers;
 
 public class ApexPathManager
 {
-    private string Path { get; }
+    private string FilePath { get; set; }
 
-    public ApexPathManager(string path)
+    public ApexPathManager(string filePath)
     {
-        Path = path;
+        FilePath = filePath;
     }
     
-    // ProcessPath function that checks if a file exists, if it does, it returns the path, if not, check if a directory exists, and return the path
+    // ProcessPath function that checks if a file exists, if it does, it returns the filePath, if not, check if a directory exists, and return the filePath
     public void ProcessPath()
     {
-        IPathProcessor processor;
-        if (Directory.Exists(Path))
-        {
-            processor = new AafSarcPassThroughManager(Path);
-            processor.TryProcess();
-            return;
-        }
+        if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, SarcV02File.FileListName);
+        var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
         
-        if (!File.Exists(Path)) return;
-        
-        var ext = System.IO.Path.GetExtension(Path);
-        if (ext is ".ee" or ".sarc")
+        if (fourCc == EFourCc.Xml) fourCc = TryGetXmlFourCc(FilePath);
+
+        IPathProcessor processor = fourCc switch
         {
-            processor = new AafSarcPassThroughManager(Path);
-        }
-        else if (ext is ".bin")
-        {
-            processor = new IrtpcV01Manager(Path);
-        }
-        else if (ext is ".epe")
-        {
-            processor = new RtpcV01Manager(Path);
-        }
-        else if (ext is ".xml")
-        {
-            processor = new RtpcV01Manager(Path);
-        }
-        else
-        {
-            throw new IOException("Unknown file extension");
-        }
+            EFourCc.Aaf => new AafSarcPassThroughManager(FilePath),
+            EFourCc.Rtpc => new RtpcV01Manager(FilePath),
+            // EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
+            EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
+            EFourCc.Sarc => new SarcV02Manager(FilePath),
+            EFourCc.Xml => throw new NotImplementedException(),
+            EFourCc.Adf => throw new NotImplementedException(),
+            EFourCc.Tab => throw new NotImplementedException(),
+            EFourCc.Mawe => throw new NotImplementedException(),
+            _ => throw new NotSupportedException()
+        };
         
         processor.TryProcess();
     }
     
-    // ProcessPath function that opens the file, reads the four character code, and returns it
-    public string GetFileCharacterCode()
+    private static EFourCc TryGetXmlFourCc(string path)
     {
-        using var reader = new BinaryReader(File.Open(Path, FileMode.Open));
-        var fourCharacterCode = reader.ReadChars(4).ToString();
-        
-        return fourCharacterCode;
+        var xr = XmlReader.Create(path);
+        xr.Read();  // Read XML declaration
+        xr.Read();  // Read XML whitespace
+        xr.Read();  // Read root element
+
+        if (FileHeaderUtils.FourCcStringMap.ContainsKey(xr.Name.ToUpper()))
+        {
+            return FileHeaderUtils.FourCcStringMap[xr.Name.ToUpper()];
+        }
+
+        throw new MalformedXmlException("XML file is not a valid Apex file");
     }
 }

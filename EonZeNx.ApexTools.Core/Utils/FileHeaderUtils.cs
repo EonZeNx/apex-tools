@@ -2,9 +2,13 @@
 
 public static class FileHeaderUtils
 {
-    public static readonly Dictionary<uint, EFourCc> FourCcMap = Enum.GetValues<EFourCc>()
+    public static readonly Dictionary<uint, EFourCc> FourCcUintMap = Enum.GetValues<EFourCc>()
         .ToArray()
         .ToDictionary(val => (uint) val, val => val);
+    
+    public static readonly Dictionary<string, EFourCc> FourCcStringMap = Enum.GetValues<EFourCc>()
+        .ToArray()
+        .ToDictionary(val => val.ToString().ToUpper(), val => val);
     
     
     /// <summary>
@@ -18,15 +22,13 @@ public static class FileHeaderUtils
         if (!File.Exists(filePath)) throw new FileNotFoundException("File not found", filePath);
 
         // Use a binary reader to read the first 16 bytes of the file
-        using (var br = new BinaryReader(File.OpenRead(filePath)))
-        {
-            return br.ReadBytes(16);
-        }
+        using var br = new BinaryReader(File.OpenRead(filePath));
+        return br.ReadBytes(16);
     }
     
     public static bool IsSupportedCharacterCode(uint input)
     {
-        return FourCcMap.ContainsKey(input);
+        return FourCcUintMap.ContainsKey(input);
     }
     
     /// <summary>
@@ -44,13 +46,13 @@ public static class FileHeaderUtils
             var inputArray = input.AsSpan()[lastI..i];
             var value = BitConverter.ToUInt32(inputArray);
                 
-            if (IsSupportedCharacterCode(value)) return FourCcMap[value];
+            if (IsSupportedCharacterCode(value)) return FourCcUintMap[value];
 
             var reversedInputArray = inputArray.ToArray();
             Array.Reverse(reversedInputArray);
             var reversedValue = BitConverter.ToUInt32(reversedInputArray);
 
-            if (IsSupportedCharacterCode(reversedValue)) return FourCcMap[reversedValue];
+            if (IsSupportedCharacterCode(reversedValue)) return FourCcUintMap[reversedValue];
         }
 
         return EFourCc.Irtpc;

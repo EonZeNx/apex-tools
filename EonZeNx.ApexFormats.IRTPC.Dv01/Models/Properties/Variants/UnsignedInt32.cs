@@ -1,42 +1,42 @@
 ﻿using System.Xml;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties.Variants;
 
-public class F32 : IrtpcV01BaseProperty
+public class UnsignedInt32 : PropertyBase
 {
-    public override string XmlName => "F32";
-    protected override EVariantType VariantType => EVariantType.Float32;
-
-    protected float Value { get; set; }
-
-
-    public F32() { }
-    public F32(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public override string XmlName => "UInt32";
+    public override EVariantType VariantType => EVariantType.UInteger32;
     
-    
+    public uint Value { get; set; }
+
+
+    public UnsignedInt32() { }
+
+
     #region ApexSerializable
-
+    
     public override void FromApex(BinaryReader br)
     {
-        Value = br.ReadSingle();
+        Value = br.ReadUInt32();
     }
 
     public override void ToApex(BinaryWriter bw)
     {
-        base.ToApex(bw);
+        bw.Write(NameHash);
         bw.Write(Value);
+        bw.Write((byte) VariantType);
     }
 
     #endregion
 
     
     #region XmlSerializable
-
+    
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-        Value = float.Parse(xr.ReadString());
+        Value = uint.Parse(xr.ReadString());
     }
 
     public override void ToXml(XmlWriter xw)
@@ -49,6 +49,6 @@ public class F32 : IrtpcV01BaseProperty
         xw.WriteValue(Value);
         xw.WriteEndElement();
     }
-
+    
     #endregion
 }
