@@ -4,7 +4,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class ObjectId : RtpcV01PropertyDeferred
+public class ObjectId : PropertyBaseDeferredV01
 {
     public override string XmlName => "OID";
     public override EVariantType VariantType => EVariantType.ObjectId;
@@ -15,7 +15,7 @@ public class ObjectId : RtpcV01PropertyDeferred
 
 
     public ObjectId() { }
-    public ObjectId(RtpcV01PropertyHeader header)
+    public ObjectId(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

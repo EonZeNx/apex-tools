@@ -7,15 +7,15 @@ using EonZeNx.ApexTools.Core.Utils;
 namespace EonZeNx.ApexFormats.SARC.V02.Models;
 
 /// <summary>
-/// A <see cref="SarcV02File"/> file.
+/// A <see cref="FileV02"/> file.
 /// <br/> Structure:
 /// <br/> Header Length - <see cref="uint"/>
 /// <br/> FourCC - <see cref="EFourCc"/>
 /// <br/> Version - <see cref="uint"/>
 /// <br/> Data offset - <see cref="uint"/>
-/// <br/> Entries array - <see cref="SarcV02Entry"/>
+/// <br/> Entries array - <see cref="EntryV02"/>
 /// </summary>
-public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySerializable
+public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializable
 {
     public EFourCc FourCc => EFourCc.Sarc;
     public uint Version => 0x02;
@@ -23,7 +23,7 @@ public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySeriali
     
     public uint HeaderLength { get; set; }
     public uint DataOffset { get; set; }
-    public SarcV02Entry[] Entries { get; set; } = Array.Empty<SarcV02Entry>();
+    public EntryV02[] Entries { get; set; } = Array.Empty<EntryV02>();
 
 
     #region ApexSerializable
@@ -40,10 +40,10 @@ public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySeriali
         
         DataOffset = br.ReadUInt32();
         
-        var entries = new List<SarcV02Entry>();
+        var entries = new List<EntryV02>();
         while (br.Position() < 4 + DataOffset)
         {
-            var entry = new SarcV02Entry();
+            var entry = new EntryV02();
             entry.FromApex(br);
             entries.Add(entry);
         }
@@ -141,7 +141,7 @@ public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySeriali
     {
         if (Path.HasExtension(basePath)) basePath = Path.GetDirectoryName(basePath) ?? basePath;
             
-        var entries = new List<SarcV02Entry>();
+        var entries = new List<EntryV02>();
         xr.ReadToDescendant("Entry");
 
         do
@@ -149,7 +149,7 @@ public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySeriali
             if (xr.NodeType != XmlNodeType.Element) continue;
             if (xr.Name != "Entry") break;
 
-            var entry = new SarcV02Entry(xr, basePath);
+            var entry = new EntryV02(xr, basePath);
             entries.Add(entry);
         } while (xr.ReadToNextSibling("Entry"));
         xr.ReadEndElement();

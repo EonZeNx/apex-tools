@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Xml;
-using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 using EonZeNx.ApexTools.Core.Abstractions.Serializable;
 using EonZeNx.ApexTools.Core.Utils;
@@ -8,14 +7,14 @@ using EonZeNx.ApexTools.Core.Utils;
 namespace EonZeNx.ApexFormats.SARC.V02.Models;
 
 /// <summary>
-/// The structure for <see cref="SarcV02Entry"/>.
+/// The structure for <see cref="EntryV02"/>.
 /// <br/> FilePath Length - <see cref="uint"/>
 /// <br/> FilePath - <see cref="string"/>
 /// <br/> Data offset - <see cref="uint"/>
 /// <br/> Size - <see cref="uint"/>
 /// <br/> Data (Deferred) - <see cref="byte"/>[]
 /// </summary>
-public class SarcV02Entry: IApexSerializable, ICustomPathSerializable, IToApexSerializableDeferred
+public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerializableDeferred
 {
     public uint PathLength { get; set; }
     public string FilePath { get; set; } = "";
@@ -34,9 +33,9 @@ public class SarcV02Entry: IApexSerializable, ICustomPathSerializable, IToApexSe
     }
 
 
-    public SarcV02Entry() {}
+    public EntryV02() {}
 
-    public SarcV02Entry(XmlReader xr, string basePath)
+    public EntryV02(XmlReader xr, string basePath)
     {
         DataOffset = 0;
         IsReference = bool.Parse(XmlUtils.GetAttribute(xr, "IsReference"));

@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
-public class Event : IrtpcV01BaseProperty
+public class Event : BasePropertyV01
 {
     public override string XmlName => "Event";
     
@@ -12,7 +12,7 @@ public class Event : IrtpcV01BaseProperty
 
 
     public Event() { }
-    public Event(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public Event(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01) { }
     
     
     #region ApexSerializable

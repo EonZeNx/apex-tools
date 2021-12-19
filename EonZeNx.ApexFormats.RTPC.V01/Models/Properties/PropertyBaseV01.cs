@@ -5,7 +5,7 @@ using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties;
 
-public abstract class RtpcV01PropertyBase : XmlSerializable, IApexSerializable
+public abstract class PropertyBaseV01 : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "PropertyBase";
     public static int HeaderSize => 4 + 4 + 1;

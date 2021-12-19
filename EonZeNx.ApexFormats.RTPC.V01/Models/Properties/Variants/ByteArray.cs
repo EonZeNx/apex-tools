@@ -14,7 +14,7 @@ public class ByteArray : BaseArray<byte>
     
     
     public ByteArray() { }
-    public ByteArray(RtpcV01PropertyHeader header) : base(header) { }
+    public ByteArray(PropertyHeaderV01 header) : base(header) { }
 
 
     #region ApexSerializable

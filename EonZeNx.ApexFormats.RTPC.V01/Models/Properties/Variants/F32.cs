@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class F32 : RtpcV01PropertyBase
+public class F32 : PropertyBaseV01
 {
     public override string XmlName => "Float";
     public override EVariantType VariantType => EVariantType.Float32;
@@ -13,7 +13,7 @@ public class F32 : RtpcV01PropertyBase
 
 
     public F32() { }
-    public F32(RtpcV01PropertyHeader header)
+    public F32(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

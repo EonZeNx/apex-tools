@@ -8,13 +8,13 @@ using EonZeNx.ApexTools.Core.Utils;
 namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models;
 
 /// <summary>
-/// The structure for an IRTPC DV01 <see cref="File"/>
+/// The structure for an IRTPC DV01 <see cref="PassThroughFile"/>
 /// <br/> Version 01 - <see cref="byte"/>
 /// <br/> Version 02 - <see cref="ushort"/>
 /// <br/> Object count - <see cref="ushort"/>
 /// <br/> Root container - <see cref="RootContainer"/>
 /// </summary>
-public class File : XmlSerializable, IApexFile, IApexSerializable
+public class PassThroughFile : XmlSerializable, IApexFile, IApexSerializable
 {
     public override string XmlName => "IRTPC";
 

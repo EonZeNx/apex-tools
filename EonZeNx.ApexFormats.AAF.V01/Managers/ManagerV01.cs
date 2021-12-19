@@ -3,11 +3,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.AAF.V01.Managers;
 
-public class AafV01Manager : IPathProcessor
+public class ManagerV01 : IPathProcessor
 {
     public string Path { get; set; }
 
-    public AafV01Manager(string path)
+    public ManagerV01(string path)
     {
         Path = path;
     }
@@ -20,7 +20,7 @@ public class AafV01Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        var aafV01File = new AafV01File();
+        var aafV01File = new FileV01();
 
         using (var inBinaryReader = new BinaryReader(new FileStream(Path, FileMode.Open)))
         {
@@ -33,7 +33,7 @@ public class AafV01Manager : IPathProcessor
     
     private void FromCustomFileToApex()
     {
-        var aafV01File = new AafV01File();
+        var aafV01File = new FileV01();
         
         using var inFileStream = new FileStream(Path, FileMode.Open);
         using var inBinaryReader = new BinaryReader(inFileStream);

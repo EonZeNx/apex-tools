@@ -7,13 +7,13 @@ using EonZeNx.ApexTools.Core.Exceptions;
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models;
 
 /// <summary>
-/// The structure for <see cref="IrtpcV01File"/> file
+/// The structure for <see cref="FileV01"/> file
 /// <br/> Version 01 - <see cref="byte"/>
 /// <br/> Version 02 - <see cref="ushort"/>
 /// <br/> Object count - <see cref="ushort"/>
-/// <br/> Root container - <see cref="IrtpcV01Container"/>
+/// <br/> Root container - <see cref="ContainerV01"/>
 /// </summary>
-public class IrtpcV01File : XmlSerializable, IApexFile, IApexSerializable
+public class FileV01 : XmlSerializable, IApexFile, IApexSerializable
 {
     public override string XmlName => "IRTPC";
 
@@ -22,7 +22,7 @@ public class IrtpcV01File : XmlSerializable, IApexFile, IApexSerializable
     public ushort Version02 => 0x04;
     
     public ushort ObjectCount { get; set; }
-    private IrtpcV01Container[] Containers { get; set; } = Array.Empty<IrtpcV01Container>();
+    private ContainerV01[] Containers { get; set; } = Array.Empty<ContainerV01>();
     
     
     #region ApexSerializable
@@ -33,10 +33,10 @@ public class IrtpcV01File : XmlSerializable, IApexFile, IApexSerializable
         if (br.ReadUInt16() != Version02) throw new InvalidFileVersion();
         ObjectCount = br.ReadUInt16();
         
-        Containers = new IrtpcV01Container[ObjectCount];
+        Containers = new ContainerV01[ObjectCount];
         for (var i = 0; i < ObjectCount; i++)
         {
-            Containers[i] = new IrtpcV01Container();
+            Containers[i] = new ContainerV01();
             Containers[i].FromApex(br);
         }
     }
@@ -59,13 +59,13 @@ public class IrtpcV01File : XmlSerializable, IApexFile, IApexSerializable
 
     public override void FromXml(XmlReader xr)
     {
-        var containers = new List<IrtpcV01Container>();
-        var container = new IrtpcV01Container();
+        var containers = new List<ContainerV01>();
+        var container = new ContainerV01();
         
         xr.ReadToDescendant(container.XmlName);
         while (xr.NodeType == XmlNodeType.Element && xr.Name == container.XmlName)
         {
-            container = new IrtpcV01Container();
+            container = new ContainerV01();
             container.FromXml(xr);
             containers.Add(container);
                 

@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.CustomArrays;
 
-public abstract class BaseArray<T> : RtpcV01PropertyDeferred
+public abstract class BaseArray<T> : PropertyBaseDeferredV01
 {
     public abstract T[] Values { get; set; }
     public virtual int Count { get; set; } = -1;
@@ -12,7 +12,7 @@ public abstract class BaseArray<T> : RtpcV01PropertyDeferred
 
 
     public BaseArray() { }
-    public BaseArray(RtpcV01PropertyHeader header)
+    public BaseArray(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

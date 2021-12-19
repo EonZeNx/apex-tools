@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class Mat3X3 : F32Array
+public class Mat3X3 : FloatArray
 {
     public override string XmlName => "Mat3x3";
     public override EVariantType VariantType => EVariantType.Mat3X3;
@@ -12,7 +12,7 @@ public class Mat3X3 : F32Array
     
     
     public Mat3X3() { }
-    public Mat3X3(RtpcV01PropertyHeader header) : base(header) { }
+    public Mat3X3(PropertyHeaderV01 header) : base(header) { }
 
 
     public override void ToXml(XmlWriter xw)

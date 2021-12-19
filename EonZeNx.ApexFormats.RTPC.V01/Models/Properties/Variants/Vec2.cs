@@ -1,8 +1,6 @@
-﻿using System.Xml;
+﻿namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
-
-public class Vec2 : F32Array
+public class Vec2 : FloatArray
 {
     public override string XmlName => "Vec2";
     public override EVariantType VariantType => EVariantType.Vec2;
@@ -11,5 +9,5 @@ public class Vec2 : F32Array
     
     
     public Vec2() { }
-    public Vec2(RtpcV01PropertyHeader header) : base(header) { }
+    public Vec2(PropertyHeaderV01 header) : base(header) { }
 }

@@ -4,7 +4,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
-public class Str : IrtpcV01BaseProperty
+public class Str : BasePropertyV01
 {
     public override string XmlName => "String";
     
@@ -13,7 +13,7 @@ public class Str : IrtpcV01BaseProperty
 
 
     public Str() { }
-    public Str(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public Str(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01) { }
     
     
     #region ApexSerializable

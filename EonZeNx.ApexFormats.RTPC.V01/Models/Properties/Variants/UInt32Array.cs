@@ -13,7 +13,7 @@ public class UInt32Array : BaseArray<uint>
     
     
     public UInt32Array() { }
-    public UInt32Array(RtpcV01PropertyHeader header) : base(header) { }
+    public UInt32Array(PropertyHeaderV01 header) : base(header) { }
 
 
     #region ApexSerializable

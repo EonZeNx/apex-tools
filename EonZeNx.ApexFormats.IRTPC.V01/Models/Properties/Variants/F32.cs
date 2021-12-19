@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
-public class F32 : IrtpcV01BaseProperty
+public class F32 : BasePropertyV01
 {
     public override string XmlName => "F32";
     protected override EVariantType VariantType => EVariantType.Float32;
@@ -12,7 +12,7 @@ public class F32 : IrtpcV01BaseProperty
 
 
     public F32() { }
-    public F32(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public F32(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01) { }
     
     
     #region ApexSerializable

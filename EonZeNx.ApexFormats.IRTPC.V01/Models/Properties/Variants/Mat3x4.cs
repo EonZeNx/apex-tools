@@ -3,13 +3,13 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
-public class Mat3X4 : IrtpcV01FloatArray
+public class Mat3X4 : FloatArray
 {
     public override string XmlName => "Max3x4";
     protected override EVariantType VariantType => EVariantType.Mat3X4;
     
     public Mat3X4() { }
-    public Mat3X4(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader)
+    public Mat3X4(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01)
     {
         Num = 12;
     }

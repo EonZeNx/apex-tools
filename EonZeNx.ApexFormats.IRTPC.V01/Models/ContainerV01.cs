@@ -1,5 +1,4 @@
-﻿using System.Data.SQLite;
-using System.Xml;
+﻿using System.Xml;
 using EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
 using EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 using EonZeNx.ApexFormats.IRTPC.V01.Utils;
@@ -10,14 +9,14 @@ using EonZeNx.ApexTools.Core.Utils.Hash;
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models;
 
 /// <summary>
-/// The structure of an <see cref="IrtpcV01Container"/>.
+/// The structure of an <see cref="ContainerV01"/>.
 /// <br/> Name hash - <see cref="int"/>
 /// <br/> Version 01 - <see cref="byte"/>
 /// <br/> Version 02 - <see cref="ushort"/>
 /// <br/> Property count - <see cref="ushort"/>
 /// <br/> <b>NOTE:</b> IRTPC containers only contain properties.
 /// </summary>
-public class IrtpcV01Container : XmlSerializable, IApexSerializable
+public class ContainerV01 : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "Container";
     
@@ -25,7 +24,7 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
     public byte Version01 { get; set; }
     public ushort Version02 { get; set; }
     public ushort PropertyCount { get; set; }
-    public IrtpcV01BaseProperty[] Properties { get; set; } = Array.Empty<IrtpcV01BaseProperty>();
+    public BasePropertyV01[] Properties { get; set; } = Array.Empty<BasePropertyV01>();
     
     public string Name { get; set; } = string.Empty;
     
@@ -63,11 +62,11 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
 
     private void PropertiesFromApex(BinaryReader br)
     {
-        Properties = new IrtpcV01BaseProperty[PropertyCount];
+        Properties = new BasePropertyV01[PropertyCount];
         for (var i = 0; i < PropertyCount; i++)
         {
-            var loadedProperty = new IrtpcV01PropertyHeader(br);
-            IrtpcV01BaseProperty property = loadedProperty.VariantType switch
+            var loadedProperty = new PropertyHeaderV01(br);
+            BasePropertyV01 propertyV01 = loadedProperty.VariantType switch
             {
                 EVariantType.UInteger32 => new UnsignedInt32(loadedProperty),
                 EVariantType.Float32 => new F32(loadedProperty),
@@ -81,8 +80,8 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            Properties[i] = property;
-            property.FromApex(br);
+            Properties[i] = propertyV01;
+            propertyV01.FromApex(br);
         }
     }
 
@@ -100,7 +99,7 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
         Version01 = byte.Parse(XmlUtils.GetAttribute(xr, nameof(Version01)));
         Version02 = ushort.Parse(XmlUtils.GetAttribute(xr, nameof(Version02)));
         
-        var properties = new List<IrtpcV01BaseProperty>();
+        var properties = new List<BasePropertyV01>();
         xr.Read();
 
         while (xr.Read())
@@ -113,8 +112,8 @@ public class IrtpcV01Container : XmlSerializable, IApexSerializable
                 
             if (!xr.HasAttributes) throw new XmlException("Property missing attributes");
 
-            if (!IrtpcV01Utils.XmlNameToBaseProperty.ContainsKey(tag)) throw new IOException("Unknown property type");
-            var property = IrtpcV01Utils.XmlNameToBaseProperty[tag]();
+            if (!UtilsV01.XmlNameToBaseProperty.ContainsKey(tag)) throw new IOException("Unknown property type");
+            var property = UtilsV01.XmlNameToBaseProperty[tag]();
             
             property.FromXml(xr);
             properties.Add(property);

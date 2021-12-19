@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
-public class UnsignedInt32 : IrtpcV01BaseProperty
+public class UnsignedInt32 : BasePropertyV01
 {
     public override string XmlName => "UInt32";
     protected override EVariantType VariantType => EVariantType.UInteger32;
@@ -11,7 +11,7 @@ public class UnsignedInt32 : IrtpcV01BaseProperty
 
 
     public UnsignedInt32() { }
-    public UnsignedInt32(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public UnsignedInt32(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01) { }
     
     
     #region ApexSerializable

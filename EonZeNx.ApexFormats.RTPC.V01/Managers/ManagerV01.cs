@@ -4,11 +4,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Managers;
 
-public class RtpcV01Manager : IPathProcessor
+public class ManagerV01 : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public RtpcV01Manager(string path)
+    public ManagerV01(string path)
     {
         FilePath = path;
     }
@@ -21,7 +21,7 @@ public class RtpcV01Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        var rtpcV01File = new RtpcV01File();
+        var rtpcV01File = new FileV01();
 
         using (var br = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
         {
@@ -35,7 +35,7 @@ public class RtpcV01Manager : IPathProcessor
     
     private void FromCustomFileToApex()
     {
-        var rtpcV01File = new RtpcV01File();
+        var rtpcV01File = new FileV01();
         using var xr = XmlReader.Create(FilePath);
         rtpcV01File.FromXml(xr);
         

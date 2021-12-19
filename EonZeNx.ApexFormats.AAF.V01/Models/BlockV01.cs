@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using EonZeNx.ApexTools.Core;
+﻿using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 using EonZeNx.ApexTools.Core.Utils;
 using Ionic.Zlib;
@@ -15,7 +14,7 @@ namespace EonZeNx.ApexFormats.AAF.V01.Models;
 /// <br/> FourCC - <see cref="EFourCc"/>
 /// <br/> Compressed Data : ZLib uncompress Level 6
 /// </summary>
-public class AafV01Block : IApexSerializable, ICustomFileSerializable
+public class BlockV01 : IApexSerializable, ICustomFileSerializable
 {
     public uint CompressedSize { get; set; }
     public uint UncompressedSize { get; set; }

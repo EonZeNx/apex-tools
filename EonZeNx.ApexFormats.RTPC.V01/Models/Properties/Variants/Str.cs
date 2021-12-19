@@ -4,7 +4,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class Str : RtpcV01PropertyDeferred
+public class Str : PropertyBaseDeferredV01
 {
     public override string XmlName => "String";
     public override EVariantType VariantType => EVariantType.String;
@@ -16,7 +16,7 @@ public class Str : RtpcV01PropertyDeferred
 
 
     public Str() { }
-    public Str(RtpcV01PropertyHeader header)
+    public Str(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

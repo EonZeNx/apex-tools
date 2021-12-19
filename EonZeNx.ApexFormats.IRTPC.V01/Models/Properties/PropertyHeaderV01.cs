@@ -2,14 +2,14 @@
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
 
-public class IrtpcV01PropertyHeader
+public class PropertyHeaderV01
 {
     public long Offset { get; }
     public int NameHash { get; }
     public EVariantType VariantType { get; }
     
 
-    public IrtpcV01PropertyHeader(BinaryReader br)
+    public PropertyHeaderV01(BinaryReader br)
     {
         Offset = br.Position();
         NameHash = br.ReadInt32();

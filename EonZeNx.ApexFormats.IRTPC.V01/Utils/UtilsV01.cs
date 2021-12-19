@@ -3,10 +3,10 @@ using EonZeNx.ApexFormats.IRTPC.V01.Models.Properties.Variants;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Utils;
 
-public static class IrtpcV01Utils
+public static class UtilsV01
 {
     // This is horrible but Google isn't finding any alternatives
-    public static readonly Dictionary<string, Func<IrtpcV01BaseProperty>> XmlNameToBaseProperty = new()
+    public static readonly Dictionary<string, Func<BasePropertyV01>> XmlNameToBaseProperty = new()
     {
         { new F32().XmlName, () => new F32() },
         { new UnsignedInt32().XmlName, () => new UnsignedInt32() },

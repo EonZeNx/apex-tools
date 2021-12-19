@@ -4,7 +4,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class F32Array : BaseArray<float>
+public class FloatArray : BaseArray<float>
 {
     public override string XmlName => "FloatArray";
     public override EVariantType VariantType => EVariantType.Float32Array;
@@ -13,8 +13,8 @@ public class F32Array : BaseArray<float>
     public override float[] Values { get; set; } = Array.Empty<float>();
     
     
-    public F32Array() { }
-    public F32Array(RtpcV01PropertyHeader header) : base(header) { }
+    public FloatArray() { }
+    public FloatArray(PropertyHeaderV01 header) : base(header) { }
 
 
     #region ApexSerializable

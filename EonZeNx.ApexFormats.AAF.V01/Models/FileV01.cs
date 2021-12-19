@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.Text;
+﻿using System.Text;
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
@@ -9,16 +8,16 @@ namespace EonZeNx.ApexFormats.AAF.V01.Models;
 
 
 /// <summary>
-/// The structure for <see cref="AafV01File"/>.
+/// The structure for <see cref="FileV01"/>.
 /// <br/> FourCc - <see cref="EFourCc"/>
 /// <br/> Version - <see cref="uint"/>
 /// <br/> Comment (Length 28, UTF8) - <see cref="string"/>
 /// <br/> Uncompressed Size - <see cref="uint"/>
 /// <br/> Compressed Size - <see cref="uint"/>
 /// <br/> Block count - <see cref="uint"/>
-/// <br/> Block array - <see cref="AafV01Block"/>
+/// <br/> Block array - <see cref="BlockV01"/>
 /// </summary>
-public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
+public class FileV01 : IApexFile, IApexSerializable, ICustomFileSerializable
 {
     public EFourCc FourCc => EFourCc.Aaf;
     public uint Version => 0x01;
@@ -26,7 +25,7 @@ public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
     public uint UncompressedSize { get; set; } = 0;
     public uint CompressedSize { get; set; } = 0;
     public uint BlockCount { get; set; } = 0;
-    public AafV01Block[] BlockArray { get; set; } = Array.Empty<AafV01Block>();
+    public BlockV01[] BlockArray { get; set; } = Array.Empty<BlockV01>();
 
 
     #region ApexSerializable
@@ -45,10 +44,10 @@ public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
         CompressedSize = br.ReadUInt32();
         BlockCount = br.ReadUInt32();
         
-        BlockArray = new AafV01Block[BlockCount];
+        BlockArray = new BlockV01[BlockCount];
         for (var i = 0; i < BlockCount; i++)
         {
-            BlockArray[i] = new AafV01Block();
+            BlockArray[i] = new BlockV01();
             BlockArray[i].FromApex(br);
         }
     }
@@ -65,7 +64,7 @@ public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
         bw.Write(
             BlockArray.Length == 1
                 ? BlockArray[0].BlockSize
-                : Math.Min(BlockArray.Max(block => block.BlockSize), AafV01Block.MaxBlockSize)
+                : Math.Min(BlockArray.Max(block => block.BlockSize), BlockV01.MaxBlockSize)
         );
         bw.Write(BlockCount);
         
@@ -82,10 +81,10 @@ public class AafV01File : IApexFile, IApexSerializable, ICustomFileSerializable
 
     public void FromCustomFile(BinaryReader br)
     {
-        var blockList = new List<AafV01Block>();
+        var blockList = new List<BlockV01>();
         while (br.Position() < br.BaseStream.Length)
         {
-            var block = new AafV01Block();
+            var block = new BlockV01();
             block.FromCustomFile(br);
             blockList.Add(block);
         }

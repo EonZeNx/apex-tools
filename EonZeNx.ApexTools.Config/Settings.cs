@@ -4,7 +4,7 @@ public static class Settings
 {
     public static Setting<bool> AutoClose { get; set; } = new()
     {
-        Value = false,
+        Value = true,
         Description = "Automatically close the tool after an action",
         DefaultValue = false
     };
@@ -34,6 +34,13 @@ public static class Settings
     {
         Value = true,
         Description = "Always output the hash even if the hash lookup was successful",
+        DefaultValue = true
+    };
+    
+    public static Setting<bool> OutputValueOffset { get; set; } = new()
+    {
+        Value = true,
+        Description = "Whether or not to output the offset of each value",
         DefaultValue = true
     };
     

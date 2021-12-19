@@ -3,11 +3,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.SARC.V02.Managers;
 
-public class SarcV02Manager : IPathProcessor
+public class ManagerV02 : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public SarcV02Manager(string filePath)
+    public ManagerV02(string filePath)
     {
         FilePath = filePath;
     }
@@ -20,7 +20,7 @@ public class SarcV02Manager : IPathProcessor
 
     private void FromApexToCustomDirectory()
     {
-        var sarcV02File = new SarcV02File();
+        var sarcV02File = new FileV02();
         
         using var inFileStream = new FileStream(FilePath, FileMode.Open);
         using var inBinaryReader = new BinaryReader(inFileStream);
@@ -39,7 +39,7 @@ public class SarcV02Manager : IPathProcessor
     
     private void FromCustomDirectoryToApex()
     {
-        var sarcV02File = new SarcV02File();
+        var sarcV02File = new FileV02();
         sarcV02File.FromCustomDirectory(FilePath);
 
         using var outputFileStream = new FileStream(Path.ChangeExtension(FilePath, "custom.sarc"), FileMode.Create);

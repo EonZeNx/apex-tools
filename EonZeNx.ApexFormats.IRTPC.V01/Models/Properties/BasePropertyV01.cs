@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
 
-public class IrtpcV01BaseProperty : XmlSerializable, IApexSerializable
+public class BasePropertyV01 : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "BaseProperty";
     
@@ -13,12 +13,12 @@ public class IrtpcV01BaseProperty : XmlSerializable, IApexSerializable
     protected string Name { get; set; } = "";
 
 
-    public IrtpcV01BaseProperty() { }
+    public BasePropertyV01() { }
     
-    public IrtpcV01BaseProperty(IrtpcV01PropertyHeader propertyHeader)
+    public BasePropertyV01(PropertyHeaderV01 propertyHeaderV01)
     {
-        Offset = propertyHeader.Offset;
-        NameHash = propertyHeader.NameHash;
+        Offset = propertyHeaderV01.Offset;
+        NameHash = propertyHeaderV01.NameHash;
     }
 
 

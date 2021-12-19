@@ -4,11 +4,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Managers;
 
-public class IrtpcV01Manager : IPathProcessor
+public class ManagerV01 : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public IrtpcV01Manager(string path)
+    public ManagerV01(string path)
     {
         FilePath = path;
     }
@@ -21,7 +21,7 @@ public class IrtpcV01Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        var irtpcV01File = new IrtpcV01File();
+        var irtpcV01File = new FileV01();
 
         using (var br = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
         {
@@ -35,7 +35,7 @@ public class IrtpcV01Manager : IPathProcessor
     
     private void FromCustomFileToApex()
     {
-        var irtpcV01File = new IrtpcV01File();
+        var irtpcV01File = new FileV01();
         using var xr = XmlReader.Create(FilePath);
         irtpcV01File.FromXml(xr);
         

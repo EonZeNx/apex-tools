@@ -1,6 +1,4 @@
-﻿
-using EonZeNx.ApexTools.Core;
-using EonZeNx.ApexTools.Core.Utils;
+﻿using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Managers;
 
 namespace EonZeNx.ApexTools;

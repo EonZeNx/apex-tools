@@ -11,17 +11,17 @@ using EonZeNx.ApexTools.Core.Utils;
 namespace EonZeNx.ApexFormats.RTPC.V01.Models;
 
 /// <summary>
-/// The structure of an <see cref="RtpcV01Container"/> file
+/// The structure of an <see cref="ContainerV01"/> file
 /// <br/> Name hash - <see cref="int"/>
 /// <br/> Offset - <see cref="uint"/>
 /// <br/> Property count - <see cref="ushort"/>
 /// <br/> Container count - <see cref="ushort"/>
 /// <br/> Property headers
 /// <br/> Containers headers
-/// <br/> Properties - <see cref="RtpcV01PropertyBase"/>[]
-/// <br/> Containers - <see cref="RtpcV01Container"/>[]
+/// <br/> Properties - <see cref="PropertyBaseV01"/>[]
+/// <br/> Containers - <see cref="ContainerV01"/>[]
 /// </summary>
-public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSerializableDeferred
+public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializableDeferred
 {
     public override string XmlName => "Container";
     public static int HeaderSize => 4 + 4 + 2 + 2;
@@ -37,8 +37,8 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     public long ContainerHeaderStart { get; set; }
     public long DataOffset { get; set; }
     
-    public RtpcV01PropertyBase[] Properties { get; set; } = Array.Empty<RtpcV01PropertyBase>();
-    public RtpcV01Container[] Containers { get; set; } = Array.Empty<RtpcV01Container>();
+    public PropertyBaseV01[] Properties { get; set; } = Array.Empty<PropertyBaseV01>();
+    public ContainerV01[] Containers { get; set; } = Array.Empty<ContainerV01>();
     
     
     #region ApexSerializable
@@ -69,7 +69,7 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     public void ToApexDeferred(BinaryWriter bw)
     {
         Offset = (uint) bw.Position();
-        ContainerHeaderStart = ByteUtils.Align(Offset + PropertyCount * RtpcV01PropertyBase.HeaderSize, 4);
+        ContainerHeaderStart = ByteUtils.Align(Offset + PropertyCount * PropertyBaseV01.HeaderSize, 4);
         DataOffset = ContainerHeaderStart + ContainerCount * HeaderSize;
 
         if (Properties.Length > 0) PropertiesToApex(bw);
@@ -85,14 +85,14 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     {
         br.BaseStream.Seek(Offset, SeekOrigin.Begin);
         
-        var propertyHeaders = new RtpcV01PropertyHeader[PropertyCount];
+        var propertyHeaders = new PropertyHeaderV01[PropertyCount];
         for (var i = 0; i < propertyHeaders.Length; i++)
         {
-            propertyHeaders[i] = new RtpcV01PropertyHeader(br);
+            propertyHeaders[i] = new PropertyHeaderV01(br);
         }
 
         ContainerHeaderOffset = br.Position();
-        Properties = new RtpcV01PropertyBase[PropertyCount];
+        Properties = new PropertyBaseV01[PropertyCount];
         for (var i = 0; i < PropertyCount; i++)
         {
             var header = propertyHeaders[i];
@@ -108,7 +108,7 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
                 EVariantType.Mat3X3 => new Mat3X3(header),
                 EVariantType.Mat4X4 => new Mat4X4(header),
                 EVariantType.UInteger32Array => new UInt32Array(header),
-                EVariantType.Float32Array => new F32Array(header),
+                EVariantType.Float32Array => new FloatArray(header),
                 EVariantType.ByteArray => new ByteArray(header),
                 EVariantType.Deprecated => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
                 EVariantType.ObjectId => new ObjectId(header),
@@ -127,10 +127,10 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     {
         br.BaseStream.Seek(ContainerHeaderOffset, SeekOrigin.Begin);
         br.Align(4);
-        Containers = new RtpcV01Container[ContainerCount];
+        Containers = new ContainerV01[ContainerCount];
         for (var i = 0; i < ContainerCount; i++)
         {
-            Containers[i] = new RtpcV01Container();
+            Containers[i] = new ContainerV01();
             Containers[i].FromApex(br);
         }
         
@@ -194,13 +194,13 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     public void SortProperties()
     {
         // Sort properties using NameHash
-        if (Settings.SortRuntimeContainers.Value) Array.Sort(Properties, new RtpcV01PropertyComparer());
+        if (Settings.SortRuntimeContainers.Value) Array.Sort(Properties, new PropertyV01Comparer());
     }
     
     public void SortContainers()
     {
         // Sort properties using NameHash
-        if (Settings.SortRuntimeContainers.Value) Array.Sort(Containers, new RtpcV01ContainerComparer());
+        if (Settings.SortRuntimeContainers.Value) Array.Sort(Containers, new ContainerV01Comparer());
     }
 
     #endregion
@@ -239,7 +239,7 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
 
     private void PropertiesFromXml(XmlReader xr)
     {
-        var properties = new List<RtpcV01PropertyBase>();
+        var properties = new List<PropertyBaseV01>();
         do
         {
             var tag = xr.Name;
@@ -250,9 +250,9 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
 
             if (!xr.HasAttributes) throw new XmlException("Property missing attributes");
 
-            if (!RtpcV01Utils.XmlNameToBaseProperty.ContainsKey(tag))
+            if (!UtilsV01.XmlNameToBaseProperty.ContainsKey(tag))
                 throw new IOException($"Unknown property type: {tag}");
-            var property = RtpcV01Utils.XmlNameToBaseProperty[tag]();
+            var property = UtilsV01.XmlNameToBaseProperty[tag]();
 
             property.FromXml(xr);
             properties.Add(property);
@@ -264,7 +264,7 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
     
     private void ContainersFromXml(XmlReader xr)
     {
-        var containers = new List<RtpcV01Container>();
+        var containers = new List<ContainerV01>();
 
         do
         {
@@ -276,7 +276,7 @@ public class RtpcV01Container : XmlSerializable, IApexSerializable, IToApexSeria
                 
             if (!xr.HasAttributes) throw new XmlException("Property missing attributes");
 
-            var container = new RtpcV01Container();
+            var container = new ContainerV01();
 
             container.FromXml(xr);
             containers.Add(container);

@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class UnsignedInt32 : RtpcV01PropertyBase
+public class UnsignedInt32 : PropertyBaseV01
 {
     public override string XmlName => "UInt32";
     public override EVariantType VariantType => EVariantType.UInteger32;
@@ -13,7 +13,7 @@ public class UnsignedInt32 : RtpcV01PropertyBase
 
 
     public UnsignedInt32() { }
-    public UnsignedInt32(RtpcV01PropertyHeader header)
+    public UnsignedInt32(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

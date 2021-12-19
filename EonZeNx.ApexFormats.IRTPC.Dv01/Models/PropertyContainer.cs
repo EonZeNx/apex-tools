@@ -1,8 +1,6 @@
 ﻿using System.Xml;
 using EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties;
 using EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties.Variants;
-using EonZeNx.ApexFormats.Debug.IRTPC.V01.Utils;
-using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Core.Utils.Hash;

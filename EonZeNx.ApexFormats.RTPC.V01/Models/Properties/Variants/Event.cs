@@ -1,10 +1,9 @@
-﻿using System.Globalization;
-using System.Xml;
+﻿using System.Xml;
 using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models.Properties.Variants;
 
-public class Event : RtpcV01PropertyDeferred
+public class Event : PropertyBaseDeferredV01
 {
     public override string XmlName => "Event";
     public override EVariantType VariantType => EVariantType.Event;
@@ -15,7 +14,7 @@ public class Event : RtpcV01PropertyDeferred
 
 
     public Event() { }
-    public Event(RtpcV01PropertyHeader header)
+    public Event(PropertyHeaderV01 header)
     {
         NameHash = header.NameHash;
         RawData = header.RawData;

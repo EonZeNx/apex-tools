@@ -39,8 +39,8 @@ public class AafSarcPassThroughManager : IPathProcessor
 
     private void FromApexToCustomDirectory()
     {
-        var aafV01File = new AafV01File();
-        var sarcV02File = new SarcV02File();
+        var aafV01File = new FileV01();
+        var sarcV02File = new FileV02();
 
         using (var inBr = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
         {
@@ -71,8 +71,8 @@ public class AafSarcPassThroughManager : IPathProcessor
         using var br = new BinaryReader(ms);
         using var bw = new BinaryWriter(ms);
         
-        var aafV01File = new AafV01File();
-        var sarcV02File = new SarcV02File();
+        var aafV01File = new FileV01();
+        var sarcV02File = new FileV02();
         
         sarcV02File.FromCustomDirectory(FilePath);
         sarcV02File.ToApex(bw);

@@ -3,7 +3,7 @@ using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
 
-public class IrtpcV01FloatArray : IrtpcV01BaseProperty
+public class FloatArray : BasePropertyV01
 {
     public override string XmlName => "FloatArray";
     protected override EVariantType VariantType => EVariantType.Vec2;
@@ -12,8 +12,8 @@ public class IrtpcV01FloatArray : IrtpcV01BaseProperty
     public float[] Value { get; set; } = Array.Empty<float>();
     
     
-    public IrtpcV01FloatArray() { }
-    public IrtpcV01FloatArray(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
+    public FloatArray() { }
+    public FloatArray(PropertyHeaderV01 propertyHeaderV01) : base(propertyHeaderV01) { }
     
     
     #region ApexSerializable

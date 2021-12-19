@@ -2,9 +2,9 @@
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Models;
 
-public class RtpcV01PropertyComparer : Comparer<RtpcV01PropertyBase>
+public class PropertyV01Comparer : Comparer<PropertyBaseV01>
 {
-    public override int Compare(RtpcV01PropertyBase? x, RtpcV01PropertyBase? y)
+    public override int Compare(PropertyBaseV01? x, PropertyBaseV01? y)
     {
         // Null compare
         if (x == null && y == null) return 0;
@@ -23,9 +23,9 @@ public class RtpcV01PropertyComparer : Comparer<RtpcV01PropertyBase>
     }
 }
 
-public class RtpcV01ContainerComparer : Comparer<RtpcV01Container>
+public class ContainerV01Comparer : Comparer<ContainerV01>
 {
-    public override int Compare(RtpcV01Container? x, RtpcV01Container? y)
+    public override int Compare(ContainerV01? x, ContainerV01? y)
     {
         // Null compare
         if (x == null && y == null) return 0;
