@@ -11,7 +11,7 @@ public class UnsignedInt32 : IrtpcV01BaseProperty
 
 
     public UnsignedInt32() { }
-    public UnsignedInt32(IrtpcV01LoadProperty loadProperty) : base(loadProperty) { }
+    public UnsignedInt32(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader) { }
     
     
     #region ApexSerializable

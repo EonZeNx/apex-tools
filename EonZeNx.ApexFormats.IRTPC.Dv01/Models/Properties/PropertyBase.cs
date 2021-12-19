@@ -1,25 +1,15 @@
 ﻿using System.Xml;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Models.Properties;
 
-public class IrtpcV01BaseProperty : XmlSerializable, IApexSerializable
+public class PropertyBase : XmlSerializable, IApexSerializable
 {
-    public override string XmlName => "BaseProperty";
+    public override string XmlName => "PropertyBase";
+    public virtual EVariantType VariantType { get; }
     
-    protected virtual EVariantType VariantType { get; set; }
-    protected long Offset { get; set; }
-    protected int NameHash { get; set; }
+    public int NameHash { get; set; }
     protected string Name { get; set; } = "";
-
-
-    public IrtpcV01BaseProperty() { }
-    
-    public IrtpcV01BaseProperty(IrtpcV01PropertyHeader propertyHeader)
-    {
-        Offset = propertyHeader.Offset;
-        NameHash = propertyHeader.NameHash;
-    }
 
 
     #region ApexSerializable
@@ -34,11 +24,11 @@ public class IrtpcV01BaseProperty : XmlSerializable, IApexSerializable
         bw.Write(NameHash);
         bw.Write((byte) (uint) VariantType);
     }
-
+    
     #endregion
-    
-    
-    #region CustomSerializable
+
+
+    #region XmlSerializable
 
     public override void FromXml(XmlReader xr)
     {

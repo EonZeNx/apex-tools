@@ -6,7 +6,7 @@ public class Vec4 : IrtpcV01FloatArray
     protected override EVariantType VariantType => EVariantType.Vec4;
     
     public Vec4() { }
-    public Vec4(IrtpcV01LoadProperty loadProperty) : base(loadProperty)
+    public Vec4(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader)
     {
         Num = 4;
     }

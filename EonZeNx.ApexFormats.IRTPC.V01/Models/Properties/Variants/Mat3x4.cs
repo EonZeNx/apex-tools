@@ -9,7 +9,7 @@ public class Mat3X4 : IrtpcV01FloatArray
     protected override EVariantType VariantType => EVariantType.Mat3X4;
     
     public Mat3X4() { }
-    public Mat3X4(IrtpcV01LoadProperty loadProperty) : base(loadProperty)
+    public Mat3X4(IrtpcV01PropertyHeader propertyHeader) : base(propertyHeader)
     {
         Num = 12;
     }
