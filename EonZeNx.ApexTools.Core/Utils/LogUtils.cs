@@ -1,4 +1,6 @@
-﻿namespace EonZeNx.ApexTools.Core.Utils;
+﻿using EonZeNx.ApexTools.Config;
+
+namespace EonZeNx.ApexTools.Core.Utils;
 
 public static class LogUtils
 {
@@ -13,13 +15,14 @@ public static class LogUtils
         Warning,
         Debug
     }
-    
+
     /// <summary>
     /// Log function that calls the Log function in the LogUtils class and changes the colour based on LogType enum
     /// </summary>
     /// <param name="message"></param>
     /// <param name="logType"></param>
-    public static void Log(string message, LogType logType)
+    /// <param name="newLine"></param>
+    public static void Log(string message, LogType logType, bool newLine = true)
     {
         var consoleColor = logType switch
         {
@@ -31,18 +34,22 @@ public static class LogUtils
             _ => ConsoleColor.White
         };
         
-        Log($"{logType.ToString().ToUpper()}: {message}", consoleColor);
+        Log($"[{logType.ToString().ToUpper()}]: {message}", consoleColor, newLine);
     }
-    
+
     /// <summary>
     /// Public log function that writes a message with the specified color to the console.
     /// </summary>
     /// <param name="message"></param>
     /// <param name="color"></param>
-    public static void Log(string message, ConsoleColor color)
+    /// <param name="newLine"></param>
+    public static void Log(string message, ConsoleColor color, bool newLine = true)
     {
         Console.ForegroundColor = color;
-        Console.WriteLine(message);
+        
+        if (newLine) Console.WriteLine(message);
+        else Console.Write(message);
+        
         Console.ResetColor();
     }
     
@@ -55,5 +62,43 @@ public static class LogUtils
     {
         Console.Write(message);
         return Console.ReadLine();
+    }
+
+    
+    /// <summary>
+    /// Log the loading step of the file.
+    /// </summary>
+    /// <param name="targetFilename"></param>
+    /// <param name="fileType"></param>
+    public static void LogLoading(string targetFilename, string fileType)
+    {
+        if (Settings.LogProgress.Value) Log($"Loading '{targetFilename}' as {fileType}", LogType.Info);
+    }
+    
+    /// <summary>
+    /// Log the processing step of the file.
+    /// </summary>
+    /// <param name="targetFilename"></param>
+    public static void LogProcessing(string targetFilename)
+    {
+        if (Settings.LogProgress.Value) Log($"Processing '{targetFilename}'", LogType.Info);
+    }
+    
+    /// <summary>
+    /// Log the completion step of the file.
+    /// </summary>
+    /// <param name="targetFilename"></param>
+    public static void LogComplete(string targetFilename)
+    {
+        if (Settings.LogProgress.Value) Log($"Completed '{targetFilename}'", LogType.Info);
+    }
+    
+    /// <summary>
+    /// Log the failed status of loading the file.
+    /// </summary>
+    /// <param name="targetFilename"></param>
+    public static void LogFailedToLoadError(string targetFilename)
+    {
+        if (Settings.LogProgress.Value) Log($"Failed to load '{targetFilename}'", LogType.Error);
     }
 }

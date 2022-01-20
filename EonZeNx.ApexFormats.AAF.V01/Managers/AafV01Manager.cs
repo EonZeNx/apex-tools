@@ -1,50 +1,55 @@
-﻿using EonZeNx.ApexFormats.ADF.V04.Models;
+﻿using EonZeNx.ApexFormats.AAF.V01.Models;
+using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace EonZeNx.ApexFormats.ADF.V04.Managers;
+namespace EonZeNx.ApexFormats.AAF.V01.Managers;
 
-public class AdfV04Manager : IPathProcessor
+public class AafV01Manager : IPathProcessor
 {
     public string TargetPath { get; set; }
     public string TargetPathName => Path.GetFileName(TargetPath);
 
-    public AdfV04Manager(string targetPath)
+    public AafV01Manager(string targetPath)
     {
         TargetPath = targetPath;
     }
 
     public void TryProcess()
     {
-        if (Path.GetExtension(TargetPath) is ".wtunec" or ".vmodc") FromApexToCustomFile();
-        else if (Path.GetExtension(TargetPath) == ".xml") FromCustomFileToApex();
+        var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
+        
+        if (fourCc == EFourCc.Aaf) FromApexToCustomFile();
+        else if (fourCc == EFourCc.Sarc) FromCustomFileToApex();
         else LogUtils.LogFailedToLoadError(TargetPathName);
     }
 
     private void FromApexToCustomFile()
     {
         LogUtils.LogLoading(TargetPathName, "ApexFile");
-        
-        var adfV04File = new FileV04();
+        var aafV01File = new FileV01();
 
         using (var inBinaryReader = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
         {
-            adfV04File.FromApex(inBinaryReader);
+            aafV01File.FromApex(inBinaryReader);
         }
+        
+        LogUtils.LogProcessing(TargetPathName);
 
         using var outBinaryWriter = new BinaryWriter(new FileStream($"{TargetPath}.sarc", FileMode.Create));
-        adfV04File.ToCustomFile(outBinaryWriter);
+        aafV01File.ToCustomFile(outBinaryWriter);
+        
+        LogUtils.LogComplete(TargetPathName);
     }
     
     private void FromCustomFileToApex()
     {
         LogUtils.LogLoading(TargetPathName, "CustomFile");
-        
-        var adfV04File = new FileV04();
+        var aafV01File = new FileV01();
         
         using var inFileStream = new FileStream(TargetPath, FileMode.Open);
         using var inBinaryReader = new BinaryReader(inFileStream);
-        adfV04File.FromCustomFile(inBinaryReader);
+        aafV01File.FromCustomFile(inBinaryReader);
         inBinaryReader.Dispose();
         inFileStream.Dispose();
         
@@ -52,7 +57,7 @@ public class AdfV04Manager : IPathProcessor
 
         using var outFileStream = new FileStream($"{TargetPath}.ee", FileMode.Create);
         using var outBinaryWriter = new BinaryWriter(outFileStream);
-        adfV04File.ToApex(outBinaryWriter);
+        aafV01File.ToApex(outBinaryWriter);
         
         LogUtils.LogComplete(TargetPathName);
     }

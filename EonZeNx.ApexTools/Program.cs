@@ -1,4 +1,5 @@
-﻿using EonZeNx.ApexTools.Core.Utils;
+﻿using EonZeNx.ApexTools.Config;
+using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Managers;
 
 namespace EonZeNx.ApexTools;
@@ -38,6 +39,8 @@ public class Program
         // Set validPaths to result of FilterPaths. If length is zero, call Close
         var validPaths = FilterPaths(args).ToArray();
         if (!validPaths.Any()) Close("No valid paths found.");
+
+        Settings.LoadSettings();
         
         var manager = new ApexMultiPathManager(validPaths);
         manager.ProcessPaths();
