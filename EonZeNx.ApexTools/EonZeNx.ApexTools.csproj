@@ -9,7 +9,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EonZeNx.ApexFormats.AAF.V01\EonZeNx.ApexFormats.AAF.V01.csproj" />
-      <ProjectReference Include="..\EonZeNx.ApexFormats.ADF.V04\EonZeNx.ApexFormats.ADF.V04.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.IRTPC.Dv01\EonZeNx.ApexFormats.IRTPC.Dv01.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.IRTPC.V01\EonZeNx.ApexFormats.IRTPC.V01.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.RTPC.V01\EonZeNx.ApexFormats.RTPC.V01.csproj" />

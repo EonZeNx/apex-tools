@@ -1,27 +1,27 @@
 ﻿using System.Xml;
-using EonZeNx.ApexFormats.IRTPC.V01.Models;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Models;
 using EonZeNx.ApexTools.Core.Abstractions;
 
-namespace EonZeNx.ApexFormats.IRTPC.V01.Managers;
+namespace EonZeNx.ApexFormats.Debug.IRTPC.V01.Managers;
 
-public class IrtpcV01Manager : IPathProcessor
+public class ManagerDv01 : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public IrtpcV01Manager(string path)
+    public ManagerDv01(string path)
     {
         FilePath = path;
     }
     
     public void TryProcess()
     {
-        if (Path.GetExtension(FilePath) == ".bin") FromApexToCustomFile();
+        if (Path.GetExtension(FilePath) == ".epe") FromApexToCustomFile();
         else if (Path.GetExtension(FilePath) == ".xml") FromCustomFileToApex();
     }
 
     private void FromApexToCustomFile()
     {
-        var irtpcV01File = new FileV01();
+        var irtpcV01File = new PassThroughFile();
 
         using (var br = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
         {
@@ -35,7 +35,7 @@ public class IrtpcV01Manager : IPathProcessor
     
     private void FromCustomFileToApex()
     {
-        var irtpcV01File = new FileV01();
+        var irtpcV01File = new PassThroughFile();
         using var xr = XmlReader.Create(FilePath);
         irtpcV01File.FromXml(xr);
         

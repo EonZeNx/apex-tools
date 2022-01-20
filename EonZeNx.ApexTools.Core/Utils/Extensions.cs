@@ -1,17 +1,9 @@
 ﻿using System.Buffers.Binary;
-using System.Text;
 
 namespace EonZeNx.ApexTools.Core.Utils;
 
-public static class StreamUtils
+public static class Extensions
 {
-    public static uint ReadBigUInt32(this BinaryReader br)
-    {
-        return BinaryPrimitives.ReadUInt32BigEndian(br.ReadBytes(4));
-    }
-    
-    #region Position
-
     public static long Position(this BinaryReader br)
     {
         return br.BaseStream.Position;
@@ -21,12 +13,14 @@ public static class StreamUtils
     {
         return bw.BaseStream.Position;
     }
+    
+    
+    public static uint ReadBigUInt32(this BinaryReader br)
+    {
+        return BinaryPrimitives.ReadUInt32BigEndian(br.ReadBytes(4));
+    }
 
-    #endregion
-
-
-    #region Alignment
-
+    
     public static void Align(this BinaryReader br, uint align)
     {
         br.BaseStream.Seek(ByteUtils.Align(br.Position(), align), SeekOrigin.Begin);
@@ -53,34 +47,4 @@ public static class StreamUtils
 
         return preAlign;
     }
-
-    #endregion
-
-
-    #region StringZ
-
-    public static string ReadStringZ(this BinaryReader br)
-    {
-        var fullString = "";
-        var character = "";
-            
-        while (character != "\0")
-        {
-            fullString += character;
-            character = Encoding.UTF8.GetString(br.ReadBytes(1));
-        }
-
-        return fullString;
-    }
-        
-    public static void WriteStringZ(this BinaryWriter bw, string value)
-    {
-        foreach (var character in value) { bw.Write(character); }
-
-        if (value.EndsWith("\0")) return;
-            
-        bw.Write("\0");
-    }
-
-    #endregion
 }
