@@ -4,11 +4,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Managers;
 
-public class ManagerV01 : IPathProcessor
+public class RtpcV01Manager : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public ManagerV01(string path)
+    public RtpcV01Manager(string path)
     {
         FilePath = path;
     }
