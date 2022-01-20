@@ -1,45 +1,63 @@
 ﻿using System.Xml;
 using EonZeNx.ApexFormats.RTPC.V01.Models;
+using EonZeNx.ApexTools.Config;
+using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Abstractions;
+using EonZeNx.ApexTools.Core.Utils;
 
 namespace EonZeNx.ApexFormats.RTPC.V01.Managers;
 
 public class RtpcV01Manager : IPathProcessor
 {
-    public string FilePath { get; set; }
+    public string TargetPath { get; set; }
+    public string TargetPathName => Path.GetFileName(TargetPath);
 
     public RtpcV01Manager(string path)
     {
-        FilePath = path;
+        TargetPath = path;
     }
     
     public void TryProcess()
     {
-        if (Path.GetExtension(FilePath) == ".epe") FromApexToCustomFile();
-        else if (Path.GetExtension(FilePath) == ".xml") FromCustomFileToApex();
+        var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
+        
+        if (fourCc == EFourCc.Rtpc) FromApexToCustomFile();
+        else if (fourCc == EFourCc.Xml) FromCustomFileToApex();
+        else LogUtils.LogFailedToLoadError(TargetPathName);
     }
 
     private void FromApexToCustomFile()
     {
+        LogUtils.LogLoading(TargetPathName, "ApexFile");
+        
         var rtpcV01File = new FileV01();
-
-        using (var br = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
+        using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
         {
             rtpcV01File.FromApex(br);
         }
+        
+        LogUtils.LogProcessing(TargetPathName);
 
         var settings = new XmlWriterSettings{ Indent = true, IndentChars = "\t" };
-        using var xr = XmlWriter.Create($"{FilePath}.xml", settings);
+        using var xr = XmlWriter.Create($"{TargetPath}.xml", settings);
         rtpcV01File.ToXml(xr);
+        
+        LogUtils.LogComplete(TargetPathName);
     }
     
     private void FromCustomFileToApex()
     {
+        LogUtils.LogLoading(TargetPathName, "CustomFile");
+
         var rtpcV01File = new FileV01();
-        using var xr = XmlReader.Create(FilePath);
+        using var xr = XmlReader.Create(TargetPath);
         rtpcV01File.FromXml(xr);
         
-        using var bw = new BinaryWriter(new FileStream($"{FilePath}.epe", FileMode.Create));
+        LogUtils.LogProcessing(TargetPathName);
+        
+        using var bw = new BinaryWriter(new FileStream($"{TargetPath}.epe", FileMode.Create));
         rtpcV01File.ToApex(bw);
+        
+        LogUtils.LogComplete(TargetPathName);
     }
 }
