@@ -14,7 +14,7 @@ public class Program
     public static void Close(string message = "")
     {
         if (message.Length != 0) LogUtils.Log(message, LogUtils.LogType.Warning);
-        if (!Config.Settings.AutoClose.Value) LogUtils.GetInput("Press any key to continue...");
+        if (!Settings.AutoClose.Value) LogUtils.GetInput("Press any key to continue...");
         
         Environment.Exit(0);
     }

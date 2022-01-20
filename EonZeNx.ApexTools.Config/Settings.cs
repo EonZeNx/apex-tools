@@ -127,7 +127,7 @@ public static class Settings
             
         xw.WriteStartElement(nameof(setting.Value));
         xw.WriteAttributeString(nameof(setting.DefaultValue), $"{setting.DefaultValue}");
-        xw.WriteValue($"{setting.Value}");
+        xw.WriteValue($"{setting.DefaultValue}");
         xw.WriteEndElement();
             
         xw.WriteStartElement(nameof(setting.Description));
