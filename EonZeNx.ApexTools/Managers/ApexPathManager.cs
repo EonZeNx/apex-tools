@@ -1,4 +1,8 @@
 ﻿using System.Xml;
+using EonZeNx.ApexFormats.ADF.V04.Managers;
+using EonZeNx.ApexFormats.Debug.IRTPC.V01.Managers;
+using EonZeNx.ApexFormats.IRTPC.V01.Managers;
+using EonZeNx.ApexFormats.RTPC.V01.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Models;
 using EonZeNx.ApexTools.Core;
@@ -6,7 +10,6 @@ using EonZeNx.ApexTools.Core.Abstractions;
 using EonZeNx.ApexTools.Core.Exceptions;
 using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.PassThrough.Managers;
-using ManagerV01 = EonZeNx.ApexFormats.IRTPC.V01.Managers.ManagerV01;
 
 namespace EonZeNx.ApexTools.Managers;
 
@@ -30,12 +33,12 @@ public class ApexPathManager
         IPathProcessor processor = fourCc switch
         {
             EFourCc.Aaf => new AafSarcPassThroughManager(FilePath),
-            EFourCc.Rtpc => new ApexFormats.RTPC.V01.Managers.ManagerV01(FilePath),
-            EFourCc.Irtpc => new ManagerV01(FilePath),
-            // EFourCc.Irtpc => new ManagerDv01(FilePath),
-            EFourCc.Sarc => new ManagerV02(FilePath),
+            EFourCc.Rtpc => new RtpcV01Manager(FilePath),
+            EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
+            // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
+            EFourCc.Sarc => new SarcV02Manager(FilePath),
             EFourCc.Xml => throw new NotImplementedException(),
-            EFourCc.Adf => throw new NotImplementedException(),
+            EFourCc.Adf => new AdfV04Manager(FilePath),
             EFourCc.Tab => throw new NotImplementedException(),
             EFourCc.Mawe => throw new NotImplementedException(),
             _ => throw new NotSupportedException()

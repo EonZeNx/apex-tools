@@ -3,11 +3,11 @@ using EonZeNx.ApexTools.Core.Abstractions;
 
 namespace EonZeNx.ApexFormats.SARC.V02.Managers;
 
-public class ManagerV02 : IPathProcessor
+public class SarcV02Manager : IPathProcessor
 {
     public string FilePath { get; set; }
 
-    public ManagerV02(string filePath)
+    public SarcV02Manager(string filePath)
     {
         FilePath = filePath;
     }
