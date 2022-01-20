@@ -33,14 +33,14 @@ public class Program
     
     public static void Main(string[] args)
     {
+        Settings.LoadSettings();
+        
         // If args length is zero, call Close
         if (args.Length == 0) Close("No arguments passed. Make sure to drag a supported file onto me.");
         
         // Set validPaths to result of FilterPaths. If length is zero, call Close
         var validPaths = FilterPaths(args).ToArray();
         if (!validPaths.Any()) Close("No valid paths found.");
-
-        Settings.LoadSettings();
         
         var manager = new ApexMultiPathManager(validPaths);
         manager.ProcessPaths();
