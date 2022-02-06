@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using EonZeNx.ApexTools.Core.Abstractions.CombinedSerializable;
+using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace EonZeNx.ApexFormats.IRTPC.V01.Models.Properties;
 
@@ -19,6 +20,9 @@ public class BasePropertyV01 : XmlSerializable, IApexSerializable
     {
         Offset = propertyHeaderV01.Offset;
         NameHash = propertyHeaderV01.NameHash;
+        
+        // If valid connection, attempt hash lookup
+        Name = HashUtils.Lookup(NameHash);
     }
 
 

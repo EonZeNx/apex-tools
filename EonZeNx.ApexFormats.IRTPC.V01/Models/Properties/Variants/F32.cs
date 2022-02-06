@@ -42,6 +42,7 @@ public class F32 : BasePropertyV01
     public override void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
+        xw.WriteAttributeString("Offset", ByteUtils.ToHex((uint) Offset));
             
         // Write Name if valid
         XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);

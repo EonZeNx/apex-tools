@@ -111,14 +111,14 @@ public static class Settings
         var xr = XmlReader.Create(ExeFilepath);
         xr.ReadToDescendant("Settings");
 
-        LogProgress.Value = LoadSetting<bool>(xr, nameof(LogProgress));
-        AutoClose.Value = LoadSetting<bool>(xr, nameof(AutoClose));
-        DatabasePath.Value = LoadSetting<string>(xr, nameof(DatabasePath));
-        PerformHashLookUp.Value = LoadSetting<bool>(xr, nameof(PerformHashLookUp));
-        HashCacheSize.Value = LoadSetting<ushort>(xr, nameof(HashCacheSize));
-        AlwaysOutputHash.Value = LoadSetting<bool>(xr, nameof(AlwaysOutputHash));
-        OutputValueOffset.Value = LoadSetting<bool>(xr, nameof(OutputValueOffset));
-        SortRuntimeContainers.Value = LoadSetting<bool>(xr, nameof(SortRuntimeContainers));
+        LogProgress.Value = LoadSetting(xr, LogProgress);
+        AutoClose.Value = LoadSetting(xr, AutoClose);
+        DatabasePath.Value = LoadSetting(xr, DatabasePath);
+        PerformHashLookUp.Value = LoadSetting(xr, PerformHashLookUp);
+        HashCacheSize.Value = LoadSetting(xr, HashCacheSize);
+        AlwaysOutputHash.Value = LoadSetting(xr, AlwaysOutputHash);
+        OutputValueOffset.Value = LoadSetting(xr, OutputValueOffset);
+        SortRuntimeContainers.Value = LoadSetting(xr, SortRuntimeContainers);
     }
 
     private static void WriteSetting<T>(XmlWriter xw, Setting<T> setting)
@@ -135,6 +135,23 @@ public static class Settings
         xw.WriteEndElement();
             
         xw.WriteEndElement();
+    }
+    
+    private static T LoadSetting<T>(XmlReader xr, Setting<T> setting)
+    {
+        xr.ReadToFollowing(setting.Name);
+        xr.ReadToFollowing(nameof(setting.Value));
+        
+        var value = xr.ReadElementContentAsString();
+        try
+        {
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return setting.DefaultValue ?? default(T);
+        }
+        
     }
 
     private static T LoadSetting<T>(XmlReader xr, string settingName)
