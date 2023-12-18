@@ -65,6 +65,18 @@ public class ByteArray : BaseArray<byte>
         var bytes = byteString.Split(",");
         Values = Array.ConvertAll(bytes, byte.Parse);
     }
-    
+
+    public override void ToXml(XmlWriter xw)
+    {
+        xw.WriteStartElement(XmlName);
+            
+        // Write Name if valid
+        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+
+        var array = string.Join(",", Values.Select(ByteUtils.ToHex));
+        xw.WriteValue(array);
+        xw.WriteEndElement();
+    }
+
     #endregion
 }

@@ -64,11 +64,27 @@ public static class Settings
         DefaultValue = true
     };
     
-    public static Setting<bool> SortRuntimeContainers { get; set; } = new()
+    public static Setting<bool> SortRtpcContainers { get; set; } = new()
     {
-        Name = nameof(SortRuntimeContainers),
+        Name = nameof(SortRtpcContainers),
         Value = false,
-        Description = "Whether or not to sort any Runtime Containers (I/RTPC files)",
+        Description = "Whether or not to sort the containers of Runtime Containers (I/RTPC files)",
+        DefaultValue = false
+    };
+    
+    public static Setting<bool> SortRtpcProperties { get; set; } = new()
+    {
+        Name = nameof(SortRtpcProperties),
+        Value = true,
+        Description = "Whether or not to sort the properties of Runtime Containers (I/RTPC files)",
+        DefaultValue = true
+    };
+    
+    public static Setting<bool> SkipUnassignedRtpcProperties { get; set; } = new()
+    {
+        Name = nameof(SkipUnassignedRtpcProperties),
+        Value = true,
+        Description = "Whether or not to skip unassigned properties of Runtime Containers (I/RTPC files)",
         DefaultValue = true
     };
 
@@ -100,7 +116,9 @@ public static class Settings
         WriteSetting(xw, HashCacheSize);
         WriteSetting(xw, AlwaysOutputHash);
         WriteSetting(xw, OutputValueOffset);
-        WriteSetting(xw, SortRuntimeContainers);
+        WriteSetting(xw, SortRtpcContainers);
+        WriteSetting(xw, SortRtpcProperties);
+        WriteSetting(xw, SkipUnassignedRtpcProperties);
             
         xw.WriteEndElement();
         xw.Close();
@@ -118,7 +136,9 @@ public static class Settings
         HashCacheSize.Value = LoadSetting(xr, HashCacheSize);
         AlwaysOutputHash.Value = LoadSetting(xr, AlwaysOutputHash);
         OutputValueOffset.Value = LoadSetting(xr, OutputValueOffset);
-        SortRuntimeContainers.Value = LoadSetting(xr, SortRuntimeContainers);
+        SortRtpcContainers.Value = LoadSetting(xr, SortRtpcContainers);
+        SortRtpcProperties.Value = LoadSetting(xr, SortRtpcProperties);
+        SkipUnassignedRtpcProperties.Value = LoadSetting(xr, SkipUnassignedRtpcProperties);
     }
 
     private static void WriteSetting<T>(XmlWriter xw, Setting<T> setting)
@@ -139,8 +159,15 @@ public static class Settings
     
     private static T LoadSetting<T>(XmlReader xr, Setting<T> setting)
     {
-        xr.ReadToFollowing(setting.Name);
-        xr.ReadToFollowing(nameof(setting.Value));
+        if (!xr.ReadToFollowing(setting.Name))
+        {
+            return setting.DefaultValue ?? default(T);
+        }
+        
+        if (!xr.ReadToFollowing(nameof(setting.Value)))
+        {
+            return setting.DefaultValue ?? default(T);
+        }
         
         var value = xr.ReadElementContentAsString();
         try

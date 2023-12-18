@@ -8,6 +8,7 @@ public static class UtilsV01
     // This is horrible but Google isn't finding any alternatives
     public static readonly Dictionary<string, Func<PropertyBaseV01>> XmlNameToBaseProperty = new()
     {
+        { new Unassigned().XmlName, () => new Unassigned() },
         { new F32().XmlName, () => new F32() },
         { new UnsignedInt32().XmlName, () => new UnsignedInt32() },
         { new Str().XmlName, () => new Str() },

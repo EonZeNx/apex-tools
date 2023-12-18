@@ -13,6 +13,11 @@ public static class ByteUtils
 
     
     #region Reverse
+    
+    public static IEnumerable<byte> ReverseBytes(IEnumerable<byte> value)
+    {
+        return value.Reverse();
+    }
 
     public static ushort ReverseBytes(ushort value)
     {
@@ -75,51 +80,51 @@ public static class ByteUtils
 
     #region To Hex
 
-    public static string BytesToHex(IEnumerable<byte> bytes)
+    public static string BytesToHex(IEnumerable<byte> bytes, bool reverse = false)
     {
-        return bytes.Aggregate("", (current, b) => current + b.ToString("X2"));
+        var safeBytes = reverse ? bytes.Reverse() : bytes;
+        return safeBytes.Aggregate("", (current, b) => current + ToHex(b));
     }
     
     public static string ToHex(byte value)
     {
-        var bytes = new[] { value };
-        return BytesToHex(bytes);
+        return value.ToString("X2");
     }
     
-    public static string ToHex(ulong value)
+    public static string ToHex(ulong value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
     
-    public static string ToHex(long value)
+    public static string ToHex(long value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
     
-    public static string ToHex(uint value)
+    public static string ToHex(uint value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
     
-    public static string ToHex(int value)
+    public static string ToHex(int value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
     
-    public static string ToHex(ushort value)
+    public static string ToHex(ushort value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
     
-    public static string ToHex(short value)
+    public static string ToHex(short value, bool reverse = false)
     {
         var bytes = BitConverter.GetBytes(value);
-        return BytesToHex(bytes);
+        return BytesToHex(bytes, reverse);
     }
 
     #endregion

@@ -13,6 +13,19 @@ public static class XmlUtils
         return xr.GetAttribute(attribute) ?? "";
     }
     
+    public static void WriteNameOrNameHash(XmlWriter xw, string nameHash, string name = "")
+    {
+        if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
+        {
+            xw.WriteAttributeString("NameHash", $"{nameHash}");
+        }
+        
+        if (!string.IsNullOrEmpty(name))
+        {
+            xw.WriteAttributeString("Name", name);
+        }
+    }
+    
     public static void WriteNameOrNameHash(XmlWriter xw, int nameHash, string name = "")
     {
         if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))

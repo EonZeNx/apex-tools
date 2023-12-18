@@ -27,7 +27,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
     public static int HeaderSize => 4 + 4 + 2 + 2;
     
     public int NameHash { get; set; }
-    public string HexNameHash => ByteUtils.ToHex(NameHash);
+    public string HexNameHash => ByteUtils.ToHex(NameHash, true);
     public string Name { get; set; } = string.Empty;
     public uint Offset { get; set; }
     public ushort PropertyCount { get; set; }
@@ -98,7 +98,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
             var header = propertyHeaders[i];
             Properties[i] = header.VariantType switch
             {
-                EVariantType.Unassigned => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
+                EVariantType.Unassigned => new Unassigned(header),
                 EVariantType.UInteger32 => new UnsignedInt32(header),
                 EVariantType.Float32 => new F32(header),
                 EVariantType.String => new Str(header),
@@ -194,13 +194,13 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
     public void SortProperties()
     {
         // Sort properties using NameHash
-        if (Settings.SortRuntimeContainers.Value) Array.Sort(Properties, new PropertyV01Comparer());
+        if (Settings.SortRtpcProperties.Value) Array.Sort(Properties, new PropertyV01Comparer());
     }
     
     public void SortContainers()
     {
         // Sort properties using NameHash
-        if (Settings.SortRuntimeContainers.Value) Array.Sort(Containers, new ContainerV01Comparer());
+        if (Settings.SortRtpcContainers.Value) Array.Sort(Containers, new ContainerV01Comparer());
     }
 
     #endregion
@@ -227,7 +227,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        XmlUtils.WriteNameOrNameHash(xw, HexNameHash, Name);
         
         foreach (var property in Properties) property.ToXml(xw);
         foreach (var container in Containers) container.ToXml(xw);
