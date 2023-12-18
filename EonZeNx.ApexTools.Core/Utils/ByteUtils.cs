@@ -132,6 +132,11 @@ public static class ByteUtils
 
     #region From Hex
     
+    public static byte HexToByte(string value)
+    {
+        return value.Length < 1 ? (byte)0 : Convert.ToByte(value, 16);
+    }
+    
     public static uint HexToUint(string value)
     {
         if (value.Length < 1) return 0;

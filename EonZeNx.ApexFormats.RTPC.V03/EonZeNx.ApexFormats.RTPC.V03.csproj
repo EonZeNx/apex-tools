@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>EonZeNx.ApexFormats.RTPC.V03</AssemblyName>
+        <RootNamespace>EonZeNx.ApexFormats.RTPC.V03</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EonZeNx.ApexTools.Core\EonZeNx.ApexTools.Core.csproj" />
+    </ItemGroup>
+
+</Project>

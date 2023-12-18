@@ -2,7 +2,7 @@
 using EonZeNx.ApexFormats.ADF.V04.Managers;
 using EonZeNx.ApexFormats.Debug.IRTPC.V01.Managers;
 using EonZeNx.ApexFormats.IRTPC.V01.Managers;
-using EonZeNx.ApexFormats.RTPC.V01.Managers;
+using EonZeNx.ApexFormats.RTPC.V03.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Managers;
 using EonZeNx.ApexFormats.SARC.V02.Models;
 using EonZeNx.ApexTools.Core;
@@ -33,7 +33,7 @@ public class ApexPathManager
         IPathProcessor processor = fourCc switch
         {
             EFourCc.Aaf => new AafSarcPassThroughManager(FilePath),
-            EFourCc.Rtpc => new RtpcV01Manager(FilePath),
+            EFourCc.Rtpc => new RtpcV03Manager(FilePath),
             EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
             EFourCc.Sarc => new SarcV02Manager(FilePath),

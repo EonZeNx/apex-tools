@@ -12,7 +12,7 @@
       <ProjectReference Include="..\EonZeNx.ApexFormats.ADF.V04\EonZeNx.ApexFormats.ADF.V04.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.IRTPC.Dv01\EonZeNx.ApexFormats.IRTPC.Dv01.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.IRTPC.V01\EonZeNx.ApexFormats.IRTPC.V01.csproj" />
-      <ProjectReference Include="..\EonZeNx.ApexFormats.RTPC.V01\EonZeNx.ApexFormats.RTPC.V01.csproj" />
+      <ProjectReference Include="..\EonZeNx.ApexFormats.RTPC.V03\EonZeNx.ApexFormats.RTPC.V03.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexFormats.SARC.V02\EonZeNx.ApexFormats.SARC.V02.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexTools.Config\EonZeNx.ApexTools.Config.csproj" />
       <ProjectReference Include="..\EonZeNx.ApexTools.Core\EonZeNx.ApexTools.Core.csproj" />
