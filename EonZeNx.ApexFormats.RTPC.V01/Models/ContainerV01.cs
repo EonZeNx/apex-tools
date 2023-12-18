@@ -21,13 +21,13 @@ namespace EonZeNx.ApexFormats.RTPC.V01.Models;
 /// <br/> Properties - <see cref="PropertyBaseV01"/>[]
 /// <br/> Containers - <see cref="ContainerV01"/>[]
 /// </summary>
-public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializableDeferred
+public class ContainerV01 : XmlSerializable, IApexSerializable, IFromApexHeaderSerializable, IToApexSerializableDeferred
 {
     public override string XmlName => "Container";
     public static int HeaderSize => 4 + 4 + 2 + 2;
     
     public int NameHash { get; set; }
-    public string HexNameHash => ByteUtils.ToHex(NameHash, true);
+    public string HexNameHash => ByteUtils.ToHex(NameHash);
     public string Name { get; set; } = string.Empty;
     public uint Offset { get; set; }
     public ushort PropertyCount { get; set; }
@@ -42,20 +42,21 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
     
     
     #region ApexSerializable
-    
-    public void FromApex(BinaryReader br)
+
+    public void FromApexHeader(BinaryReader br)
     {
         // Read variables
         NameHash = br.ReadInt32();
         Offset = br.ReadUInt32();
         PropertyCount = br.ReadUInt16();
         ContainerCount = br.ReadUInt16();
+    }
 
+    public void FromApex(BinaryReader br)
+    {
         // Read properties and sub-containers
-        var containerDataOffset = br.BaseStream.Position;
         PropertiesFromApex(br);
         ContainersFromApex(br);
-        br.BaseStream.Seek(containerDataOffset, SeekOrigin.Begin);
     }
 
     public void ToApex(BinaryWriter bw)
@@ -131,6 +132,11 @@ public class ContainerV01 : XmlSerializable, IApexSerializable, IToApexSerializa
         for (var i = 0; i < ContainerCount; i++)
         {
             Containers[i] = new ContainerV01();
+            Containers[i].FromApexHeader(br);
+        }
+        
+        for (var i = 0; i < ContainerCount; i++)
+        {
             Containers[i].FromApex(br);
         }
         

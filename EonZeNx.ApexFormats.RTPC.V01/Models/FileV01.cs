@@ -28,6 +28,7 @@ public class FileV01 : XmlSerializable, IApexFile, IApexSerializable
     {
         br.BaseStream.Seek(4 + 4, SeekOrigin.Begin);
         Root = new ContainerV01();
+        Root.FromApexHeader(br);
         Root.FromApex(br);
         
         Str.StringMap.Clear();
