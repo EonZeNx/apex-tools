@@ -30,7 +30,7 @@ public static class XmlUtils
     {
         if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
         {
-            xw.WriteAttributeString("NameHash", $"{ByteUtils.ToHex(nameHash)}");
+            xw.WriteAttributeString("NameHash", $"{ByteUtils.ToHex(nameHash, true)}");
         }
         
         if (!string.IsNullOrEmpty(name))

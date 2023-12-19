@@ -103,16 +103,16 @@ public static class ByteUtils
 
 
     #region To Hex
+    
+    public static string ToHex(byte value)
+    {
+        return value.ToString("X2");
+    }
 
     public static string BytesToHex(IEnumerable<byte> bytes, bool reverse = false)
     {
         var safeBytes = reverse ? bytes.Reverse() : bytes;
         return safeBytes.Aggregate("", (current, b) => current + ToHex(b));
-    }
-    
-    public static string ToHex(byte value)
-    {
-        return value.ToString("X2");
     }
     
     public static string ToHex(ulong value, bool reverse = false)

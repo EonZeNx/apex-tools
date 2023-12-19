@@ -28,7 +28,7 @@ public class VariantF32Array : ABaseArray<float>
         Value = new List<float>((int) Count);
         for (var i = 0; i < Count; i++)
         {
-            Value[i] = br.ReadSingle();
+            Value.Add(br.ReadSingle());
         }
     }
 

@@ -28,7 +28,7 @@ public class VariantByteArray : ABaseArray<byte>
         Value = new List<byte>((int) Count);
         for (var i = 0; i < Count; i++)
         {
-            Value[i] = br.ReadByte();
+            Value.Add(br.ReadByte());
         }
     }
 

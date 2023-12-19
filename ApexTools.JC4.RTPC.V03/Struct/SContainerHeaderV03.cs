@@ -19,7 +19,7 @@ public class SContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 
     public static int BinarySize => 4 + 4 + 2 + 2;
 
-    public string HexNameHash => ByteUtils.ToHex(NameHash);
+    public string HexNameHash => ByteUtils.ToHex(NameHash, true);
     public string Name { get; set; } = string.Empty;
 
     public void FromApexHeader(BinaryReader br)

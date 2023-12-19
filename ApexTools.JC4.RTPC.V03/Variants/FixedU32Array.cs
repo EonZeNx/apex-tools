@@ -23,7 +23,7 @@ public class FixedU32Array : VariantU32Array
         Value = new List<uint>((int) Count);
         for (var i = 0; i < Count; i++)
         {
-            Value[i] = br.ReadUInt32();
+            Value.Add(br.ReadUInt32());
         }
     }
 

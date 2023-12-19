@@ -16,7 +16,7 @@ public class JC4PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
     public byte[] RawData = new byte[4];
     public EVariantType VariantType = EVariantType.Unassigned;
     
-    public string HexNameHash => ByteUtils.ToHex(NameHash);
+    public string HexNameHash => ByteUtils.ToHex(NameHash, true);
     public string Name { get; set; } = string.Empty;
 
     public static int BinarySize => 4 + 4 + 1;

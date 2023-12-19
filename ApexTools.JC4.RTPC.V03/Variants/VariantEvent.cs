@@ -30,7 +30,7 @@ public class VariantEvent : ABaseArray<(uint, uint)>
         {
             var first = br.ReadUInt32();
             var second = br.ReadUInt32();
-            Value[i] = (first, second);
+            Value.Add((first, second));
         }
     }
 
