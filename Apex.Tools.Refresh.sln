@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Just Cause 3", "Just Cause 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EonZeNx.ApexFormats.ADF.V04", "EonZeNx.ApexFormats.ADF.V04\EonZeNx.ApexFormats.ADF.V04.csproj", "{472E153F-DC9D-4F41-9534-97DC681B5679}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexTools.RTPC.V03.1", "ApexTools.RTPC.V03.1\ApexTools.RTPC.V03.1.csproj", "{C98F57B2-6540-4C9D-BA23-28E0C24C6018}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexTools.JC4.RTPC.V03", "ApexTools.JC4.RTPC.V03\ApexTools.JC4.RTPC.V03.csproj", "{C98F57B2-6540-4C9D-BA23-28E0C24C6018}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

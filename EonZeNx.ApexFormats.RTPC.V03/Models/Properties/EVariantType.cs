@@ -1,7 +1,7 @@
 ﻿namespace EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 
 /// <summary>
-/// Assume 1-byte padding unless stated otherwise
+/// Assume 4-byte padding unless stated otherwise
 /// </summary>
 public enum EVariantType
 {
@@ -11,9 +11,9 @@ public enum EVariantType
     String = 3, // No pad
     Vec2 = 4,
     Vec3 = 5,
-    Vec4 = 6, // 4-byte pad
+    Vec4 = 6, // 16-byte pad
     Mat3X3 = 7,
-    Mat4X4 = 8, // 4-byte pad
+    Mat4X4 = 8, // 16-byte pad
     UInteger32Array = 9,
     Float32Array = 10,
     ByteArray = 11,

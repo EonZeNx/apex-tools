@@ -80,11 +80,14 @@ public static class StreamUtils
         
     public static void WriteStringZ(this BinaryWriter bw, string value)
     {
-        foreach (var character in value) { bw.Write(character); }
+        foreach (var character in value)
+        {
+            bw.Write(character);
+        }
 
-        if (value.EndsWith("\0")) return;
+        if (value.EndsWith(char.MinValue)) return;
             
-        bw.Write("\0");
+        bw.Write(char.MinValue);
     }
 
     #endregion
