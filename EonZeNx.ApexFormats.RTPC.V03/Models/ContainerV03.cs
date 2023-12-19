@@ -26,7 +26,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public override string XmlName => "Container";
     public static int HeaderSize => 4 + 4 + 2 + 2;
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public string HexNameHash => ByteUtils.ToHex(NameHash);
     public string Name { get; set; } = string.Empty;
     public uint Offset { get; set; }
@@ -46,7 +46,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public void FromApexHeader(BinaryReader br)
     {
         // Read variables
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         Offset = br.ReadUInt32();
         PropertyCount = br.ReadUInt16();
         ContainerCount = br.ReadUInt16();

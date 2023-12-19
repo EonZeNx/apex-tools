@@ -61,17 +61,15 @@ public class VariantEvent : ABaseArray<(uint, uint)>
         var value = xr.ReadString();
         if (value.Length == 0) return;
 
-        string[] eventStringArray = {value};
+        string[] eventPairStringArray = {value};
         if (value.Contains(','))
         {
-            eventStringArray = value.Split(", ");
+            eventPairStringArray = value.Split(", ");
         }
-
-        Value = (from eventString in eventStringArray
-                select eventString.Split("=")
-                into eventStrings
-                select Array.ConvertAll(eventStrings, ByteUtils.HexToUint)
-                into eventsArray
+        
+        Value = (from eventString in eventPairStringArray 
+                select eventString.Split("=") into eventStrings 
+                select Array.ConvertAll(eventStrings, ByteUtils.HexToUInt) into eventsArray 
                 select (eventsArray[0], eventsArray[1]))
             .ToList();
     }

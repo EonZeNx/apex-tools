@@ -12,7 +12,7 @@ namespace ApexTools.JC4.RTPC.V03.Struct;
 /// </summary>
 public class JC4PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 {
-    public int NameHash = 0;
+    public uint NameHash = 0;
     public byte[] RawData = new byte[4];
     public EVariantType VariantType = EVariantType.Unassigned;
     
@@ -23,7 +23,7 @@ public class JC4PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 
     public void FromApexHeader(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         RawData = br.ReadBytes(4);
         VariantType = (EVariantType)br.ReadByte();
     }

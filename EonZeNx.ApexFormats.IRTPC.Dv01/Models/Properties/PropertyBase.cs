@@ -8,7 +8,7 @@ public class PropertyBase : XmlSerializable, IApexSerializable
     public override string XmlName => "PropertyBase";
     public virtual EVariantType VariantType { get; }
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     protected string Name { get; set; } = "";
 
 

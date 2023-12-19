@@ -20,7 +20,7 @@ public static class HashUtils
         DbConnection.Open();
     }
     
-    public static string Lookup(int hash)
+    public static string Lookup(uint hash)
     {
         if (!Settings.PerformHashLookUp.Value) return string.Empty;
         if (Cache.Contains(hash)) return Cache.Get(hash);

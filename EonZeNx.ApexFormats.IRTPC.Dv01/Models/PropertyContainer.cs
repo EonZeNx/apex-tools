@@ -19,7 +19,7 @@ public class PropertyContainer : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "PropertyContainer";
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public byte Flag01 { get; set; }
     public ushort Flag02 { get; set; }
     public ushort PropertyCount { get; set; }
@@ -39,7 +39,7 @@ public class PropertyContainer : XmlSerializable, IApexSerializable
     {
         if (!notFirst)
         {
-            NameHash = br.ReadInt32();
+            NameHash = br.ReadUInt32();
             Flag01 = br.ReadByte();
         }
         
@@ -73,7 +73,7 @@ public class PropertyContainer : XmlSerializable, IApexSerializable
         Properties = new PropertyBase[PropertyCount];
         for (var i = 0; i < PropertyCount; i++)
         {
-            var nameHash = br.ReadInt32();
+            var nameHash = br.ReadUInt32();
             var variantType = (EVariantType) br.ReadByte();
             PropertyBase property = variantType switch
             {

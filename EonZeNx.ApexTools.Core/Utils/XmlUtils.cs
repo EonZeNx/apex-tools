@@ -26,7 +26,7 @@ public static class XmlUtils
         }
     }
     
-    public static void WriteNameOrNameHash(XmlWriter xw, int nameHash, string name = "")
+    public static void WriteNameOrNameHash(XmlWriter xw, uint nameHash, string name = "")
     {
         if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
         {
@@ -39,11 +39,11 @@ public static class XmlUtils
         }
     }
     
-    public static int ReadNameIfValid(XmlReader xr)
+    public static uint ReadNameIfValid(XmlReader xr)
     {
         var name = GetAttribute(xr, "Name");
         return name == ""
-            ? ByteUtils.HexToInt(GetAttribute(xr, "NameHash"))
+            ? ByteUtils.HexToUInt(GetAttribute(xr, "NameHash"))
             : HashJenkinsL3.Hash(name);
     }
 }

@@ -8,13 +8,13 @@
 /// </summary>
 public class PropertyHeaderV03
 {
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public byte[] RawData { get; set; }
     public EVariantType VariantType { get; set; }
     
     public PropertyHeaderV03(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         RawData = br.ReadBytes(4);
         VariantType = (EVariantType) br.ReadByte();
     }

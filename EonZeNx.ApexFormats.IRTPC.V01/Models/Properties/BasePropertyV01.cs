@@ -10,7 +10,7 @@ public class BasePropertyV01 : XmlSerializable, IApexSerializable
     
     protected virtual EVariantType VariantType { get; set; }
     protected long Offset { get; set; }
-    protected int NameHash { get; set; }
+    protected uint NameHash { get; set; }
     protected string Name { get; set; } = "";
 
 

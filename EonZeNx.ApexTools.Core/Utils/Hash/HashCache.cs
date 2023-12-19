@@ -2,7 +2,7 @@
 
 public class HashCache
     {
-        public readonly Dictionary<int, HashCacheEntry> Cache = new();
+        public readonly Dictionary<uint, HashCacheEntry> Cache = new();
         private int MaxSize { get; }
 
         public HashCache(int size)
@@ -15,7 +15,7 @@ public class HashCache
         /// </summary>
         /// <param name="hash">Hash to lookup</param>
         /// <returns></returns>
-        public bool Contains(int hash)
+        public bool Contains(uint hash)
         {
             return Cache.ContainsKey(hash);
         }
@@ -25,7 +25,7 @@ public class HashCache
         /// </summary>
         /// <param name="hash">Hash to search for.</param>
         /// <returns>Non-nullable string</returns>
-        public string Get(int hash)
+        public string Get(uint hash)
         {
             return Contains(hash) ? Cache[hash].Value : string.Empty;
         }
@@ -34,7 +34,7 @@ public class HashCache
         /// Gets the lowest count hash in the cache and returns it.
         /// </summary>
         /// <returns>Nullable HashCacheEntry</returns>
-        public int Lowest()
+        public uint Lowest()
         {
             if (Cache.Count == 0) return 0;
             
@@ -54,7 +54,7 @@ public class HashCache
         /// </summary>
         /// <param name="hash"></param>
         /// <param name="value"></param>
-        public void Add(int hash, string value)
+        public void Add(uint hash, string value)
         {
             // Check if exists in cache already
             if (Contains(hash))

@@ -161,17 +161,17 @@ public static class ByteUtils
         return value.Length < 1 ? (byte)0 : Convert.ToByte(value, 16);
     }
     
-    public static uint HexToUint(string value)
+    public static uint HexToUInt(string value)
     {
         if (value.Length < 1) return 0;
-
-        var reversedValue = "";
+        
+        var safeValue = "";
         for (var i = value.Length - 2; i >= 0; i -= 2)
         {
-            reversedValue += value[i..(i + 2)];
+            safeValue += value[i..(i + 2)];
         }
         
-        return uint.Parse(reversedValue, NumberStyles.AllowHexSpecifier);
+        return uint.Parse(safeValue, NumberStyles.AllowHexSpecifier);
     }
 
     public static int HexToInt(string value, bool reverse = false)

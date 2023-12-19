@@ -2,10 +2,16 @@
 
 using ApexTools.JC4.RTPC.V03.Struct;
 
+var ext = new[]
+{
+    ".blo",
+    ".epe"
+};
+
 var targetPath = args[0];
 var targetExtension = Path.GetExtension(targetPath);
 
-if (targetExtension == ".blo")
+if (ext.Contains(targetExtension))
 {
     var rtpcV03 = RtpcV03Parser.FromApex(targetPath);
     RtpcV03Parser.ToXml(rtpcV03, targetPath);

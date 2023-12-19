@@ -3,7 +3,6 @@ using ApexTools.JC4.RTPC.V03.Abstractions;
 using ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
-using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.Struct;
 
@@ -45,6 +44,15 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 
         Container = new SContainerV03();
         Container.Header.FromApexHeader(br);
+
+        var flatContainerIndices = Container.Properties.Any(p => p.Header.NameHash == 0x3EB4D7CF);
+        var flatContainerObjectIds = Container.Properties.Any(p => p.Header.NameHash == 0x5A6E1D8F);
+        var flatContainerClassHash = Container.Properties.Any(p => p.Header.NameHash == 0xA0DDE26A);
+        if (flatContainerIndices && flatContainerObjectIds && flatContainerClassHash)
+        {
+            
+        }
+        
         Container.FromApexHeader(br);
     }
 

@@ -12,10 +12,11 @@ namespace ApexTools.JC4.RTPC.V03.Struct;
 /// </summary>
 public class SContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 {
-    public int NameHash = 0;
+    public uint NameHash = 0;
     public uint BodyOffset = 0;
     public ushort PropertyCount = 0;
     public ushort ContainerCount = 0;
+    public bool Flat = false;
 
     public static int BinarySize => 4 + 4 + 2 + 2;
 
@@ -24,7 +25,7 @@ public class SContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 
     public void FromApexHeader(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         BodyOffset = br.ReadUInt32();
         PropertyCount = br.ReadUInt16();
         ContainerCount = br.ReadUInt16();

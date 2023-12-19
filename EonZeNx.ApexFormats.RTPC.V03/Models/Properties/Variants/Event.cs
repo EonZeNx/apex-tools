@@ -81,7 +81,7 @@ public class Event : PropertyBaseDeferredV03
         
         Value = (from eventString in eventStringArray 
                 select eventString.Split("=") into eventStrings 
-                select Array.ConvertAll(eventStrings, ByteUtils.HexToUint) into eventsArray 
+                select Array.ConvertAll(eventStrings, ByteUtils.HexToUInt) into eventsArray 
                 select (eventsArray[0], eventsArray[1]))
             .ToArray();
 
