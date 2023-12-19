@@ -10,7 +10,12 @@ public static class StreamUtils
         return BinaryPrimitives.ReadUInt32BigEndian(br.ReadBytes(4));
     }
     
-    #region Position
+    #region Stream
+    
+    public static void Seek(this BinaryReader br, long offset)
+    {
+        br.BaseStream.Seek(offset, SeekOrigin.Begin);
+    }
 
     public static long Position(this BinaryReader br)
     {
@@ -27,9 +32,9 @@ public static class StreamUtils
 
     #region Alignment
 
-    public static void Align(this BinaryReader br, uint align)
+    public static void Align(this BinaryReader br, uint align, bool force = false)
     {
-        br.BaseStream.Seek(ByteUtils.Align(br.Position(), align), SeekOrigin.Begin);
+        br.BaseStream.Seek(ByteUtils.Align(br.Position(), align, force), SeekOrigin.Begin);
     }
         
     public static void Align(this BinaryWriter bw, long align, byte fill = 0x50)
@@ -58,7 +63,7 @@ public static class StreamUtils
 
 
     #region StringZ
-
+    
     public static string ReadStringZ(this BinaryReader br)
     {
         var fullString = "";

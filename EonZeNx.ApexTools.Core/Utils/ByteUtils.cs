@@ -43,36 +43,60 @@ public static class ByteUtils
 
     #region Aligment
 
-    public static int Align(int value, int align)
+    public static int Align(int value, int align, bool force = false)
     {
         if (value == 0) return align;
         if (align == 0) return value;
-            
-        return value + ((align - (value % align)) % align);
-    }
         
-    public static uint Align(uint value, uint align)
-    {
-        if (value == 0) return align;
-        if (align == 0) return value;
+        var desiredAlignment = (align - (value % align)) % align;
+        if (force && desiredAlignment == 0)
+        {
+            desiredAlignment = align;
+        }
 
-        return value + ((align - (value % align)) % align);
+        return value + desiredAlignment;
     }
         
-    public static long Align(long value, long align)
+    public static uint Align(uint value, uint align, bool force = false)
+    {
+        if (value == 0) return align;
+        if (align == 0) return value;
+        
+        var desiredAlignment = (align - (value % align)) % align;
+        if (force && desiredAlignment == 0)
+        {
+            desiredAlignment = align;
+        }
+
+        return value + desiredAlignment;
+    }
+        
+    public static long Align(long value, long align, bool force = false)
     {
         if (value == 0) return 0;
         if (align == 0) return value;
+        
+        var desiredAlignment = (align - (value % align)) % align;
+        if (force && desiredAlignment == 0)
+        {
+            desiredAlignment = align;
+        }
 
-        return value + ((align - (value % align)) % align);
+        return value + desiredAlignment;
     }
         
-    public static ulong Align(ulong value, ulong align)
+    public static ulong Align(ulong value, ulong align, bool force = false)
     {
         if (value == 0) return align;
         if (align == 0) return value;
+        
+        var desiredAlignment = (align - (value % align)) % align;
+        if (force && desiredAlignment == 0)
+        {
+            desiredAlignment = align;
+        }
 
-        return value + ((align - (value % align)) % align);
+        return value + desiredAlignment;
     }
 
     #endregion

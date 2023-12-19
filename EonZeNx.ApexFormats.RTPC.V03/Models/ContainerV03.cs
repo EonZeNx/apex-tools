@@ -200,13 +200,19 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public void SortProperties()
     {
         // Sort properties using NameHash
-        if (Settings.SortRtpcProperties.Value) Array.Sort(Properties, new PropertyV03Comparer());
+        if (Settings.SortRtpcProperties.Value)
+        {
+            Array.Sort(Properties, new PropertyV03Comparer());
+        }
     }
     
     public void SortContainers()
     {
         // Sort properties using NameHash
-        if (Settings.SortRtpcContainers.Value) Array.Sort(Containers, new ContainerV03Comparer());
+        if (Settings.SortRtpcContainers.Value)
+        {
+            Array.Sort(Containers, new ContainerV03Comparer());
+        }
     }
 
     #endregion
@@ -234,6 +240,11 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
         xw.WriteStartElement(XmlName);
         
         XmlUtils.WriteNameOrNameHash(xw, HexNameHash, Name);
+
+        if (Settings.OutputValueOffset.Value)
+        {
+            xw.WriteAttributeString("Offset", $"{Offset}");
+        }
         
         foreach (var property in Properties) property.ToXml(xw);
         foreach (var container in Containers) container.ToXml(xw);

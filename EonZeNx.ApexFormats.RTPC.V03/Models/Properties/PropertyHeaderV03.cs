@@ -11,8 +11,7 @@ public class PropertyHeaderV03
     public int NameHash { get; set; }
     public byte[] RawData { get; set; }
     public EVariantType VariantType { get; set; }
-
-
+    
     public PropertyHeaderV03(BinaryReader br)
     {
         NameHash = br.ReadInt32();

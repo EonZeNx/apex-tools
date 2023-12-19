@@ -51,9 +51,9 @@ public class Str : PropertyBaseDeferredV03
     public override void ToApexDeferred(BinaryWriter bw)
     {
         // If value already exists in file, use that offset
-        if (StringMap.ContainsKey(Value))
+        if (StringMap.TryGetValue(Value, out var value))
         {
-            Offset = StringMap[Value];
+            Offset = value;
             return;
         }
             
