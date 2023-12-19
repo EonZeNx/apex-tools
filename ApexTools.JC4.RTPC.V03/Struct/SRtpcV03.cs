@@ -85,7 +85,7 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
         Mat3X3ToOffsetMap.Create(properties, bw);
         Mat4X4ToOffsetMap.Create(properties, bw);
         U32ArrayToOffsetMap.Create(properties, bw);
-        // F32ArrayToOffsetMap.Create(properties, bw);
+        F32ArrayToOffsetMap.Create(properties, bw);
         // ByteArrayToOffsetMap.Create(properties, bw);
         // ObjectIdToOffsetMap.Create(properties, bw);
         // EventToOffsetMap.Create(properties, bw);

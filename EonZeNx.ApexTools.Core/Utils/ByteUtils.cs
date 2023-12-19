@@ -174,17 +174,22 @@ public static class ByteUtils
         return uint.Parse(reversedValue, NumberStyles.AllowHexSpecifier);
     }
 
-    public static int HexToInt(string value)
+    public static int HexToInt(string value, bool reverse = false)
     {
         if (value.Length < 1) return 0;
 
-        var reversedValue = "";
-        for (var i = value.Length - 2; i >= 0; i -= 2)
+        if (!reverse)
         {
-            reversedValue += value[i..(i + 2)];
+            return int.Parse(value, NumberStyles.AllowHexSpecifier);
         }
         
-        return int.Parse(reversedValue, NumberStyles.AllowHexSpecifier);
+        var safeValue = "";
+        for (var i = value.Length - 2; i >= 0; i -= 2)
+        {
+            safeValue += value[i..(i + 2)];
+        }
+        
+        return int.Parse(safeValue, NumberStyles.AllowHexSpecifier);
     }
 
     #endregion
