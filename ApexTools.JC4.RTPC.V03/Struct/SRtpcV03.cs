@@ -23,16 +23,16 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     #region Variant maps
 
     protected readonly ValueToOffsetMapV03<string, VariantStr> StringToOffsetMap = new(EVariantType.String, 0);
-    protected readonly F32ListToOffsetMapV03<VariantVec2> Vec2ToOffsetMap = new(EVariantType.Vec2);
-    protected readonly F32ListToOffsetMapV03<VariantVec3> Vec3ToOffsetMap = new(EVariantType.Vec3);
-    protected readonly F32ListToOffsetMapV03<VariantVec4> Vec4ToOffsetMap = new(EVariantType.Vec4);
-    protected readonly F32ListToOffsetMapV03<VariantMat3X3> Mat3X3ToOffsetMap = new(EVariantType.Mat3X3);
-    protected readonly F32ListToOffsetMapV03<VariantMat4X4> Mat4X4ToOffsetMap = new(EVariantType.Mat4X4, 16);
-    protected readonly ValueToOffsetMapV03<IList<uint>, VariantU32Array> U32ArrayToOffsetMap = new(EVariantType.UInteger32Array);
-    protected readonly F32ListToOffsetMapV03<VariantF32Array> F32ArrayToOffsetMap = new(EVariantType.Float32Array);
-    protected readonly ValueToOffsetMapV03<IList<byte>, VariantByteArray> ByteArrayToOffsetMap = new(EVariantType.ByteArray, 16);
-    protected readonly OIdToOffsetMapV03<VariantObjectId> ObjectIdToOffsetMap = new(EVariantType.ObjectId);
-    protected readonly ValueToOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventToOffsetMap = new(EVariantType.Event);
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantVec2> Vec2ToOffsetMap = new(EVariantType.Vec2, new ListComparer<float>());
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantVec3> Vec3ToOffsetMap = new(EVariantType.Vec3, new ListComparer<float>());
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantVec4> Vec4ToOffsetMap = new(EVariantType.Vec4, new ListComparer<float>());
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantMat3X3> Mat3X3ToOffsetMap = new(EVariantType.Mat3X3, new ListComparer<float>());
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantMat4X4> Mat4X4ToOffsetMap = new(EVariantType.Mat4X4, new ListComparer<float>(), 16);
+    protected readonly ValueToOffsetMapV03<IList<uint>, VariantU32Array> U32ArrayToOffsetMap = new(EVariantType.UInteger32Array, new ListComparer<uint>());
+    protected readonly ValueToOffsetMapV03<IList<float>, VariantF32Array> F32ArrayToOffsetMap = new(EVariantType.Float32Array, new ListComparer<float>());
+    protected readonly ValueToOffsetMapV03<IList<byte>, VariantByteArray> ByteArrayToOffsetMap = new(EVariantType.ByteArray, new ListComparer<byte>(), 16);
+    protected readonly ValueToOffsetMapV03<(ulong, byte), VariantObjectId> ObjectIdToOffsetMap = new(EVariantType.ObjectId, new U64BComparer());
+    protected readonly ValueToOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventToOffsetMap = new(EVariantType.Event, new ListComparer<(uint, uint)>());
 
     #endregion
 
@@ -84,7 +84,7 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
         Vec4ToOffsetMap.Create(properties, bw);
         Mat3X3ToOffsetMap.Create(properties, bw);
         Mat4X4ToOffsetMap.Create(properties, bw);
-        // U32ArrayToOffsetMap.Create(properties, bw);
+        U32ArrayToOffsetMap.Create(properties, bw);
         // F32ArrayToOffsetMap.Create(properties, bw);
         // ByteArrayToOffsetMap.Create(properties, bw);
         // ObjectIdToOffsetMap.Create(properties, bw);

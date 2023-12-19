@@ -16,6 +16,11 @@ public class ValueToOffsetMapV03<T, U> where T : notnull
     public readonly EVariantType Variant;
     public int Alignment;
 
+    public ValueToOffsetMapV03(EVariantType variant, IEqualityComparer<T> comparer, int alignment = 4) : this(variant, alignment)
+    {
+        Map = new Dictionary<T, uint>(comparer);
+    }
+
     public ValueToOffsetMapV03(EVariantType variant, int alignment = 4)
     {
         Map = new Dictionary<T, uint>();
