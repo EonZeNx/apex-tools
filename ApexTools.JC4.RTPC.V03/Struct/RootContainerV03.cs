@@ -25,10 +25,11 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
     public Dictionary<ulong, uint> OIdToParentIndex = new();
     public List<ulong> OIdList = new();
+    public uint Unknown01 = 0;
     
     public string XmlName => "Root";
 
-    public void FlatFromApexHeader()
+    public void SetupFromApexUnflat()
     {
         if (Header.PropertyCount != 4)
         {
@@ -41,6 +42,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         
         var flatContainerIndices = PropertyHeaders.Any(ph => ph.NameHash == 0xCFD7B43E);
         var flatContainerObjectIds = PropertyHeaders.Any(ph => ph.NameHash == 0x8F1D6E5A);
+        var unknownProperty = PropertyHeaders.Any(ph => ph.NameHash == 0x95C1191D);
         var flatContainerClassHash = PropertyHeaders.Any(ph => ph.NameHash == 0x6AE2DDA0);
 
         if (!flatContainerIndices)
@@ -51,6 +53,10 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         {
             throw new RtpcContainerException($"Missing object id array property ${ByteUtils.ToHex(0x8F1D6E5A)}");
         }
+        if (!unknownProperty)
+        {
+            throw new RtpcContainerException($"Missing unknown property 01 ${ByteUtils.ToHex(0x95C1191D)}");
+        }
         if (!flatContainerClassHash)
         {
             throw new RtpcContainerException($"Missing class hash array property ${ByteUtils.ToHex(0x6AE2DDA0)}");
@@ -58,13 +64,12 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         
         var indices = ((VariantU32Array) Properties.First(p => p.Header.NameHash == 0xCFD7B43E)).Value;
         var byteObjectIds = ((VariantByteArray) Properties.First(p => p.Header.NameHash == 0x8F1D6E5A)).Value;
+        Unknown01 = ((VariantU32) Properties.First(p => p.Header.NameHash == 0x95C1191D)).Value;
         
         OIdToParentIndex = new Dictionary<ulong, uint>(indices.Count);
         for (var i = 0; i < byteObjectIds.Count; i += 8)
         {
             var parentIndex = indices[i / 8];
-            if (parentIndex == 0xFFFFFFFF) continue;
-            
             var objectIdBytes = byteObjectIds.GetRange(i, 8).ToArray();
             var objectId = BitConverter.ToUInt64(objectIdBytes, 0);
             
@@ -73,52 +78,59 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         }
     }
     
-    public void FlatFromApex()
+    public void FromApexUnflat()
     {
         var objectIdHash = HashJenkinsL3.Hash("_object_id"u8.ToArray());
-        var i = 0;
-        while (i < Containers.Length)
+        var toRemove = new List<SContainerV03>();
+        
+        foreach (var container in Containers)
         {
-            var container = Containers[i];
-
             var oid = container.GetObjectId(objectIdHash);
             var moveList = new List<int>();
             
             RecurseFlatFromApex(oid, ref moveList);
 
-            if (moveList.Count == 0)
+            if (moveList.Count == 0) continue;
+
+            container.Flat = true;
+
+            var parentContainer = new SContainerV03();
+            foreach (var move in moveList)
             {
-                i++;
-                continue;
+                parentContainer = Containers[move];
             }
-
-            var parentContainer = moveList.Aggregate(container, (current, move) => current.Containers[move]);
-
+            
             var newParentContainers = parentContainer.Containers.ToList();
             newParentContainers.Add(container);
 
             parentContainer.Containers = newParentContainers.ToArray();
-
-            var newContainers = Containers.ToList();
-            newContainers.Remove(container);
-
-            Containers = newContainers.ToArray();
+            
+            toRemove.Add(container);
         }
+
+        var newContainers = Containers.ToList();
+        newContainers.RemoveAll(c => toRemove.Contains(c));
+
+        Containers = newContainers.ToArray();
     }
 
     public void RecurseFlatFromApex(ulong oid, ref List<int> moveList)
     {
         while (true)
         {
+            if (!OIdToParentIndex.ContainsKey(oid))
+            {
+                return;
+            }
+            
             var parentIndex = OIdToParentIndex[oid];
             if (parentIndex >= OIdList.Count)
             {
                 return;
             }
 
-            moveList.Add((int)parentIndex);
-            var parentOId = OIdList[(int)parentIndex];
-            oid = parentOId;
+            moveList.Add((int) parentIndex);
+            oid = OIdList[(int) parentIndex];
         }
     }
 
@@ -126,8 +138,6 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
     public void FromApexHeader(BinaryReader br)
     {
-        FlatFromApexHeader();
-        
         PropertyHeaders = new JC4PropertyHeaderV03[Header.PropertyCount];
         if (Header.PropertyCount != 0)
         {
@@ -184,14 +194,14 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
             Properties[i].FromApex(br);
         }
 
-        FlatFromApexHeader();
+        SetupFromApexUnflat();
         
         for (var i = 0; i < Header.ContainerCount; i++)
         {
             Containers[i].FromApex(br);
         }
 
-        FlatFromApex();
+        FromApexUnflat();
     }
 
     public void ToApexHeader(BinaryWriter bw)
@@ -230,11 +240,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     {
         xw.WriteStartElement(XmlName);
         XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
-
-        foreach (var property in Properties)
-        {
-            property.ToXml(xw);
-        }
+        xw.WriteAttributeString("Unknown01", $"{Unknown01}");
 
         foreach (var container in Containers)
         {

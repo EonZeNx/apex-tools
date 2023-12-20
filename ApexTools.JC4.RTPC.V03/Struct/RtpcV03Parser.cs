@@ -8,7 +8,11 @@ public static class RtpcV03Parser
     {
         using var br = new BinaryReader(new FileStream(targetPath, FileMode.Open));
         
-        var sRtpcV03 = new SRtpcV03();
+        var sRtpcV03 = new SRtpcV03
+        {
+            Extension = Path.GetExtension(targetPath)
+        };
+
         sRtpcV03.FromApexHeader(br);
         sRtpcV03.FromApex(br);
             
