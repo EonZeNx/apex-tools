@@ -4,21 +4,21 @@ using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 /// <summary>
 /// Format:<br/>
-/// Header - <see cref="SContainerHeaderV03"/><br/>
-/// Property headers - <see cref="JC4PropertyHeaderV03"/><br/>
-/// Container headers - <see cref="SContainerHeaderV03"/><br/>
+/// Header - <see cref="ContainerHeaderV03"/><br/>
+/// Property headers - <see cref="PropertyHeaderV03"/><br/>
+/// Container headers - <see cref="ContainerHeaderV03"/><br/>
 /// Valid property count - <see cref="uint"/>
 /// </summary>
-public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApexHeader, IToApex
+public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApexHeader, IToApex
 {
-    public SContainerHeaderV03 Header = new();
-    public JC4PropertyHeaderV03[] PropertyHeaders = Array.Empty<JC4PropertyHeaderV03>();
+    public ContainerHeaderV03 Header = new();
+    public PropertyHeaderV03[] PropertyHeaders = Array.Empty<PropertyHeaderV03>();
     public APropertyV03[] Properties = Array.Empty<APropertyV03>();
-    public SContainerV03[] Containers = Array.Empty<SContainerV03>();
+    public ContainerV03[] Containers = Array.Empty<ContainerV03>();
     public uint ValidPropertyCount = 0;
     
     public bool Flat = false;
@@ -38,15 +38,57 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
         return result;
     }
 
-    public IEnumerable<SContainerV03> GetAllContainers()
+    public IEnumerable<ContainerV03> GetAllContainers()
     {
-        var result = new List<SContainerV03> { this };
+        var result = new List<ContainerV03> { this };
         foreach (var container in Containers)
         {
             result.AddRange(container.GetAllContainers());
         }
 
         return result;
+    }
+    
+    public IEnumerable<ContainerV03> GetAllContainersFlat()
+    {
+        var result = new List<ContainerV03>();
+        if (Flat) result.Add(this);
+
+        var flattenedContainers = new List<ContainerV03>();
+        foreach (var container in Containers)
+        {
+            if (Flat) flattenedContainers.Add(container);
+            result.AddRange(container.GetAllContainers());
+        }
+
+        var filteredContainers = Containers.ToList();
+        filteredContainers.RemoveAll(c => flattenedContainers.Contains(c));
+        Containers = filteredContainers.ToArray();
+
+        return result;
+    }
+    
+    public uint GetContainerCount()
+    {
+        var count = (uint) Containers.Length;
+        foreach (var container in Containers)
+        {
+            count += container.GetContainerCount();
+        }
+
+        return count;
+    }
+    
+    public uint GetContainerCountFlat()
+    {
+        uint count = 0;
+        foreach (var container in Containers)
+        {
+            if (container.Flat) count += 1;
+            count += container.GetContainerCountFlat();
+        }
+
+        return count;
     }
     
     public ulong GetObjectId(uint hash)
@@ -64,22 +106,22 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
 
     public void FromApexHeader(BinaryReader br)
     {
-        PropertyHeaders = new JC4PropertyHeaderV03[Header.PropertyCount];
+        PropertyHeaders = new PropertyHeaderV03[Header.PropertyCount];
         if (Header.PropertyCount != 0)
         {
             for (var i = 0; i < Header.PropertyCount; i++)
             {
-                PropertyHeaders[i] = new JC4PropertyHeaderV03();
+                PropertyHeaders[i] = new PropertyHeaderV03();
                 PropertyHeaders[i].FromApexHeader(br);
             }
         }
 
-        Containers = new SContainerV03[Header.ContainerCount];
+        Containers = new ContainerV03[Header.ContainerCount];
         if (Header.ContainerCount != 0)
         {
             for (var i = 0; i < Header.ContainerCount; i++)
             {
-                Containers[i] = new SContainerV03();
+                Containers[i] = new ContainerV03();
                 Containers[i].Header.FromApexHeader(br);
             }
         }
@@ -185,6 +227,7 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
     public void FromXml(XmlReader xr)
     {
         Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Flat = bool.Parse(xr.GetAttribute(nameof(Flat)) ?? $"{false}");
 
         while (xr.Read())
         { if (xr.NodeType != XmlNodeType.Whitespace) break; }
@@ -229,7 +272,7 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
     
     private void ContainersFromXml(XmlReader xr)
     {
-        var containers = new List<SContainerV03>();
+        var containers = new List<ContainerV03>();
 
         do
         {
@@ -241,7 +284,7 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
                 
             if (!xr.HasAttributes) throw new XmlException("Container missing attributes");
 
-            var container = new SContainerV03();
+            var container = new ContainerV03();
 
             container.FromXml(xr);
             containers.Add(container);

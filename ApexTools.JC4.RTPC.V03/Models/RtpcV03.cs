@@ -4,17 +4,17 @@ using ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 /// <summary>
 /// Format:<br/>
-/// Header - <see cref="SRtpcHeaderV03"/><br/>
-/// Container - <see cref="SContainerV03"/><br/>
+/// Header - <see cref="RtpcHeaderV03"/><br/>
+/// Container - <see cref="ContainerV03"/><br/>
 /// Variant value maps
 /// </summary>
-public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
+public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 {
-    public SRtpcHeaderV03 Header = new();
+    public RtpcHeaderV03 Header = new();
     public RootContainerV03 RootContainer = new();
 
     public string XmlName => "RTPC";
@@ -40,7 +40,7 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     
     public void FromApexHeader(BinaryReader br)
     {
-        Header = new SRtpcHeaderV03();
+        Header = new RtpcHeaderV03();
         Header.FromApexHeader(br);
 
         RootContainer = new RootContainerV03();

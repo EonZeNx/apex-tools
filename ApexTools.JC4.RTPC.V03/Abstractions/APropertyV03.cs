@@ -1,23 +1,23 @@
 ﻿using System.Xml;
-using ApexTools.JC4.RTPC.V03.Abstractions;
+using ApexTools.JC4.RTPC.V03.Models;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Abstractions;
 
 /// <summary>
 /// Format:<br/>
-/// Header - <see cref="JC4PropertyHeaderV03"/>
+/// Header - <see cref="PropertyHeaderV03"/>
 /// </summary>
 public abstract class APropertyV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 {
-    public JC4PropertyHeaderV03 Header;
+    public PropertyHeaderV03 Header;
     public abstract string XmlName { get; }
 
     public APropertyV03()
     {
-        Header = new JC4PropertyHeaderV03();
+        Header = new PropertyHeaderV03();
     }
     
-    public APropertyV03(JC4PropertyHeaderV03 header)
+    public APropertyV03(PropertyHeaderV03 header)
     {
         Header = header;
     }

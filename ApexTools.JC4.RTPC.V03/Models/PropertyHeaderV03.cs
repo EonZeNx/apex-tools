@@ -3,7 +3,7 @@ using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 /// <summary>
 /// Format:<br/>
@@ -11,7 +11,7 @@ namespace ApexTools.JC4.RTPC.V03.Struct;
 /// RawData - <see cref="byte"/>[]<br/>
 /// VariantType - <see cref="EVariantType"/>
 /// </summary>
-public class JC4PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
+public class PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 {
     public uint NameHash = 0;
     public byte[] RawData = new byte[4];

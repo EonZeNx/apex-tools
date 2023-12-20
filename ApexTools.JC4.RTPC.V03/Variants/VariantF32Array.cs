@@ -1,7 +1,8 @@
 using System.Xml;
-using ApexTools.JC4.RTPC.V03.Struct;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
+using PropertyHeaderV03 = ApexTools.JC4.RTPC.V03.Models.PropertyHeaderV03;
 
 namespace ApexTools.JC4.RTPC.V03.Variants;
 
@@ -15,7 +16,7 @@ public class VariantF32Array : ABaseArray<float>
     {
         Header.VariantType = EVariantType.Float32Array;
     }
-    public VariantF32Array(JC4PropertyHeaderV03 header) : base(header)
+    public VariantF32Array(PropertyHeaderV03 header) : base(header)
     { }
 
     public override void FromApex(BinaryReader br)

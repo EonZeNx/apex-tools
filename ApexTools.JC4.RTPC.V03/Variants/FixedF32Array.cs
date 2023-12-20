@@ -1,5 +1,5 @@
 using System.Xml;
-using ApexTools.JC4.RTPC.V03.Struct;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexTools.Core.Exceptions;
 using EonZeNx.ApexTools.Core.Utils;
 
@@ -12,7 +12,7 @@ public class FixedF32Array : VariantF32Array
     public override string XmlName => "F32Array";
 
     public FixedF32Array() { }
-    public FixedF32Array(JC4PropertyHeaderV03 header) : base(header)
+    public FixedF32Array(PropertyHeaderV03 header) : base(header)
     { }
 
     public override void FromApex(BinaryReader br)

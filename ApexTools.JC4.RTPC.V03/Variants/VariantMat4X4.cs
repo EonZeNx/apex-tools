@@ -1,5 +1,6 @@
-using ApexTools.JC4.RTPC.V03.Struct;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+using PropertyHeaderV03 = ApexTools.JC4.RTPC.V03.Models.PropertyHeaderV03;
 
 namespace ApexTools.JC4.RTPC.V03.Variants;
 
@@ -12,6 +13,6 @@ public class VariantMat4X4 : FixedF32Array
     {
         Header.VariantType = EVariantType.Mat4X4;
     }
-    public VariantMat4X4(JC4PropertyHeaderV03 header) : base(header)
+    public VariantMat4X4(PropertyHeaderV03 header) : base(header)
     { }
 }

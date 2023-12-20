@@ -2,14 +2,14 @@
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 /// <summary>
 /// Format:<br/>
 /// FourCc - <see cref="EFourCc"/><br/>
 /// Version - <see cref="uint"/><br/>
 /// </summary>
-public class SRtpcHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
+public class RtpcHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 {
     public EFourCc FourCc = EFourCc.Rtpc;
     public uint Version = 3;

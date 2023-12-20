@@ -1,8 +1,10 @@
 using System.Xml;
-using ApexTools.JC4.RTPC.V03.Struct;
+using ApexTools.JC4.RTPC.V03.Abstractions;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils;
+using PropertyHeaderV03 = ApexTools.JC4.RTPC.V03.Models.PropertyHeaderV03;
 
 namespace ApexTools.JC4.RTPC.V03.Variants;
 
@@ -14,7 +16,7 @@ public class VariantUnassigned : APropertyV03
     {
         Header.VariantType = EVariantType.Unassigned;
     }
-    public VariantUnassigned(JC4PropertyHeaderV03 header) : base(header)
+    public VariantUnassigned(PropertyHeaderV03 header) : base(header)
     { }
 
     public override void FromApex(BinaryReader br)

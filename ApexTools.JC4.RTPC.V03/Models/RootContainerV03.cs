@@ -6,21 +6,21 @@ using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
 using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace ApexTools.JC4.RTPC.V03.Struct;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 /// <summary>
 /// Format:<br/>
-/// Header - <see cref="SContainerHeaderV03"/><br/>
-/// Property headers - <see cref="JC4PropertyHeaderV03"/><br/>
-/// Container headers - <see cref="SContainerHeaderV03"/><br/>
+/// Header - <see cref="ContainerHeaderV03"/><br/>
+/// Property headers - <see cref="PropertyHeaderV03"/><br/>
+/// Container headers - <see cref="ContainerHeaderV03"/><br/>
 /// Valid property count - <see cref="uint"/>
 /// </summary>
 public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApexHeader, IToApex
 {
-    public SContainerHeaderV03 Header = new();
-    public JC4PropertyHeaderV03[] PropertyHeaders = Array.Empty<JC4PropertyHeaderV03>();
+    public ContainerHeaderV03 Header = new();
+    public PropertyHeaderV03[] PropertyHeaders = Array.Empty<PropertyHeaderV03>();
     public APropertyV03[] Properties = Array.Empty<APropertyV03>();
-    public SContainerV03[] Containers = Array.Empty<SContainerV03>();
+    public ContainerV03[] Containers = Array.Empty<ContainerV03>();
     public uint ValidPropertyCount = 0;
 
     public Dictionary<ulong, uint> OIdToParentIndex = new();
@@ -29,7 +29,9 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     
     public string XmlName => "Root";
 
-    public void FromApexUnflatSetup()
+    #region Unflat
+
+    public void UnflatSetup()
     {
         if (Header.PropertyCount != 4)
         {
@@ -78,23 +80,23 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         }
     }
     
-    public void FromApexUnflat()
+    public void Unflat()
     {
         var objectIdHash = HashJenkinsL3.Hash("_object_id"u8.ToArray());
-        var toRemove = new List<SContainerV03>();
+        var toRemove = new List<ContainerV03>();
         
         foreach (var container in Containers)
         {
             var oid = container.GetObjectId(objectIdHash);
             var moveList = new List<int>();
             
-            RecurseFlatFromApex(oid, ref moveList);
+            UnflatRecurse(oid, ref moveList);
 
             if (moveList.Count == 0) continue;
 
             container.Flat = true;
 
-            var parentContainer = new SContainerV03();
+            var parentContainer = new ContainerV03();
             foreach (var move in moveList)
             {
                 parentContainer = Containers[move];
@@ -114,7 +116,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         Containers = newContainers.ToArray();
     }
 
-    public void RecurseFlatFromApex(ulong oid, ref List<int> moveList)
+    public void UnflatRecurse(ulong oid, ref List<int> moveList)
     {
         while (true)
         {
@@ -134,24 +136,80 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         }
     }
 
+    #endregion
+
+    #region Flatten
+
+    public void Flatten()
+    {
+        uint flatCount = 0;
+        foreach (var container in Containers)
+        {
+            flatCount += container.GetContainerCountFlat();
+        }
+
+        for (uint i = 0; i < flatCount; i++)
+        {
+            i += FlattenRecurse(Containers[i], i, true);
+        }
+
+        var strappedContainers = new List<ContainerV03>();
+        foreach (var container in Containers)
+        {
+            strappedContainers.AddRange(container.GetAllContainersFlat());
+        }
+
+        Containers = strappedContainers.ToArray();
+        Header.ContainerCount = (ushort) Containers.Length;
+        
+        // TODO: Add root properties, and test
+    }
+    
+    public uint FlattenRecurse(ContainerV03 container, uint currentIndex, bool noParent = false)
+    {
+        uint flattenedChildren = 0;
+        var objectIdHash = HashJenkinsL3.Hash("_object_id"u8.ToArray());
+        
+        foreach (var subContainer in container.Containers)
+        {
+            if (!noParent && !subContainer.Flat)
+            {
+                continue;
+            }
+
+            var objectId = subContainer.GetObjectId(objectIdHash);
+            
+            OIdToParentIndex.Add(objectId, noParent ? 0xFFFFFFFF : currentIndex);
+            OIdList.Add(objectId);
+
+            flattenedChildren += 1;
+            flattenedChildren += FlattenRecurse(subContainer, currentIndex + flattenedChildren);
+        }
+        
+
+        return flattenedChildren;
+    }
+
+    #endregion
+
     #region IApex
 
     public void FromApexHeader(BinaryReader br)
     {
-        PropertyHeaders = new JC4PropertyHeaderV03[Header.PropertyCount];
+        PropertyHeaders = new PropertyHeaderV03[Header.PropertyCount];
         if (Header.PropertyCount != 0)
         {
             for (var i = 0; i < Header.PropertyCount; i++)
             {
-                PropertyHeaders[i] = new JC4PropertyHeaderV03();
+                PropertyHeaders[i] = new PropertyHeaderV03();
                 PropertyHeaders[i].FromApexHeader(br);
             }
         }
 
-        Containers = new SContainerV03[Header.ContainerCount];
+        Containers = new ContainerV03[Header.ContainerCount];
         for (var i = 0; i < Header.ContainerCount; i++)
         {
-            Containers[i] = new SContainerV03();
+            Containers[i] = new ContainerV03();
             Containers[i].Header.FromApexHeader(br);
         }
         
@@ -194,18 +252,20 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
             Properties[i].FromApex(br);
         }
 
-        FromApexUnflatSetup();
+        UnflatSetup();
         
         for (var i = 0; i < Header.ContainerCount; i++)
         {
             Containers[i].FromApex(br);
         }
 
-        FromApexUnflat();
+        Unflat();
     }
 
     public void ToApexHeader(BinaryWriter bw)
     {
+        Flatten();
+        
         for (var i = 0; i < Header.PropertyCount; i++)
         {
             PropertyHeaders[i].ToApexHeader(bw);
@@ -270,7 +330,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
     private void ContainersFromXml(XmlReader xr)
     {
-        var containers = new List<SContainerV03>();
+        var containers = new List<ContainerV03>();
 
         do
         {
@@ -282,7 +342,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
                 
             if (!xr.HasAttributes) throw new XmlException("Container missing attributes");
 
-            var container = new SContainerV03();
+            var container = new ContainerV03();
 
             container.FromXml(xr);
             containers.Add(container);

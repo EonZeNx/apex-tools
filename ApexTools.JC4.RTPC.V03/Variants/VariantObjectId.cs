@@ -1,9 +1,10 @@
 using System.Globalization;
 using System.Xml;
 using ApexTools.JC4.RTPC.V03.Abstractions;
-using ApexTools.JC4.RTPC.V03.Struct;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
+using PropertyHeaderV03 = ApexTools.JC4.RTPC.V03.Models.PropertyHeaderV03;
 
 namespace ApexTools.JC4.RTPC.V03.Variants;
 
@@ -16,7 +17,7 @@ public class VariantObjectId : APropertyV03, IGetValue<(ulong, byte)>
     {
         Header.VariantType = EVariantType.ObjectId;
     }
-    public VariantObjectId(JC4PropertyHeaderV03 header) : base(header)
+    public VariantObjectId(PropertyHeaderV03 header) : base(header)
     { }
 
     public override void FromApex(BinaryReader br)
