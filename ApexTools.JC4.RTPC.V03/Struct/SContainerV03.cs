@@ -164,8 +164,10 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
     public void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
-        xw.WriteAttributeString("Flat", $"{Flat}");
+        
         XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
+        
+        xw.WriteAttributeString("Flat", $"{Flat}");
 
         foreach (var property in Properties)
         {

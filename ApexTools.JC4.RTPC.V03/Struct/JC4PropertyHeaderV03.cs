@@ -1,6 +1,7 @@
 ﻿using ApexTools.JC4.RTPC.V03.Abstractions;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
+using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace ApexTools.JC4.RTPC.V03.Struct;
 
@@ -17,7 +18,15 @@ public class JC4PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
     public EVariantType VariantType = EVariantType.Unassigned;
     
     public string HexNameHash => ByteUtils.ToHex(NameHash, true);
-    public string Name { get; set; } = string.Empty;
+    private string _name = string.Empty;
+    public string Name
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_name)) _name = HashUtils.Lookup(NameHash);
+            return _name;
+        }
+    }
 
     public static int BinarySize => 4 + 4 + 1;
 

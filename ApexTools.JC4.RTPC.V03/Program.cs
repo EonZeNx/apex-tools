@@ -1,7 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using ApexTools.JC4.RTPC.V03.Struct;
+using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils;
+
+Settings.LoadSettings();
 
 var ext = new[]
 {

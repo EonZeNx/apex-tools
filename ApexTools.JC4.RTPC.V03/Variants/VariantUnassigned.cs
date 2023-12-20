@@ -1,6 +1,7 @@
 using System.Xml;
 using ApexTools.JC4.RTPC.V03.Struct;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.Variants;
@@ -21,6 +22,8 @@ public class VariantUnassigned : APropertyV03
 
     public override void ToXml(XmlWriter xw)
     {
+        if (Settings.SkipUnassignedRtpcProperties.Value) return;
+        
         xw.WriteStartElement(XmlName);
         
         XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);

@@ -239,7 +239,9 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     public void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
+        
         XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
+        
         xw.WriteAttributeString("Flat", $"{true}");
         xw.WriteAttributeString(nameof(Unknown01), $"{Unknown01}");
 

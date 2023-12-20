@@ -8,10 +8,13 @@ public static class HashUtils
 {
     public static SQLiteConnection? DbConnection { get; set; } = null;
     public static HashCache Cache { get; set; } = new(Settings.HashCacheSize.Value);
+    public static bool TriedToOpenDB { get; set; } = false;
     
     
     public static void OpenDatabaseConnection()
     {
+        TriedToOpenDB = true;
+        
         var dbFile = Settings.DatabasePath.Value;
         if (!File.Exists(dbFile)) return;
             
@@ -25,7 +28,7 @@ public static class HashUtils
         if (!Settings.PerformHashLookUp.Value) return string.Empty;
         if (Cache.Contains(hash)) return Cache.Get(hash);
 
-        if (DbConnection == null) OpenDatabaseConnection();
+        if (DbConnection == null && !TriedToOpenDB) OpenDatabaseConnection();
         if (DbConnection?.State != ConnectionState.Open) return string.Empty;
             
         var command = DbConnection.CreateCommand();
