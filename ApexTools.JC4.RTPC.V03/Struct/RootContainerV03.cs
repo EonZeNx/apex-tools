@@ -29,7 +29,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     
     public string XmlName => "Root";
 
-    public void SetupFromApexUnflat()
+    public void FromApexUnflatSetup()
     {
         if (Header.PropertyCount != 4)
         {
@@ -194,7 +194,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
             Properties[i].FromApex(br);
         }
 
-        SetupFromApexUnflat();
+        FromApexUnflatSetup();
         
         for (var i = 0; i < Header.ContainerCount; i++)
         {
@@ -240,7 +240,8 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     {
         xw.WriteStartElement(XmlName);
         XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
-        xw.WriteAttributeString("Unknown01", $"{Unknown01}");
+        xw.WriteAttributeString("Flat", $"{true}");
+        xw.WriteAttributeString(nameof(Unknown01), $"{Unknown01}");
 
         foreach (var container in Containers)
         {
@@ -253,11 +254,10 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     public void FromXml(XmlReader xr)
     {
         Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Unknown01 = uint.Parse(xr.GetAttribute(nameof(Unknown01)) ?? "0");
 
         while (xr.Read())
         { if (xr.NodeType != XmlNodeType.Whitespace) break; }
-        
-        if (xr.Name != XmlName) PropertiesFromXml(xr);
             
         ContainersFromXml(xr);
     }
@@ -266,35 +266,6 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
     
     #region XmlHelpers
 
-    private void PropertiesFromXml(XmlReader xr)
-    {
-        var properties = new List<APropertyV03>();
-        do
-        {
-            var tag = xr.Name;
-            var nodeType = xr.NodeType;
-
-            if (tag == XmlName && (nodeType is XmlNodeType.EndElement or XmlNodeType.Element)) break;
-            if (nodeType != XmlNodeType.Element) continue;
-
-            if (!xr.HasAttributes) throw new XmlException("Property missing attributes");
-
-            if (!XmlUtilsV03.XmlNameToBaseProperty.ContainsKey(tag))
-            {
-                throw new IOException($"Unknown property type: {tag}");
-            }
-            
-            var property = XmlUtilsV03.XmlNameToBaseProperty[tag]();
-            
-            property.FromXml(xr);
-            properties.Add(property);
-        } while (xr.Read());
-
-        Properties = properties.ToArray();
-        Header.PropertyCount = (ushort) Properties.Length;
-        PropertyHeaders = Properties.Select(p => p.Header).ToArray();
-    }
-    
     private void ContainersFromXml(XmlReader xr)
     {
         var containers = new List<SContainerV03>();

@@ -80,8 +80,8 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     {
         xw.WriteStartElement(XmlName);
         
-        xw.WriteAttributeString("Ext", Extension);
-        xw.WriteAttributeString("Version", $"{Header.Version}");
+        xw.WriteAttributeString(nameof(Extension), Extension);
+        xw.WriteAttributeString(nameof(Header.Version), $"{Header.Version}");
         
         RootContainer.ToXml(xw);
         xw.WriteEndElement();
