@@ -5,6 +5,7 @@
 /// </summary>
 public enum EFourCc
 {
+    None = 0x00000000,
     Aaf = 0x41414600,
     Mawe = 0x4557414D,
     Rtpc = 0x52545043,

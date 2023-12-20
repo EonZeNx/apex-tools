@@ -20,6 +20,8 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
     public APropertyV03[] Properties = Array.Empty<APropertyV03>();
     public SContainerV03[] Containers = Array.Empty<SContainerV03>();
     public uint ValidPropertyCount = 0;
+    
+    public bool Flat = false;
 
     public string XmlName => "Container";
 
@@ -45,6 +47,17 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
         }
 
         return result;
+    }
+    
+    public ulong GetObjectId(uint hash)
+    {
+        var hasObjectId = Properties.Any(p => p.Header.NameHash == hash);
+
+        if (!hasObjectId) return 0;
+        var objectIdVariant = (VariantObjectId) Properties.First(p => p.Header.NameHash == hash);
+        var objectId = objectIdVariant.Value.Item1;
+
+        return objectId;
     }
 
     #region IApex
@@ -151,6 +164,7 @@ public class SContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToAp
     public void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
+        xw.WriteAttributeString("Flat", $"{Flat}");
         XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         foreach (var property in Properties)

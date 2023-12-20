@@ -16,7 +16,6 @@ public class SContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
     public uint BodyOffset = 0;
     public ushort PropertyCount = 0;
     public ushort ContainerCount = 0;
-    public bool Flat = false;
 
     public static int BinarySize => 4 + 4 + 2 + 2;
 

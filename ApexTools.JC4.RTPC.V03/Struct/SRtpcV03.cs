@@ -1,8 +1,10 @@
-﻿using System.Xml;
+﻿using System.Text;
+using System.Xml;
 using ApexTools.JC4.RTPC.V03.Abstractions;
 using ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace ApexTools.JC4.RTPC.V03.Struct;
 
@@ -44,21 +46,13 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 
         Container = new SContainerV03();
         Container.Header.FromApexHeader(br);
-
-        var flatContainerIndices = Container.Properties.Any(p => p.Header.NameHash == 0x3EB4D7CF);
-        var flatContainerObjectIds = Container.Properties.Any(p => p.Header.NameHash == 0x5A6E1D8F);
-        var flatContainerClassHash = Container.Properties.Any(p => p.Header.NameHash == 0xA0DDE26A);
-        if (flatContainerIndices && flatContainerObjectIds && flatContainerClassHash)
-        {
-            
-        }
-        
         Container.FromApexHeader(br);
     }
 
     public void FromApex(BinaryReader br)
     {
         Container.FromApex(br);
+        FlatPackRestructure();
     }
 
     public void ToApex(BinaryWriter bw)
@@ -83,6 +77,91 @@ public class SRtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     #endregion
 
     #region IApex utils
+
+    public void FlatPackRestructure()
+    {
+        // 3EB4D7CF = parent container index
+        // 5A6E1D8F = container object id
+        // A0DDE26A = container class
+        
+        var flatContainerIndices = Container.PropertyHeaders.Any(ph => ph.NameHash == 0xCFD7B43E);
+        var flatContainerObjectIds = Container.PropertyHeaders.Any(ph => ph.NameHash == 0x8F1D6E5A);
+        var flatContainerClassHash = Container.PropertyHeaders.Any(ph => ph.NameHash == 0x6AE2DDA0);
+        
+        if (!flatContainerIndices || !flatContainerObjectIds || !flatContainerClassHash)
+        {
+            return;
+        }
+        
+        var indices = ((VariantU32Array)Container.Properties.First(p => p.Header.NameHash == 0xCFD7B43E)).Value;
+        var byteObjectIds = (VariantByteArray) Container.Properties.First(p => p.Header.NameHash == 0x8F1D6E5A);
+
+        var objectIds = new List<ulong>();
+        for (var i = 0; i < byteObjectIds.Value.Count; i += 8)
+        {
+            var objectIdBytes = byteObjectIds.Value.GetRange(i, 8).ToArray();
+            var objectId = BitConverter.ToUInt64(objectIdBytes, 0);
+            objectIds.Add(objectId);
+        }
+        
+        var oidToParentOid = new Dictionary<ulong, ulong>();
+        foreach (var (oid, parentIndex) in objectIds.Zip(indices, (oid, pi) => (oid, pi)))
+        {
+            if (parentIndex == 0xFFFFFFFF) continue;
+            oidToParentOid.Add(oid, objectIds[(int) parentIndex]);
+        }
+
+        var allContainers = Container.Containers.ToList();
+        foreach (var container in allContainers)
+        {
+            if (container.Containers.Length <= 0) continue;
+            
+            foreach (var subContainer in container.Containers)
+            {
+                subContainer.Flat = false;
+            }
+        }
+
+        var objectIdHash = HashJenkinsL3.Hash("_object_id"u8.ToArray());
+        for (var i = allContainers.Count - 1; i >= 0; i--)
+        {
+            var container = allContainers[i];
+            var objectId = container.GetObjectId(objectIdHash);
+            
+            if (objectId == 0) continue;
+            if (!oidToParentOid.ContainsKey(objectId)) continue;
+
+            var parentOid = oidToParentOid[objectId];
+            var validParent = allContainers.Any(c => c.GetObjectId(objectIdHash) == parentOid);
+            if (!validParent) continue;
+
+            var parent = allContainers.First(c => c.GetObjectId(objectIdHash) == parentOid);
+            
+            var temp = parent.Containers.ToList();
+            container.Flat = true;
+            temp.Add(container);
+
+            parent.Containers = temp.ToArray();
+            
+            allContainers.RemoveAt(i);
+        }
+
+        Container.Containers = allContainers.ToArray();
+        
+        var newProperties = Container.Properties.ToList();
+        var newPropertyHeaders = Container.PropertyHeaders.ToList();
+        for (var i = newPropertyHeaders.Count - 1; i >= 0 ; i--)
+        {
+            var propertyHeader = Container.PropertyHeaders[i];
+            if (propertyHeader.NameHash is not (0xCFD7B43E or 0x8F1D6E5A or 0x6AE2DDA0)) continue;
+            
+            newProperties.RemoveAt(i);
+            newPropertyHeaders.RemoveAt(i);
+        }
+        
+        Container.Properties = newProperties.ToArray();
+        Container.PropertyHeaders = newPropertyHeaders.ToArray();
+    }
 
     public void CreateValueMaps(APropertyV03[] properties, BinaryWriter bw)
     {
