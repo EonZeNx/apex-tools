@@ -10,7 +10,7 @@ namespace ApexTools.JC4.RTPC.V03.Models;
 /// Property count - <see cref="ushort"/><br/>
 /// Container count - <see cref="ushort"/>
 /// </summary>
-public class ContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
+public class ContainerHeaderV03 : IBinarySize, IFromApex, IToApex
 {
     public uint NameHash = 0;
     public uint BodyOffset = 0;
@@ -22,7 +22,7 @@ public class ContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
     public string HexNameHash => ByteUtils.ToHex(NameHash, true);
     public string Name { get; set; } = string.Empty;
 
-    public void FromApexHeader(BinaryReader br)
+    public void FromApex(BinaryReader br)
     {
         NameHash = br.ReadUInt32();
         BodyOffset = br.ReadUInt32();
@@ -30,7 +30,7 @@ public class ContainerHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
         ContainerCount = br.ReadUInt16();
     }
 
-    public void ToApexHeader(BinaryWriter bw)
+    public void ToApex(BinaryWriter bw)
     {
         bw.Write(NameHash);
         bw.Write(BodyOffset);

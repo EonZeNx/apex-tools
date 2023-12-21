@@ -11,7 +11,7 @@ namespace ApexTools.JC4.RTPC.V03.Models;
 /// RawData - <see cref="byte"/>[]<br/>
 /// VariantType - <see cref="EVariantType"/>
 /// </summary>
-public class PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
+public class PropertyHeaderV03 : IBinarySize, IFromApex, IToApex
 {
     public uint NameHash = 0;
     public byte[] RawData = new byte[4];
@@ -30,14 +30,14 @@ public class PropertyHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
 
     public static int BinarySize => 4 + 4 + 1;
 
-    public void FromApexHeader(BinaryReader br)
+    public void FromApex(BinaryReader br)
     {
         NameHash = br.ReadUInt32();
         RawData = br.ReadBytes(4);
         VariantType = (EVariantType)br.ReadByte();
     }
 
-    public void ToApexHeader(BinaryWriter bw)
+    public void ToApex(BinaryWriter bw)
     {
         bw.Write(NameHash);
         bw.Write(RawData);

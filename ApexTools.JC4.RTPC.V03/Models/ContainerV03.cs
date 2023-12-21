@@ -54,18 +54,22 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         var result = new List<ContainerV03>();
         if (Flat) result.Add(this);
 
-        var flattenedContainers = new List<ContainerV03>();
         foreach (var container in Containers)
         {
-            if (Flat) flattenedContainers.Add(container);
-            result.AddRange(container.GetAllContainers());
+            var containersFlat = container.GetAllContainersFlat();
+            result.AddRange(containersFlat);
         }
-
-        var filteredContainers = Containers.ToList();
-        filteredContainers.RemoveAll(c => flattenedContainers.Contains(c));
-        Containers = filteredContainers.ToArray();
+        
+        Containers = Containers.Where(c => !c.Flat).ToArray();
+        Header.ContainerCount = (ushort) Containers.Length;
 
         return result;
+    }
+
+    public void Flatten()
+    {
+        Containers = Containers.Where(c => !c.Flat).ToArray();
+        Header.ContainerCount = (ushort) Containers.Length;
     }
     
     public uint GetContainerCount()
@@ -112,7 +116,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
             for (var i = 0; i < Header.PropertyCount; i++)
             {
                 PropertyHeaders[i] = new PropertyHeaderV03();
-                PropertyHeaders[i].FromApexHeader(br);
+                PropertyHeaders[i].FromApex(br);
             }
         }
 
@@ -122,7 +126,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
             for (var i = 0; i < Header.ContainerCount; i++)
             {
                 Containers[i] = new ContainerV03();
-                Containers[i].Header.FromApexHeader(br);
+                Containers[i].Header.FromApex(br);
             }
         }
         
@@ -175,12 +179,12 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
     {
         for (var i = 0; i < Header.PropertyCount; i++)
         {
-            PropertyHeaders[i].ToApexHeader(bw);
+            PropertyHeaders[i].ToApex(bw);
         }
         
         for (var i = 0; i < Header.ContainerCount; i++)
         {
-            Containers[i].Header.ToApexHeader(bw);
+            Containers[i].Header.ToApex(bw);
         }
 
         var validProperties = PropertyHeaders
@@ -226,7 +230,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
 
     public void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Flat = bool.Parse(xr.GetAttribute(nameof(Flat)) ?? $"{false}");
 
         while (xr.Read())

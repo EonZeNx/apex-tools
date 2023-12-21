@@ -24,7 +24,7 @@ public abstract class APropertyV03 : IFromApexHeader, IFromApex, IToXml, IFromXm
 
     public void FromApexHeader(BinaryReader br)
     {
-        Header.FromApexHeader(br);
+        Header.FromApex(br);
     }
 
     public abstract void FromApex(BinaryReader br);

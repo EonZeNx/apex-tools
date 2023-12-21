@@ -9,20 +9,20 @@ namespace ApexTools.JC4.RTPC.V03.Models;
 /// FourCc - <see cref="EFourCc"/><br/>
 /// Version - <see cref="uint"/><br/>
 /// </summary>
-public class RtpcHeaderV03 : IBinarySize, IFromApexHeader, IToApexHeader
+public class RtpcHeaderV03 : IBinarySize, IFromApex, IToApex
 {
     public EFourCc FourCc = EFourCc.Rtpc;
     public uint Version = 3;
     
     public static int BinarySize => 4 + 4;
 
-    public void FromApexHeader(BinaryReader br)
+    public void FromApex(BinaryReader br)
     {
         FourCc = (EFourCc) br.ReadUInt32();
         Version = br.ReadUInt32();
     }
 
-    public void ToApexHeader(BinaryWriter bw)
+    public void ToApex(BinaryWriter bw)
     {
         bw.Write(FourCc.ToBigEndian());
         bw.Write(Version);

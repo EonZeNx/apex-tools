@@ -38,7 +38,7 @@ public static class RtpcV03Parser
     
     public static void ToApex(RtpcV03 rtpcV03, string targetPath)
     {
-        using var bw = new BinaryWriter(new FileStream($"{targetPath}.blo", FileMode.Create));
+        using var bw = new BinaryWriter(new FileStream($"{targetPath}{rtpcV03.Extension}", FileMode.Create));
         rtpcV03.ToApex(bw);
     }
 }

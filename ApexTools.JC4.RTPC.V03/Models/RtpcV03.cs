@@ -36,15 +36,36 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 
     #endregion
 
+    public void CreateValueMaps(APropertyV03[] properties, BinaryWriter bw)
+    {
+        StringToOffsetMap.Create(properties, bw);
+        Vec2ToOffsetMap.Create(properties, bw);
+        Vec3ToOffsetMap.Create(properties, bw);
+        Vec4ToOffsetMap.Create(properties, bw);
+        Mat3X3ToOffsetMap.Create(properties, bw);
+        Mat4X4ToOffsetMap.Create(properties, bw);
+        U32ArrayToOffsetMap.Create(properties, bw);
+        F32ArrayToOffsetMap.Create(properties, bw);
+        // ByteArrayToOffsetMap.Create(properties, bw);
+        // ObjectIdToOffsetMap.Create(properties, bw);
+        // EventToOffsetMap.Create(properties, bw);
+        
+        // TODO: Byte array contains list of object ids
+        // Reference those oids as offsets instead of writing the values again
+        
+        // TODO: Look into generating the 4 properties in the root container from XML structure
+        // (Once FromApex ToXml structure is regenerated like JC3 layout)
+    }
+    
     #region IApex
     
     public void FromApexHeader(BinaryReader br)
     {
         Header = new RtpcHeaderV03();
-        Header.FromApexHeader(br);
+        Header.FromApex(br);
 
         RootContainer = new RootContainerV03();
-        RootContainer.Header.FromApexHeader(br);
+        RootContainer.Header.FromApex(br);
         RootContainer.FromApexHeader(br);
     }
 
@@ -55,21 +76,24 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 
     public void ToApex(BinaryWriter bw)
     {
-        // var allProperties = RootContainer.GetAllProperties().ToArray();
-        // var allContainers = RootContainer.GetAllContainers().ToArray();
-        //
-        // var propertyDataOffset = SRtpcHeaderV03.BinarySize + 
-        //                  allProperties.Length * JC4PropertyHeaderV03.BinarySize + 
-        //                  allContainers.Length * SContainerHeaderV03.BinarySize +
-        //                  allContainers.Length * 4;
-        //
-        // bw.Seek(propertyDataOffset, SeekOrigin.Begin);
-        // CreateValueMaps(allProperties, bw);
-        //
-        // bw.Seek(0, SeekOrigin.Begin);
-        // Header.ToApexHeader(bw);
-        // RootContainer.Header.ToApexHeader(bw);
-        // RootContainer.ToApexHeader(bw);
+        var allProperties = RootContainer.GetAllProperties().ToArray();
+        var containerCount = RootContainer.GetContainerCount();
+        
+        var propertyDataOffset = (uint) (RtpcHeaderV03.BinarySize + 
+                                        allProperties.Length * PropertyHeaderV03.BinarySize + 
+                                        containerCount * ContainerHeaderV03.BinarySize +
+                                        containerCount * 4);
+        
+        bw.Seek((int) propertyDataOffset, SeekOrigin.Begin);
+        CreateValueMaps(allProperties, bw);
+        
+        bw.Seek(0, SeekOrigin.Begin);
+        Header.ToApex(bw);
+        
+        RootContainer.Flatten();
+        RootContainer.Header.ToApex(bw);
+        
+        RootContainer.ToApexHeader(bw);
     }
 
     #endregion
@@ -90,6 +114,8 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     public void FromXml(XmlReader xr)
     {
         xr.ReadToDescendant(RootContainer.XmlName);
+        Extension = xr.GetAttribute(nameof(Extension)) ?? Extension;
+        
         RootContainer.FromXml(xr);
     }
 
