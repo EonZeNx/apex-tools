@@ -39,7 +39,7 @@ public class VariantStr : APropertyV03, IToApex, IGetValue<string>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Value = xr.ReadString();
     }
 

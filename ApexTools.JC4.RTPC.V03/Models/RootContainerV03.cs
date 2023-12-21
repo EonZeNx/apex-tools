@@ -8,50 +8,21 @@ using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace ApexTools.JC4.RTPC.V03.Models;
 
-/// <summary>
-/// Format:<br/>
-/// Header - <see cref="ContainerHeaderV03"/><br/>
-/// Property headers - <see cref="PropertyHeaderV03"/><br/>
-/// Container headers - <see cref="ContainerHeaderV03"/><br/>
-/// Valid property count - <see cref="uint"/>
-/// </summary>
-public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApexHeader, IToApex
+public class RootContainerV03 : ContainerV03
 {
-    public ContainerHeaderV03 Header = new();
-    public PropertyHeaderV03[] PropertyHeaders = Array.Empty<PropertyHeaderV03>();
-    public APropertyV03[] Properties = Array.Empty<APropertyV03>();
-    public ContainerV03[] Containers = Array.Empty<ContainerV03>();
-    public uint ValidPropertyCount = 0;
-
     public Dictionary<ulong, uint> OIdToParentIndex = new();
     public List<ulong> OIdList = new();
     public uint Unknown01 = 0;
     
-    public string XmlName => "Root";
-    public bool Flat => true;
-    
-    public uint GetContainerCount()
-    {
-        var count = (uint) Containers.Length;
-        foreach (var container in Containers)
-        {
-            count += container.GetContainerCount();
-        }
+    public override string XmlName => "Root";
 
-        return count;
-    }
-    
-    public IEnumerable<APropertyV03> GetAllProperties()
+    public RootContainerV03()
     {
-        var result = new List<APropertyV03>();
-        result.AddRange(Properties);
-        
-        foreach (var container in Containers)
+        Header = new ContainerHeaderV03
         {
-            result.AddRange(container.GetAllProperties());
-        }
-
-        return result;
+            BodyOffset = 0x14
+        };
+        Flat = true;
     }
 
     #region Unflat
@@ -167,6 +138,12 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
     public void Flatten()
     {
+        CreateFlatContainers();
+        CreateFlatProperties();
+    }
+
+    public void CreateFlatContainers()
+    {
         uint flatCount = 0;
         foreach (var container in Containers)
         {
@@ -177,8 +154,8 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         {
             i += FlattenRecurse(Containers[i], i, true);
         }
-
-        var strappedContainers = new List<ContainerV03>();
+        
+        var strappedContainers = new List<ContainerV03>(Containers);
         foreach (var container in Containers)
         {
             var containersFlat = container.GetAllContainersFlat();
@@ -187,14 +164,79 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
         Containers = strappedContainers.ToArray();
         Header.ContainerCount = (ushort) Containers.Length;
+    }
+    
+    public void CreateFlatProperties()
+    {
+        PropertyHeaders = new PropertyHeaderV03[4];
+        Properties = new APropertyV03[4];
+        
+        var orderedIndices = new List<uint>(OIdList.Count);
+        orderedIndices.AddRange(OIdList.Select(oid => OIdToParentIndex[oid]));
+        
+        // Indices
+        PropertyHeaders[0] = new PropertyHeaderV03
+        {
+            NameHash = 0xCFD7B43E,
+            RawData = new byte[4],
+            VariantType = EVariantType.UInteger32Array
+        };
+        Properties[0] = new VariantU32Array
+        {
+            Header = PropertyHeaders[0],
+            Value = orderedIndices,
+            Count = (ushort) orderedIndices.Count
+        };
 
-        // TODO: Add root properties, and test
+        // Flat object ID array (byte array)
+        var oidByteArray = new List<byte>(OIdList.Count * 8);
+        foreach (var oid in OIdList)
+        {
+            oidByteArray.AddRange(BitConverter.GetBytes(oid));
+        }
+        
+        PropertyHeaders[1] = new PropertyHeaderV03
+        {
+            NameHash = 0x8F1D6E5A,
+            RawData = new byte[4],
+            VariantType = EVariantType.ByteArray
+        };
+        Properties[1] = new VariantByteArray
+        {
+            Header = PropertyHeaders[1],
+            Value = oidByteArray,
+            Count = (ushort) oidByteArray.Count
+        };
+
+        // ???
+        PropertyHeaders[2] = new PropertyHeaderV03
+        {
+            NameHash = 0x95C1191D,
+            RawData = BitConverter.GetBytes(Unknown01),
+            VariantType = EVariantType.UInteger32
+        };
+        Properties[2] = new VariantU32
+        {
+            Header = PropertyHeaders[2],
+            Value = Unknown01
+        };
+
+        // Class hash array (uint32 array)
+        PropertyHeaders[3] = new PropertyHeaderV03
+        {
+            NameHash = 0x6AE2DDA0,
+            RawData = BitConverter.GetBytes(Unknown01),
+            VariantType = EVariantType.UInteger32
+        };
+        Properties[3] = new VariantU32Array(PropertyHeaders[3]);
+
+        Header.PropertyCount = 4;
     }
     
     public uint FlattenRecurse(ContainerV03 container, uint currentIndex, bool noParent = false)
     {
         uint flattenedChildren = 0;
-        var objectIdHash = ByteUtils.ReverseBytes(HashJenkinsL3.Hash("_object_id"));
+        var objectIdHash = HashJenkinsL3.Hash("_object_id");
         
         foreach (var subContainer in container.Containers)
         {
@@ -220,35 +262,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
 
     #region IApex
 
-    public void FromApexHeader(BinaryReader br)
-    {
-        PropertyHeaders = new PropertyHeaderV03[Header.PropertyCount];
-        if (Header.PropertyCount != 0)
-        {
-            for (var i = 0; i < Header.PropertyCount; i++)
-            {
-                PropertyHeaders[i] = new PropertyHeaderV03();
-                PropertyHeaders[i].FromApex(br);
-            }
-        }
-
-        Containers = new ContainerV03[Header.ContainerCount];
-        for (var i = 0; i < Header.ContainerCount; i++)
-        {
-            Containers[i] = new ContainerV03();
-            Containers[i].Header.FromApex(br);
-        }
-        
-        // Exclude unassigned values
-        ValidPropertyCount = br.ReadUInt32();
-        
-        for (var i = 0; i < Header.ContainerCount; i++)
-        {
-            Containers[i].FromApexHeader(br);
-        }
-    }
-    
-    public void FromApex(BinaryReader br)
+    public override void FromApex(BinaryReader br)
     {
         Properties = new APropertyV03[Header.PropertyCount];
         for (var i = 0; i < Properties.Length; i++)
@@ -288,39 +302,11 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         Unflat();
     }
 
-    public void ToApexHeader(BinaryWriter bw)
-    {
-        for (var i = 0; i < Header.PropertyCount; i++)
-        {
-            PropertyHeaders[i].ToApex(bw);
-        }
-        
-        for (var i = 0; i < Header.ContainerCount; i++)
-        {
-            Containers[i].Header.ToApex(bw);
-        }
-
-        var validProperties = PropertyHeaders
-            .Where(ph => ph.VariantType != EVariantType.Unassigned)
-            .ToArray();
-        bw.Write(validProperties.Length);
-        
-        for (var i = 0; i < Header.ContainerCount; i++)
-        {
-            Containers[i].ToApexHeader(bw);
-        }
-    }
-
-    public void ToApex(BinaryWriter bw)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 
     #region IXml
 
-    public void ToXml(XmlWriter xw)
+    public override void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
         
@@ -337,7 +323,7 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         xw.WriteEndElement();
     }
 
-    public void FromXml(XmlReader xr)
+    public override void FromXml(XmlReader xr)
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Unknown01 = uint.Parse(xr.GetAttribute(nameof(Unknown01)) ?? "0");
@@ -346,35 +332,6 @@ public class RootContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IT
         { if (xr.NodeType != XmlNodeType.Whitespace) break; }
             
         ContainersFromXml(xr);
-    }
-
-    #endregion
-    
-    #region XmlHelpers
-
-    private void ContainersFromXml(XmlReader xr)
-    {
-        var containers = new List<ContainerV03>();
-
-        do
-        {
-            var tag = xr.Name;
-            var nodeType = xr.NodeType;
-                
-            if (tag == XmlName && nodeType == XmlNodeType.EndElement) break;
-            if (nodeType != XmlNodeType.Element) continue;
-                
-            if (!xr.HasAttributes) throw new XmlException("Container missing attributes");
-
-            var container = new ContainerV03();
-
-            container.FromXml(xr);
-            containers.Add(container);
-        } 
-        while (xr.Read());
-
-        Containers = containers.ToArray();
-        Header.ContainerCount = (ushort) Containers.Length;
     }
 
     #endregion

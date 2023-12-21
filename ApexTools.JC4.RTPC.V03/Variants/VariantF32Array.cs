@@ -46,7 +46,7 @@ public class VariantF32Array : ABaseArray<float>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
         var floatString = xr.ReadString();
         if (floatString.Length == 0)

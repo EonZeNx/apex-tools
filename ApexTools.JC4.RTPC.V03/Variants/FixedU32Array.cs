@@ -29,7 +29,7 @@ public class FixedU32Array : VariantU32Array
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
         var floatString = xr.ReadString();
         if (floatString.Length == 0)

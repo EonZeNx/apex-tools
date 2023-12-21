@@ -46,7 +46,7 @@ public class VariantByteArray : ABaseArray<byte>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
         var byteString = xr.ReadString();
         if (byteString.Length == 0)

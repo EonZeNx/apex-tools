@@ -23,7 +23,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
     
     public bool Flat = false;
 
-    public string XmlName => "Container";
+    public virtual string XmlName => "Container";
 
     public IEnumerable<APropertyV03> GetAllProperties()
     {
@@ -49,6 +49,17 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         return result;
     }
     
+    public ulong GetObjectId(uint hash)
+    {
+        var hasObjectId = Properties.Any(p => p.Header.NameHash == hash);
+
+        if (!hasObjectId) return 0;
+        var objectIdVariant = (VariantObjectId) Properties.First(p => p.Header.NameHash == hash);
+        var objectId = objectIdVariant.Value.Item1;
+
+        return objectId;
+    }
+    
     public IEnumerable<ContainerV03> GetAllContainersFlat()
     {
         var result = new List<ContainerV03>();
@@ -66,12 +77,6 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         return result;
     }
 
-    public void Flatten()
-    {
-        Containers = Containers.Where(c => !c.Flat).ToArray();
-        Header.ContainerCount = (ushort) Containers.Length;
-    }
-    
     public uint GetContainerCount()
     {
         var count = (uint) Containers.Length;
@@ -93,17 +98,6 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         }
 
         return count;
-    }
-    
-    public ulong GetObjectId(uint hash)
-    {
-        var hasObjectId = Properties.Any(p => p.Header.NameHash == hash);
-
-        if (!hasObjectId) return 0;
-        var objectIdVariant = (VariantObjectId) Properties.First(p => p.Header.NameHash == hash);
-        var objectId = objectIdVariant.Value.Item1;
-
-        return objectId;
     }
 
     #region IApex
@@ -139,7 +133,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         }
     }
     
-    public void FromApex(BinaryReader br)
+    public virtual void FromApex(BinaryReader br)
     {
         Properties = new APropertyV03[Header.PropertyCount];
         for (var i = 0; i < Properties.Length; i++)
@@ -175,7 +169,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         }
     }
 
-    public void ToApexHeader(BinaryWriter bw)
+    public virtual void ToApexHeader(BinaryWriter bw)
     {
         for (var i = 0; i < Header.PropertyCount; i++)
         {
@@ -188,9 +182,8 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         }
 
         var validProperties = PropertyHeaders
-            .Where(ph => ph.VariantType != EVariantType.Unassigned)
-            .ToArray();
-        bw.Write(validProperties.Length);
+            .Count(ph => ph.VariantType != EVariantType.Unassigned);
+        bw.Write(validProperties);
         
         for (var i = 0; i < Header.ContainerCount; i++)
         {
@@ -207,7 +200,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
 
     #region IXml
 
-    public void ToXml(XmlWriter xw)
+    public virtual void ToXml(XmlWriter xw)
     {
         xw.WriteStartElement(XmlName);
         
@@ -228,7 +221,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         xw.WriteEndElement();
     }
 
-    public void FromXml(XmlReader xr)
+    public virtual void FromXml(XmlReader xr)
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Flat = bool.Parse(xr.GetAttribute(nameof(Flat)) ?? $"{false}");
@@ -245,7 +238,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
     
     #region XmlHelpers
 
-    private void PropertiesFromXml(XmlReader xr)
+    protected void PropertiesFromXml(XmlReader xr)
     {
         var properties = new List<APropertyV03>();
         do
@@ -274,7 +267,7 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
         PropertyHeaders = Properties.Select(p => p.Header).ToArray();
     }
     
-    private void ContainersFromXml(XmlReader xr)
+    protected void ContainersFromXml(XmlReader xr)
     {
         var containers = new List<ContainerV03>();
 

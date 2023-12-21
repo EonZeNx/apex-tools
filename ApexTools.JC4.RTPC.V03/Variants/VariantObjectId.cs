@@ -47,7 +47,7 @@ public class VariantObjectId : APropertyV03, IGetValue<(ulong, byte)>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
         var strValue = xr.ReadString();
         var strArray = strValue.Split("=");

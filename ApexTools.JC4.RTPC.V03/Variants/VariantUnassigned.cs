@@ -35,7 +35,7 @@ public class VariantUnassigned : APropertyV03
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
     }
 
     public override void ToApex(BinaryWriter bw)

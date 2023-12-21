@@ -56,7 +56,7 @@ public class VariantEvent : ABaseArray<(uint, uint)>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Value = new List<(uint, uint)>();
         
         var value = xr.ReadString();

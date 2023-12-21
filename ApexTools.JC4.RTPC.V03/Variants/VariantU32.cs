@@ -36,7 +36,7 @@ public class VariantU32 : APropertyV03
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Value = uint.Parse(xr.ReadString());
     }
 

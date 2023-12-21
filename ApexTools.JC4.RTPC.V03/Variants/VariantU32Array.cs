@@ -46,7 +46,7 @@ public class VariantU32Array : ABaseArray<uint>
 
     public override void FromXml(XmlReader xr)
     {
-        Header.NameHash = XmlUtils.ReadNameIfValid(xr);
+        Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
         var uintString = xr.ReadString();
         if (uintString.Length == 0)
