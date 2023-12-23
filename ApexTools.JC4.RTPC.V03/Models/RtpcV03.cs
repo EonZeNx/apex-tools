@@ -34,6 +34,18 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     protected readonly ValueOffsetMapV03<(ulong, byte), VariantObjectId> ObjectIdOffsetMap = new(EVariantType.ObjectId, new U64BComparer());
     protected readonly ValueOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventOffsetMap = new(EVariantType.Event, new ListComparer<(uint, uint)>());
 
+    protected readonly Dictionary<uint, string> OffsetStringMap = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetVec2Map = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetVec3Map = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetVec4Map = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetMat3X3Map = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetMat4X4Map = new();
+    protected readonly Dictionary<uint, IList<uint>> OffsetU32ArrayMap = new();
+    protected readonly Dictionary<uint, IList<float>> OffsetF32Map = new();
+    protected readonly Dictionary<uint, IList<byte>> OffsetByteMap = new();
+    protected readonly Dictionary<uint, (ulong, byte)> OffsetObjectIdMap = new();
+    protected readonly Dictionary<uint, IList<(uint, uint)>> OffsetEventMap = new();
+
     #endregion
 
     public void CreateValueMaps(APropertyV03[] properties, BinaryWriter bw)
@@ -53,6 +65,11 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
         // TODO: Byte array contains list of object ids
         // Reference those oids as offsets instead of writing the values again
     }
+
+    public void ReadOffsetMap()
+    {
+        
+    }
     
     #region IApex
     
@@ -68,6 +85,16 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
 
     public void FromApex(BinaryReader br)
     {
+        // Get all properties
+        // For each variant
+        // Read value map
+        var allProperties = RootContainer.GetAllProperties();
+        var uniqueOffsets = allProperties
+            .Where(p => p.Header.VariantType is not
+                (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32))
+            .GroupBy(p => BitConverter.ToUInt32(p.Header.RawData))
+            .Select(g => g.First());
+        
         RootContainer.FromApex(br);
     }
 

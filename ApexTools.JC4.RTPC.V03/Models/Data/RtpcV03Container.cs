@@ -8,6 +8,7 @@ public struct RtpcV03Container
     public RtpcV03ContainerHeader Header = new();
     public RtpcV03PropertyHeader[] PropertyHeaders = Array.Empty<RtpcV03PropertyHeader>();
     public RtpcV03ContainerHeader[] ContainerHeaders = Array.Empty<RtpcV03ContainerHeader>();
+    public uint ValidProperties = 0;
 
     public RtpcV03Container() {}
 }
@@ -34,6 +35,8 @@ public static class RtpcV03ContainerExtension
             result.ContainerHeaders[i] = br.ReadRtpcV03ContainerHeader();
         }
 
+        result.ValidProperties = br.ReadUInt32();
+
         return result;
     }
     
@@ -50,5 +53,7 @@ public static class RtpcV03ContainerExtension
         {
             bw.Write(containerHeader);
         }
+        
+        bw.Write(container.ValidProperties);
     }
 }
