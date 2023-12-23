@@ -41,7 +41,7 @@ public class ObjectId : PropertyBase
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var strValue = xr.ReadString();
+        var strValue = xr.ReadElementContentAsString();
         var strArray = strValue.Split("=");
 
         var reversedOid = ulong.Parse(strArray[0], NumberStyles.AllowHexSpecifier);

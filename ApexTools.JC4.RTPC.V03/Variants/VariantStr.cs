@@ -31,7 +31,7 @@ public class VariantStr : APropertyV03, IToApex, IGetValue<string>
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
         xw.WriteValue(Value);
         
         xw.WriteEndElement();
@@ -40,7 +40,7 @@ public class VariantStr : APropertyV03, IToApex, IGetValue<string>
     public override void FromXml(XmlReader xr)
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
-        Value = xr.ReadString();
+        Value = xr.ReadElementContentAsString();
     }
 
     public override void ToApex(BinaryWriter bw)

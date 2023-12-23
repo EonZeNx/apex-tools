@@ -37,7 +37,7 @@ public class VariantF32Array : ABaseArray<float>
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         var array = string.Join(",", Value);
         xw.WriteValue(array);
@@ -48,7 +48,7 @@ public class VariantF32Array : ABaseArray<float>
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         if (floatString.Length == 0)
         {
             Value = new List<float>();

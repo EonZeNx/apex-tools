@@ -11,7 +11,7 @@ public class VariantMat3X3 : FixedF32Array
 
     public VariantMat3X3()
     {
-        Header.VariantType = EVariantType.Mat3X3;
+        Header.VariantType = EVariantType.Matrix3X3;
     }
     public VariantMat3X3(PropertyHeaderV03 header) : base(header)
     { }

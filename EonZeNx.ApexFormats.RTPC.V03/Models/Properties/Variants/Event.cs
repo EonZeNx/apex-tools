@@ -70,7 +70,7 @@ public class Event : PropertyBaseDeferredV03
         NameHash = XmlUtils.ReadNameIfValid(xr);
         Value = Array.Empty<(uint, uint)>();
         
-        var value = xr.ReadString();
+        var value = xr.ReadElementContentAsString();
         if (value.Length == 0) return;
 
         string[] eventStringArray = {value};

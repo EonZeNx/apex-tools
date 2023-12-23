@@ -6,7 +6,7 @@ namespace EonZeNx.ApexFormats.RTPC.V03.Models.Properties.Variants;
 public class Mat3X3 : FloatArray
 {
     public override string XmlName => "Mat3x3";
-    public override EVariantType VariantType => EVariantType.Mat3X3;
+    public override EVariantType VariantType => EVariantType.Matrix3X3;
     
     public override int Count { get; set; } = 9;
     
@@ -38,7 +38,7 @@ public class Mat3X3 : FloatArray
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         var vectorString = floatString.Split(", ");
 
         var floats = new List<float>();

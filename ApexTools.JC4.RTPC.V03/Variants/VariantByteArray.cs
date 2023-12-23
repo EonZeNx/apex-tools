@@ -37,7 +37,7 @@ public class VariantByteArray : ABaseArray<byte>
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         var array = string.Join(",", Value.Select(ByteUtils.ToHex));
         xw.WriteValue(array);
@@ -48,7 +48,7 @@ public class VariantByteArray : ABaseArray<byte>
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
-        var byteString = xr.ReadString();
+        var byteString = xr.ReadElementContentAsString();
         if (byteString.Length == 0)
         {
             Value = new List<byte>();

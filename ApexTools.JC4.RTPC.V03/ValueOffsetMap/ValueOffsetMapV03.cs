@@ -9,19 +9,19 @@ namespace ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 // I've been coding so long, I can't tell if this is genius or stupid
 
 // ReSharper disable once InconsistentNaming
-public class ValueToOffsetMapV03<T, U> where T : notnull
+public class ValueOffsetMapV03<T, U> where T : notnull
     where U : APropertyV03, IToApex, IGetValue<T>, new()
 {
     public Dictionary<T, uint> Map;
     public readonly EVariantType Variant;
     public int Alignment;
 
-    public ValueToOffsetMapV03(EVariantType variant, IEqualityComparer<T> comparer, int alignment = 4) : this(variant, alignment)
+    public ValueOffsetMapV03(EVariantType variant, IEqualityComparer<T> comparer, int alignment = 4) : this(variant, alignment)
     {
         Map = new Dictionary<T, uint>(comparer);
     }
 
-    public ValueToOffsetMapV03(EVariantType variant, int alignment = 4)
+    public ValueOffsetMapV03(EVariantType variant, int alignment = 4)
     {
         Map = new Dictionary<T, uint>();
         Variant = variant;
@@ -37,10 +37,24 @@ public class ValueToOffsetMapV03<T, U> where T : notnull
             .Select(g => g.First());
     }
 
+    public IEnumerable<U> Sort(IEnumerable<APropertyV03> properties)
+    {
+        if (typeof(T).GetInterfaces().Contains(typeof(IComparable)))
+        {
+            return properties
+                .OfType<U>()
+                .OrderBy(p => p.GetValue());
+        }
+
+        return properties.OfType<U>();
+    }
+
     public void Create(IEnumerable<APropertyV03> properties, BinaryWriter bw)
     {
         var unique = Filter(properties);
-        foreach (var uniqueVariant in unique)
+        var sortedUnique = Sort(unique);
+        
+        foreach (var uniqueVariant in sortedUnique)
         {
             if (Map.ContainsKey(uniqueVariant.GetValue()))
             {

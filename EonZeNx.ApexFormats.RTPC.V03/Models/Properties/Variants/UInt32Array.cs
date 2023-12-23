@@ -54,7 +54,7 @@ public class UInt32Array : BaseArray<uint>
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var uintString = xr.ReadString();
+        var uintString = xr.ReadElementContentAsString();
         if (uintString.Length == 0)
         {
             Values = Array.Empty<uint>();

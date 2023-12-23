@@ -28,7 +28,7 @@ public class VariantUnassigned : APropertyV03
         
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         xw.WriteEndElement();
     }

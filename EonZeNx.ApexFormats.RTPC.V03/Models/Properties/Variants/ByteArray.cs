@@ -55,7 +55,7 @@ public class ByteArray : BaseArray<byte>
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var byteString = xr.ReadString();
+        var byteString = xr.ReadElementContentAsString();
         if (byteString.Length == 0)
         {
             Values = Array.Empty<byte>();

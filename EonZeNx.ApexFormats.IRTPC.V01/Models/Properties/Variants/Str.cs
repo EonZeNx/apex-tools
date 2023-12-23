@@ -46,7 +46,7 @@ public class Str : BasePropertyV01
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-        Value = xr.ReadString();
+        Value = xr.ReadElementContentAsString();
     }
 
     public override void ToXml(XmlWriter xw)

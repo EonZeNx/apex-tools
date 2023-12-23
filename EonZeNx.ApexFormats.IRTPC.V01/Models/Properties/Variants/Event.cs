@@ -51,7 +51,7 @@ public class Event : BasePropertyV01
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
 
-        var value = xr.ReadString();
+        var value = xr.ReadElementContentAsString();
         if (value.Length == 0)
         {
             Value = Array.Empty<(uint, uint)>();

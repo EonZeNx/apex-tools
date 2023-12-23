@@ -42,7 +42,7 @@ public class F32 : PropertyBaseV03
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-        Value = float.Parse(xr.ReadString());
+        Value = float.Parse(xr.ReadElementContentAsString());
     }
 
     public override void ToXml(XmlWriter xw)

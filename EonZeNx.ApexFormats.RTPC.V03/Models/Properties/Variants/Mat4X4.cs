@@ -6,7 +6,7 @@ namespace EonZeNx.ApexFormats.RTPC.V03.Models.Properties.Variants;
 public class Mat4X4 : FloatArray
 {
     public override string XmlName => "Mat4x4";
-    public override EVariantType VariantType => EVariantType.Mat4X4;
+    public override EVariantType VariantType => EVariantType.Matrix4X4;
     
     public override int Count { get; set; } = 16;
     public override int Alignment => 16;
@@ -39,7 +39,7 @@ public class Mat4X4 : FloatArray
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         var vectorString = floatString.Split(", ");
 
         var floats = new List<float>();

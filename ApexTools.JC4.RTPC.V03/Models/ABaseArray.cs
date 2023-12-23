@@ -1,7 +1,6 @@
 ﻿using ApexTools.JC4.RTPC.V03.Abstractions;
-using ApexTools.JC4.RTPC.V03.Models;
 
-namespace ApexTools.JC4.RTPC.V03;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 public abstract class ABaseArray<T> : APropertyV03, IGetValue<IList<T>>
 {

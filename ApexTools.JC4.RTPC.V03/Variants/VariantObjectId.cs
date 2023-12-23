@@ -35,7 +35,7 @@ public class VariantObjectId : APropertyV03, IGetValue<(ulong, byte)>
     {
         xw.WriteStartElement(XmlName);
             
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         var stringOid = ByteUtils.ToHex(Value.Item1);
         var stringUserData = ByteUtils.ToHex(Value.Item2);
@@ -49,7 +49,7 @@ public class VariantObjectId : APropertyV03, IGetValue<(ulong, byte)>
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
-        var strValue = xr.ReadString();
+        var strValue = xr.ReadElementContentAsString();
         var strArray = strValue.Split("=");
 
         var oid = ulong.Parse(strArray[0], NumberStyles.AllowHexSpecifier);

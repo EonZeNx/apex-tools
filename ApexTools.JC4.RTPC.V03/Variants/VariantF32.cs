@@ -28,7 +28,7 @@ public class VariantF32 : APropertyV03
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
             
         xw.WriteValue(Value);
         xw.WriteEndElement();
@@ -37,7 +37,8 @@ public class VariantF32 : APropertyV03
     public override void FromXml(XmlReader xr)
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
-        Value = float.Parse(xr.ReadString());
+        Value = float.Parse(xr.ReadElementContentAsString());
+        Header.RawData = BitConverter.GetBytes(Value);
     }
 
     public override void ToApex(BinaryWriter bw)

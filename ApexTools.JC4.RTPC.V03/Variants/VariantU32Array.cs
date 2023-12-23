@@ -37,7 +37,7 @@ public class VariantU32Array : ABaseArray<uint>
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
 
         var array = string.Join(",", Value);
         xw.WriteValue(array);
@@ -48,7 +48,7 @@ public class VariantU32Array : ABaseArray<uint>
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
-        var uintString = xr.ReadString();
+        var uintString = xr.ReadElementContentAsString();
         if (uintString.Length == 0)
         {
             Value = new List<uint>();

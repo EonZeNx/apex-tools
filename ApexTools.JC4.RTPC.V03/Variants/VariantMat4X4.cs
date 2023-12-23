@@ -11,7 +11,7 @@ public class VariantMat4X4 : FixedF32Array
 
     public VariantMat4X4()
     {
-        Header.VariantType = EVariantType.Mat4X4;
+        Header.VariantType = EVariantType.Matrix4X4;
     }
     public VariantMat4X4(PropertyHeaderV03 header) : base(header)
     { }

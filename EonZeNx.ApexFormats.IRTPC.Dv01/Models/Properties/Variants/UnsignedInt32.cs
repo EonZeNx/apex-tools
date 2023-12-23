@@ -36,7 +36,7 @@ public class UnsignedInt32 : PropertyBase
     public override void FromXml(XmlReader xr)
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
-        Value = uint.Parse(xr.ReadString());
+        Value = uint.Parse(xr.ReadElementContentAsString());
     }
 
     public override void ToXml(XmlWriter xw)

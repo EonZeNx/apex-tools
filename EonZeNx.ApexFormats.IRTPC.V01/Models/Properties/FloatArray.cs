@@ -46,7 +46,7 @@ public class FloatArray : BasePropertyV01
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         var floats = floatString.Split(", ");
         Value = Array.ConvertAll(floats, float.Parse);
     }

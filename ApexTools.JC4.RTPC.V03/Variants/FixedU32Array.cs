@@ -31,7 +31,7 @@ public class FixedU32Array : VariantU32Array
     {
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         if (floatString.Length == 0)
         {
             Value = new List<uint>();

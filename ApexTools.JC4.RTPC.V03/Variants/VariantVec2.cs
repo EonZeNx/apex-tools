@@ -11,7 +11,7 @@ public class VariantVec2 : FixedF32Array
 
     public VariantVec2()
     {
-        Header.VariantType = EVariantType.Vec2;
+        Header.VariantType = EVariantType.Vector2;
     }
     public VariantVec2(PropertyHeaderV03 header) : base(header)
     { }

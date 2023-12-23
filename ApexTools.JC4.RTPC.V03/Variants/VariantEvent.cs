@@ -39,7 +39,7 @@ public class VariantEvent : ABaseArray<(uint, uint)>
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, Header.NameHash, Header.Name);
+        XmlUtils.WriteNameOrNameHash(xw, Header.HexNameHash, Header.Name);
             
         var strArray = new string[Value.Count];
         for (var i = 0; i < Value.Count; i++)
@@ -59,7 +59,7 @@ public class VariantEvent : ABaseArray<(uint, uint)>
         Header.NameHash = ByteUtils.ReverseBytes(XmlUtils.ReadNameIfValid(xr));
         Value = new List<(uint, uint)>();
         
-        var value = xr.ReadString();
+        var value = xr.ReadElementContentAsString();
         if (value.Length == 0) return;
 
         string[] eventPairStringArray = {value};
