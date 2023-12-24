@@ -16,7 +16,7 @@ public enum EVariantType
     Matrix4X4 = 8, // 16-byte pad
     UInteger32Array = 9,
     Float32Array = 10,
-    ByteArray = 11,
+    ByteArray = 11, // 16-byte pad
     Deprecated = 12,
     ObjectId = 13,
     Event = 14,

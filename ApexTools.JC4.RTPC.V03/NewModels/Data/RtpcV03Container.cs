@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ApexTools.JC4.RTPC.V03.Models.Data;
+namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03Container
@@ -10,32 +10,40 @@ public struct RtpcV03Container
     public RtpcV03ContainerHeader[] ContainerHeaders = Array.Empty<RtpcV03ContainerHeader>();
     public uint ValidProperties = 0;
 
+    public RtpcV03Container[] Containers = Array.Empty<RtpcV03Container>();
+
     public RtpcV03Container() {}
 }
 
 public static class RtpcV03ContainerExtension
 {
-    public static RtpcV03Container ReadRtpcV03Container(this BinaryReader br)
+    // Container header and body are separate
+    public static RtpcV03Container ReadRtpcV03Container(this BinaryReader br, RtpcV03ContainerHeader header)
     {
-        // Marshal.SizeOf<RtpcV03ContainerHeader>();
         var result = new RtpcV03Container
         {
-            Header = br.ReadRtpcV03ContainerHeader()
+            Header = header,
+            PropertyHeaders = new RtpcV03PropertyHeader[header.PropertyCount],
+            ContainerHeaders = new RtpcV03ContainerHeader[header.ContainerCount],
+            Containers = new RtpcV03Container[header.ContainerCount]
         };
 
-        result.PropertyHeaders = new RtpcV03PropertyHeader[result.Header.PropertyCount];
-        for (var i = 0; i < result.Header.PropertyCount; i++)
+        for (var i = 0; i < header.PropertyCount; i++)
         {
             result.PropertyHeaders[i] = br.ReadRtpcV03PropertyHeader();
         }
 
-        result.ContainerHeaders = new RtpcV03ContainerHeader[result.Header.ContainerCount];
-        for (var i = 0; i < result.Header.PropertyCount; i++)
+        for (var i = 0; i < header.ContainerCount; i++)
         {
             result.ContainerHeaders[i] = br.ReadRtpcV03ContainerHeader();
         }
 
         result.ValidProperties = br.ReadUInt32();
+
+        for (var i = 0; i < header.ContainerCount; i++)
+        {
+            result.Containers[i] = br.ReadRtpcV03Container(result.ContainerHeaders[i]);
+        }
 
         return result;
     }

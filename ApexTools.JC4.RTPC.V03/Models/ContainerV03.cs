@@ -24,6 +24,19 @@ public class ContainerV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApe
     public bool Flat = false;
 
     public virtual string XmlName => "Container";
+    
+    public IEnumerable<PropertyHeaderV03> GetAllPropertyHeaders()
+    {
+        var result = new List<PropertyHeaderV03>();
+        result.AddRange(PropertyHeaders);
+        
+        foreach (var container in Containers)
+        {
+            result.AddRange(container.GetAllPropertyHeaders());
+        }
+
+        return result;
+    }
 
     public IEnumerable<APropertyV03> GetAllProperties()
     {

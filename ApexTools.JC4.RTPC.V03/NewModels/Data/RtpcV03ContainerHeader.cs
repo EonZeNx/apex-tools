@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ApexTools.JC4.RTPC.V03.Models.Data;
+namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03ContainerHeader

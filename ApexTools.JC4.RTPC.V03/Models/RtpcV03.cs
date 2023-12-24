@@ -1,8 +1,10 @@
-﻿using System.Xml;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Xml;
 using ApexTools.JC4.RTPC.V03.Abstractions;
 using ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.Models;
 
@@ -12,7 +14,7 @@ namespace ApexTools.JC4.RTPC.V03.Models;
 /// Container - <see cref="ContainerV03"/><br/>
 /// Variant value maps
 /// </summary>
-public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
+public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
 {
     public RtpcHeaderV03 Header = new();
     public RootContainerV03 RootContainer = new();
@@ -34,17 +36,7 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
     protected readonly ValueOffsetMapV03<(ulong, byte), VariantObjectId> ObjectIdOffsetMap = new(EVariantType.ObjectId, new U64BComparer());
     protected readonly ValueOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventOffsetMap = new(EVariantType.Event, new ListComparer<(uint, uint)>());
 
-    protected readonly Dictionary<uint, string> OffsetStringMap = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec2Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec3Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec4Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetMat3X3Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetMat4X4Map = new();
-    protected readonly Dictionary<uint, IList<uint>> OffsetU32ArrayMap = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetF32Map = new();
-    protected readonly Dictionary<uint, IList<byte>> OffsetByteMap = new();
-    protected readonly Dictionary<uint, (ulong, byte)> OffsetObjectIdMap = new();
-    protected readonly Dictionary<uint, IList<(uint, uint)>> OffsetEventMap = new();
+    protected readonly OffsetValueMaps OvMaps = new();
 
     #endregion
 
@@ -66,11 +58,6 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
         // Reference those oids as offsets instead of writing the values again
     }
 
-    public void ReadOffsetMap()
-    {
-        
-    }
-    
     #region IApex
     
     public void FromApexHeader(BinaryReader br)
@@ -88,12 +75,18 @@ public class RtpcV03 : IFromApexHeader, IFromApex, IToXml, IFromXml, IToApex
         // Get all properties
         // For each variant
         // Read value map
-        var allProperties = RootContainer.GetAllProperties();
-        var uniqueOffsets = allProperties
-            .Where(p => p.Header.VariantType is not
+        
+        var allPropertyHeaders = RootContainer.GetAllPropertyHeaders();
+        var uniqueOffsets = allPropertyHeaders
+            .Where(ph => ph.VariantType is not
                 (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32))
-            .GroupBy(p => BitConverter.ToUInt32(p.Header.RawData))
-            .Select(g => g.First());
+            .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
+            .Select(g => g.First())
+            .ToArray();
+        
+        // var originalOffset = br.Position();
+        // OvMaps.Create(br, uniqueOffsets);
+        // br.Seek(originalOffset);
         
         RootContainer.FromApex(br);
     }
