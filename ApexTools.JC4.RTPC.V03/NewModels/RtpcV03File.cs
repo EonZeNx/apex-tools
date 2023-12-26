@@ -40,20 +40,6 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToApex(BinaryWriter bw)
     {
-        var propertyCount = Container.CountAllPropertyHeaders();
-        var containerCount = Container.CountAllContainerHeaders();
-        
-        var propertyDataOffset = (uint) (
-            RtpcV03Header.SizeOf() + 
-            propertyCount * RtpcV03PropertyHeader.SizeOf() + 
-            containerCount * RtpcV03ContainerHeader.SizeOf() +
-            containerCount * 4 // Include valid property count at end of container body
-        );
-        
-        bw.Seek((int) propertyDataOffset, SeekOrigin.Begin);
-        bw.Write(VoMaps);
-        bw.Seek(0, SeekOrigin.Begin);
-
         var containerOffset = (uint) (RtpcV03Header.SizeOf() + 1 * RtpcV03ContainerHeader.SizeOf());
         Container.Header.BodyOffset = containerOffset;
         {
@@ -63,8 +49,20 @@ public class RtpcV03File : IApexFile, IXmlFile
             
             containerOffset += (uint) (propertySize + containerHeaderSize + validPropertySize);
         }
-        
         Container.SetBodyOffset(containerOffset);
+        
+        var propertyCount = Container.CountAllPropertyHeaders();
+        var containerCount = Container.CountAllContainerHeaders();
+        
+        var propertyDataOffset = (uint) (
+            RtpcV03Header.SizeOf() + RtpcV03ContainerHeader.SizeOf() + 4 +
+            propertyCount * RtpcV03PropertyHeader.SizeOf() + 
+            containerCount * (RtpcV03ContainerHeader.SizeOf() + 4) // Include valid property count at end of container body
+        );
+        
+        bw.Seek((int) propertyDataOffset, SeekOrigin.Begin);
+        bw.Write(VoMaps);
+        bw.Seek(0, SeekOrigin.Begin);
         
         bw.Write(Header);
         bw.Write(Container.Header);
