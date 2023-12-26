@@ -181,110 +181,115 @@ public static class RtpcV03ValueOffsetMapsExtensions
     {
         foreach (var value in voMaps.StringOffsetMap.Keys)
         {
+            bw.Align(EVariantType.String.GetAlignment());
+            
             var offset = (uint) bw.Position();
             voMaps.StringOffsetMap[value] = offset;
             
             bw.WriteStringZ(value);
         }
-        
+        ;
         foreach (var value in voMaps.Vec2OffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Vector2.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.Vec2OffsetMap[value] = offset;
             
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.Vec3OffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Vector3.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.Vec3OffsetMap[value] = offset;
             
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.Vec4OffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Vector4.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.Vec4OffsetMap[value] = offset;
             
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.Mat3OffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Matrix3X3.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.Mat3OffsetMap[value] = offset;
             
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.Mat4OffsetMap.Keys)
         {
-            bw.Align(16);
+            bw.Align(EVariantType.Matrix4X4.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.Mat4OffsetMap[value] = offset;
             
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.U32ArrayOffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.UInteger32Array.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.U32ArrayOffsetMap[value] = offset;
             
+            bw.Write((uint) value.Count);
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.F32ArrayOffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Float32Array.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.F32ArrayOffsetMap[value] = offset;
             
+            bw.Write((uint) value.Count);
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.ByteArrayOffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.ByteArray.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.ByteArrayOffsetMap[value] = offset;
             
+            bw.Write((uint) value.Count);
             bw.Write(value);
         }
-        
+        ;
         foreach (var value in voMaps.EventOffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.Event.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.EventOffsetMap[value] = offset;
             
-            bw.Write(value.Count);
+            bw.Write((uint) value.Count);
             foreach (var valueTuple in value)
             {
                 bw.Write(valueTuple.Item1);
                 bw.Write(valueTuple.Item2);
             }
         }
-        
+        ;
         foreach (var value in voMaps.ObjectIdOffsetMap.Keys)
         {
-            bw.Align(4);
+            bw.Align(EVariantType.ObjectId.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.ObjectIdOffsetMap[value] = offset;

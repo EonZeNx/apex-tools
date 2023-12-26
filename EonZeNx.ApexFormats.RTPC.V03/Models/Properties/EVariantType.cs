@@ -44,6 +44,26 @@ public static class EVariantTypeExtensions
         {EVariantType.Event, "Event"},
         {EVariantType.Total, "Total"},
     };
+    
+    public static readonly Dictionary<EVariantType, int> VariantAlignment = new()
+    {
+        {EVariantType.Unassigned, 4},
+        {EVariantType.UInteger32, 0},
+        {EVariantType.Float32, 0},
+        {EVariantType.String, 0},
+        {EVariantType.Vector2, 4},
+        {EVariantType.Vector3, 4},
+        {EVariantType.Vector4, 4},
+        {EVariantType.Matrix3X3, 4},
+        {EVariantType.Matrix4X4, 16},
+        {EVariantType.UInteger32Array, 4},
+        {EVariantType.Float32Array, 4},
+        {EVariantType.ByteArray, 16},
+        {EVariantType.Deprecated, 0},
+        {EVariantType.ObjectId, 4},
+        {EVariantType.Event, 4},
+        {EVariantType.Total, 0},
+    };
 
     public static readonly Dictionary<string, EVariantType> XmlNameVariant = VariantXmlName.ToDictionary(x => x.Value, x => x.Key);
 
@@ -55,5 +75,10 @@ public static class EVariantTypeExtensions
     public static EVariantType GetVariant(string xmlName)
     {
         return XmlNameVariant[xmlName];
+    }
+    
+    public static int GetAlignment(this EVariantType variantType)
+    {
+        return VariantAlignment[variantType];
     }
 }

@@ -131,7 +131,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetVec4Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueMat3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix3X3);
             for (var i = 0; i < uniqueMat3Count; i++)
@@ -144,7 +144,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetMat3X3Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueMat4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix4X4);
             for (var i = 0; i < uniqueMat4Count; i++)
@@ -157,7 +157,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetMat4X4Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueU32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.UInteger32Array);
             for (var i = 0; i < uniqueU32ArrayCount; i++)
@@ -170,7 +170,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetU32ArrayMap.Add(offset, u32Array);
             }
         }
-
+        ;
         {
             var uniqueF32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Float32Array);
             for (var i = 0; i < uniqueF32ArrayCount; i++)
@@ -183,7 +183,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetF32ArrayMap.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueByteArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ByteArray);
             for (var i = 0; i < uniqueByteArrayCount; i++)
@@ -196,7 +196,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetByteArrayMap.Add(offset, byteArray);
             }
         }
-
+        ;
         {
             var uniqueEventArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Event);
             for (var i = 0; i < uniqueEventArrayCount; i++)
@@ -218,7 +218,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetEventMap.Add(offset, eventArray);
             }
         }
-
+        ;
         {
             var uniqueOIdCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ObjectId);
             for (var i = 0; i < uniqueOIdCount; i++)
