@@ -18,15 +18,16 @@ public static class DataRtpcV03Parser
     
     public static void ToXml(RtpcV03File rtpcV03, string targetPath)
     {
-        rtpcV03.ToXml($"{targetPath}.xml");
+        var targetFilePath = Path.GetDirectoryName(targetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+
+        var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
+        rtpcV03.ToXml(targetXmlFilePath);
     }
     
     public static RtpcV03File FromXml(string targetPath)
     {
         var rtpcV03 = new RtpcV03File();
-        
-        // using var xr = XmlReader.Create(targetPath);
-        // rtpcV03.FromXml(xr);
         
         rtpcV03.FromXml(targetPath);
 
@@ -35,7 +36,12 @@ public static class DataRtpcV03Parser
     
     public static void ToApex(RtpcV03File rtpcV03, string targetPath)
     {
-        using var bw = new BinaryWriter(new FileStream($"{targetPath}{rtpcV03.ApexExtension}", FileMode.Create));
+        var targetFilePath = Path.GetDirectoryName(targetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+
+        var targetApexFilePath = Path.Join(targetFilePath, $"{targetFileName}{rtpcV03.ApexExtension}");
+        using var bw = new BinaryWriter(new FileStream(targetApexFilePath, FileMode.Create));
+        
         rtpcV03.ToApex(bw);
     }
 }
