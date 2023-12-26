@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using EonZeNx.ApexTools.Core;
+using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 
@@ -29,7 +30,7 @@ public static class RtpcV03HeaderExtension
     
     public static void Write(this BinaryWriter bw, RtpcV03Header header)
     {
-        bw.Write((uint) header.FourCc);
+        bw.Write(ByteUtils.ReverseBytes((uint) header.FourCc));
         bw.Write(header.Version);
     }
 }

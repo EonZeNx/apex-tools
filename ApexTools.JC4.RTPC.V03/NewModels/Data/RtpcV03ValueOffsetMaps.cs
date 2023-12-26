@@ -179,7 +179,11 @@ public static class RtpcV03ValueOffsetMapsExtensions
 {
     public static void Write(this BinaryWriter bw, RtpcV03ValueOffsetMaps voMaps)
     {
-        foreach (var value in voMaps.StringOffsetMap.Keys)
+        var strKeys = voMaps.StringOffsetMap.Keys.ToArray();
+        var sortedStrKeys = strKeys.ToList();
+        sortedStrKeys.Sort(StringComparer.Ordinal);
+        
+        foreach (var value in sortedStrKeys)
         {
             bw.Align(EVariantType.String.GetAlignment());
             

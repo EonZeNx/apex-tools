@@ -92,7 +92,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetStringMap.Add(offset, stringZ);
             }
         }
-
+        ;
         {
             var uniqueVec2Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector2);
             for (var i = 0; i < uniqueVec2Count; i++)
@@ -105,7 +105,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetVec2Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueVec3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector3);
             for (var i = 0; i < uniqueVec3Count; i++)
@@ -118,7 +118,7 @@ public class RtpcV03OffsetValueMaps
                 OffsetVec3Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueVec4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector4);
             for (var i = 0; i < uniqueVec4Count; i++)

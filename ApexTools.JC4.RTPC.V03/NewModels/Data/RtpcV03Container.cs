@@ -22,13 +22,20 @@ public struct RtpcV03Container
 
 public static class RtpcV03ContainerExtension
 {
-    public static uint DataSize(this RtpcV03Container container)
+    public static uint DataSize(this RtpcV03Container container, bool withValid = false)
     {
         var propertySize = container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
         var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOfWithValid();
+        const int validPropertySize = 4;
         
-        return (uint) (propertySize + containerHeaderSize +
-                       container.Containers.Sum(c => c.DataSize()));
+        var result = (uint) (propertySize + containerHeaderSize +
+                             container.Containers.Sum(c => c.DataSize()));
+        if (withValid)
+        {
+            result += validPropertySize;
+        }
+        
+        return result;
     }
     
     public static uint SetBodyOffset(this RtpcV03Container container, uint containerOffset)
@@ -37,7 +44,7 @@ public static class RtpcV03ContainerExtension
         {
             container.ContainerHeaders[i].BodyOffset = containerOffset;
             container.Containers[i].Header.BodyOffset = containerOffset;
-            containerOffset += container.Containers[i].DataSize();
+            containerOffset += container.Containers[i].DataSize(true);
         }
         
         for (var j = 0; j < container.Containers.Length; j++)

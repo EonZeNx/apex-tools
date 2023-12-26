@@ -44,9 +44,10 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container.Header.BodyOffset = containerOffset;
         {
             var propertySize = Container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
-            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOfWithValid();
+            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf();
+            const int validPropertySize = 4;
             
-            containerOffset += (uint) (propertySize + containerHeaderSize);
+            containerOffset += (uint) (propertySize + containerHeaderSize + validPropertySize);
         }
         Container.SetBodyOffset(containerOffset);
         
@@ -56,7 +57,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         var propertyDataOffset = (uint) (RtpcV03Header.SizeOf() + 
             RtpcV03ContainerHeader.SizeOfWithValid() +
             propertyCount * RtpcV03PropertyHeader.SizeOf() + 
-            containerCount * (RtpcV03ContainerHeader.SizeOfWithValid())
+            containerCount * RtpcV03ContainerHeader.SizeOfWithValid()
         );
         
         bw.Seek((int) propertyDataOffset, SeekOrigin.Begin);
