@@ -11,6 +11,7 @@ public struct RtpcV03ContainerHeader
     public ushort ContainerCount = 0;
     
     public static int SizeOf() => 4 + 4 + 2 + 2;
+    public static int SizeOfWithValid() => SizeOf() + 4;
 
     public RtpcV03ContainerHeader() {}
 }

@@ -25,10 +25,9 @@ public static class RtpcV03ContainerExtension
     public static uint DataSize(this RtpcV03Container container)
     {
         var propertySize = container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
-        var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf();
-        const int validPropertySize = 4;
+        var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOfWithValid();
         
-        return (uint) (propertySize + containerHeaderSize + validPropertySize +
+        return (uint) (propertySize + containerHeaderSize +
                        container.Containers.Sum(c => c.DataSize()));
     }
     
