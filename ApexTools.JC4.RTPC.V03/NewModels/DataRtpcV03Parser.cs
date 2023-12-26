@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-namespace ApexTools.JC4.RTPC.V03.NewModels;
+﻿namespace ApexTools.JC4.RTPC.V03.NewModels;
 
 public static class DataRtpcV03Parser
 {
@@ -8,29 +6,29 @@ public static class DataRtpcV03Parser
     {
         using var br = new BinaryReader(new FileStream(targetPath, FileMode.Open));
         
-        var sRtpcV03 = new RtpcV03File
+        var rtpcV03 = new RtpcV03File
         {
             ApexExtension = Path.GetExtension(targetPath)
         };
 
-        sRtpcV03.FromApex(br);
+        rtpcV03.FromApex(br);
             
-        return sRtpcV03;
+        return rtpcV03;
     }
     
     public static void ToXml(RtpcV03File rtpcV03, string targetPath)
     {
-        var settings = new XmlWriterSettings{ Indent = true, IndentChars = "\t" };
-        using var xw = XmlWriter.Create($"{targetPath}.xml", settings);
-        rtpcV03.ToXml(xw);
+        rtpcV03.ToXml($"{targetPath}.xml");
     }
     
     public static RtpcV03File FromXml(string targetPath)
     {
-        using var xr = XmlReader.Create(targetPath);
-        
         var rtpcV03 = new RtpcV03File();
-        rtpcV03.FromXml(xr);
+        
+        // using var xr = XmlReader.Create(targetPath);
+        // rtpcV03.FromXml(xr);
+        
+        rtpcV03.FromXml(targetPath);
 
         return rtpcV03;
     }

@@ -51,7 +51,8 @@ public class ValueOffsetMapV03<T, U> where T : notnull
 
     public void Create(IEnumerable<APropertyV03> properties, BinaryWriter bw)
     {
-        var unique = Filter(properties);
+        var variantProperties = properties.Where(p => p.Header.VariantType == Variant);
+        var unique = Filter(variantProperties);
         var sortedUnique = Sort(unique);
         
         foreach (var uniqueVariant in sortedUnique)

@@ -20,22 +20,24 @@ var targetExtension = Path.GetExtension(targetPath);
 if (ext.Contains(targetExtension))
 {
     LogUtils.LogLoading(targetFileName, "RTPC");
-    var rtpcV03 = RtpcV03Parser.FromApex(targetPath);
-
-    // var dataRtpcV03 = DataRtpcV03Parser.FromApex(targetPath);
+    // var rtpcV03 = RtpcV03Parser.FromApex(targetPath);
+    var dataRtpcV03 = DataRtpcV03Parser.FromApex(targetPath);
     
     LogUtils.LogProcessing(targetFileName);
-    RtpcV03Parser.ToXml(rtpcV03, targetPath);
+    // RtpcV03Parser.ToXml(rtpcV03, targetPath);
+    DataRtpcV03Parser.ToXml(dataRtpcV03, targetPath);
     
     LogUtils.LogComplete(targetFileName);
 }
 else if (targetExtension == ".xml")
 {
     LogUtils.LogLoading(targetFileName, "XML");
-    var rtpcV03 = RtpcV03Parser.FromXml(targetPath);
+    // var rtpcV03 = RtpcV03Parser.FromXml(targetPath);
+    var dataRtpcV03 = DataRtpcV03Parser.FromXml(targetPath);
     
     LogUtils.LogProcessing(targetFileName);
-    RtpcV03Parser.ToApex(rtpcV03, targetPath);
+    // RtpcV03Parser.ToApex(rtpcV03, targetPath);
+    DataRtpcV03Parser.ToApex(dataRtpcV03, targetPath);
     
     LogUtils.LogComplete(targetFileName);
 }

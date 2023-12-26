@@ -9,6 +9,8 @@ public struct RtpcV03ContainerHeader
     public uint BodyOffset = 0;
     public ushort PropertyCount = 0;
     public ushort ContainerCount = 0;
+    
+    public static int SizeOf() => 4 + 4 + 2 + 2;
 
     public RtpcV03ContainerHeader() {}
 }

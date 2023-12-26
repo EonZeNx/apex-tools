@@ -8,6 +8,8 @@ public struct RtpcV03Header
 {
     public EFourCc FourCc = EFourCc.Rtpc;
     public uint Version = 3;
+    
+    public static int SizeOf() => 4 + 4;
 
     public RtpcV03Header() {}
 }

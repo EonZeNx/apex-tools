@@ -42,6 +42,7 @@ public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
 
     public void CreateValueMaps(APropertyV03[] properties, BinaryWriter bw)
     {
+        // Order is specific
         StringOffsetMap.Create(properties, bw);
         Vec2OffsetMap.Create(properties, bw);
         Vec3OffsetMap.Create(properties, bw);
@@ -51,11 +52,8 @@ public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
         U32ArrayOffsetMap.Create(properties, bw);
         F32ArrayOffsetMap.Create(properties, bw);
         ByteArrayOffsetMap.Create(properties, bw);
-        ObjectIdOffsetMap.Create(properties, bw);
         EventOffsetMap.Create(properties, bw);
-        
-        // TODO: Byte array contains list of object ids
-        // Reference those oids as offsets instead of writing the values again
+        ObjectIdOffsetMap.Create(properties, bw);
     }
 
     #region IApex
@@ -72,18 +70,14 @@ public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
 
     public void FromApex(BinaryReader br)
     {
-        // Get all properties
-        // For each variant
-        // Read value map
-        
-        var allPropertyHeaders = RootContainer.GetAllPropertyHeaders();
-        var uniqueOffsets = allPropertyHeaders
-            .Where(ph => ph.VariantType is not
-                (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32))
-            .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
-            .Select(g => g.First())
-            .ToArray();
-        
+        // var allPropertyHeaders = RootContainer.GetAllPropertyHeaders();
+        // var uniqueOffsets = allPropertyHeaders
+        //     .Where(ph => ph.VariantType is not
+        //         (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32))
+        //     .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
+        //     .Select(g => g.First())
+        //     .ToArray();
+        //
         // var originalOffset = br.Position();
         // OvMaps.Create(br, uniqueOffsets);
         // br.Seek(originalOffset);
@@ -130,8 +124,9 @@ public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
 
     public void FromXml(XmlReader xr)
     {
-        xr.ReadToDescendant(RootContainer.XmlName);
+        xr.ReadToFollowing(XmlName);
         Extension = xr.GetAttribute(nameof(Extension)) ?? Extension;
+        xr.ReadToDescendant(RootContainer.XmlName);
         
         RootContainer.FromXml(xr);
     }

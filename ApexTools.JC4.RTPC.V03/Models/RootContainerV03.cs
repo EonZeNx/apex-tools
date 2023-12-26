@@ -144,16 +144,7 @@ public class RootContainerV03 : ContainerV03
 
     public void CreateFlatContainers()
     {
-        uint flatCount = 0;
-        foreach (var container in Containers)
-        {
-            flatCount += container.GetContainerCountFlat();
-        }
-
-        for (uint i = 0; i < flatCount; i++)
-        {
-            i += FlattenRecurse(Containers[i], i, true);
-        }
+        FlattenRecurse(this, 0xFFFFFFFF);
         
         var strappedContainers = new List<ContainerV03>(Containers);
         foreach (var container in Containers)
@@ -225,37 +216,35 @@ public class RootContainerV03 : ContainerV03
         PropertyHeaders[3] = new PropertyHeaderV03
         {
             NameHash = 0x6AE2DDA0,
-            RawData = BitConverter.GetBytes(Unknown01),
-            VariantType = EVariantType.UInteger32
+            RawData = new byte[4],
+            VariantType = EVariantType.UInteger32Array
         };
-        Properties[3] = new VariantU32Array(PropertyHeaders[3]);
+        Properties[3] = new VariantU32Array
+        {
+            Header = PropertyHeaders[3],
+            Value = orderedIndices, // TODO: Temp
+            Count = (ushort) orderedIndices.Count
+        };
 
         Header.PropertyCount = 4;
     }
     
-    public uint FlattenRecurse(ContainerV03 container, uint currentIndex, bool noParent = false)
+    public void FlattenRecurse(ContainerV03 container, uint parentIndex)
     {
-        uint flattenedChildren = 0;
         var objectIdHash = HashJenkinsL3.Hash("_object_id");
         
+        // Property sub-containers cannot have flattened children
         foreach (var subContainer in container.Containers)
         {
-            if (!noParent && !subContainer.Flat)
-            {
-                continue;
-            }
-
+            if (parentIndex != 0xFFFFFFFF && !subContainer.Flat) continue;
+            
             var objectId = subContainer.GetObjectId(objectIdHash);
             
-            OIdToParentIndex.Add(objectId, noParent ? 0xFFFFFFFF : currentIndex);
+            OIdToParentIndex.Add(objectId, parentIndex);
             OIdList.Add(objectId);
 
-            flattenedChildren += 1;
-            flattenedChildren += FlattenRecurse(subContainer, currentIndex + flattenedChildren);
+            FlattenRecurse(subContainer, (uint) OIdList.Count);
         }
-        
-
-        return flattenedChildren;
     }
 
     #endregion
