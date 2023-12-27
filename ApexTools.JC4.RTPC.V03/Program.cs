@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using ApexTools.JC4.RTPC.V03.NewModels;
+using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils;
 
@@ -19,20 +19,20 @@ var targetExtension = Path.GetExtension(targetPath);
 if (ext.Contains(targetExtension))
 {
     LogUtils.LogLoading(targetFileName, "RTPC");
-    var dataRtpcV03 = DataRtpcV03Parser.FromApex(targetPath);
+    var rtpcV03 = RtpcV03Parser.FromApex(targetPath);
     
     LogUtils.LogProcessing(targetFileName);
-    DataRtpcV03Parser.ToXml(dataRtpcV03, targetPath);
+    RtpcV03Parser.ToXml(rtpcV03, targetPath);
     
     LogUtils.LogComplete(targetFileName);
 }
 else if (targetExtension == ".xml")
 {
     LogUtils.LogLoading(targetFileName, "XML");
-    var dataRtpcV03 = DataRtpcV03Parser.FromXml(targetPath);
+    var rtpcV03 = RtpcV03Parser.FromXml(targetPath);
     
     LogUtils.LogProcessing(targetFileName);
-    DataRtpcV03Parser.ToApex(dataRtpcV03, targetPath);
+    RtpcV03Parser.ToApex(rtpcV03, targetPath);
     
     LogUtils.LogComplete(targetFileName);
 }

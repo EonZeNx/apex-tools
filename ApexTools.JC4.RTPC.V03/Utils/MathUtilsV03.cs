@@ -1,17 +1,18 @@
 ﻿using System.Numerics;
 
-namespace ApexTools.JC4.RTPC.V03;
+namespace ApexTools.JC4.RTPC.V03.Utils;
 
-public static class MathUtilsV03
+public class U64BComparer : IEqualityComparer<(ulong, byte)>
 {
-    public static bool F32ArrayEqual(float[] a, float[] b)
+    public bool Equals((ulong, byte) x, (ulong, byte) y)
     {
-        if (a.Length != b.Length)
-        {
-            return false;
-        }
+        return x.Item1 == y.Item1 && 
+               x.Item2 == y.Item2;
+    }
 
-        return !a.Where((t, i) => Math.Abs(t - b[i]) > 0.0001f).Any();
+    public int GetHashCode((ulong, byte) tuple)
+    {
+        return tuple.Item1.GetHashCode() ^ tuple.Item2.GetHashCode();
     }
 }
 
@@ -32,20 +33,6 @@ public class ListEqualityComparer<T> : IEqualityComparer<IList<T>>
             where o is not null
             select o.GetHashCode())
             .Aggregate(hash, (current, h) => current == 0 ? h : current ^ h);
-    }
-}
-
-public class U64BComparer : IEqualityComparer<(ulong, byte)>
-{
-    public bool Equals((ulong, byte) x, (ulong, byte) y)
-    {
-        return x.Item1 == y.Item1 && 
-               x.Item2 == y.Item2;
-    }
-
-    public int GetHashCode((ulong, byte) tuple)
-    {
-        return tuple.Item1.GetHashCode() ^ tuple.Item2.GetHashCode();
     }
 }
 

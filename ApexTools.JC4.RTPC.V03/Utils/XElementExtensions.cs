@@ -5,7 +5,7 @@ using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Utils;
+namespace ApexTools.JC4.RTPC.V03.Utils;
 
 public static class XElementExtensions
 {

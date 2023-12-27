@@ -1,22 +1,24 @@
-﻿using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+﻿using ApexTools.JC4.RTPC.V03.Models.Data;
+using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.Models;
 
-public class OffsetValueMaps
+public class RtpcV03OffsetValueMaps
 {
-    protected readonly Dictionary<uint, string> OffsetStringMap = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec2Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec3Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetVec4Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetMat3X3Map = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetMat4X4Map = new();
-    protected readonly Dictionary<uint, IList<uint>> OffsetU32ArrayMap = new();
-    protected readonly Dictionary<uint, IList<float>> OffsetF3Array2Map = new();
-    protected readonly Dictionary<uint, IList<byte>> OffsetByteArrayMap = new();
-    protected readonly Dictionary<uint, ulong> OffsetObjectIdMap = new();
-    protected readonly Dictionary<uint, IList<(uint, uint)>> OffsetEventMap = new();
-
+    public readonly Dictionary<uint, string> OffsetStringMap = new();
+    public readonly Dictionary<uint, IList<float>> OffsetVec2Map = new();
+    public readonly Dictionary<uint, IList<float>> OffsetVec3Map = new();
+    public readonly Dictionary<uint, IList<float>> OffsetVec4Map = new();
+    public readonly Dictionary<uint, IList<float>> OffsetMat3X3Map = new();
+    public readonly Dictionary<uint, IList<float>> OffsetMat4X4Map = new();
+    public readonly Dictionary<uint, IList<uint>> OffsetU32ArrayMap = new();
+    public readonly Dictionary<uint, IList<float>> OffsetF32ArrayMap = new();
+    public readonly Dictionary<uint, IList<byte>> OffsetByteArrayMap = new();
+    public readonly Dictionary<uint, ulong> OffsetObjectIdMap = new();
+    public readonly Dictionary<uint, IList<(uint, uint)>> OffsetEventMap = new();
+    
+    
     protected static IList<byte> ReadByteArray(BinaryReader br)
     {
         var result = new List<byte>();
@@ -64,8 +66,13 @@ public class OffsetValueMaps
         return result;
     }
     
-    protected static IList<float> ReadFixedF32Array(BinaryReader br, uint count)
+    protected static IList<float> ReadFixedF32Array(BinaryReader br, uint count = 0)
     {
+        // if (count == 0)
+        // {
+        //     count = br.ReadUInt32();
+        // }
+        
         var result = new List<float>();
         for (var i = 0; i < count; i++)
         {
@@ -75,7 +82,7 @@ public class OffsetValueMaps
         return result;
     }
 
-    public void Create(BinaryReader br, PropertyHeaderV03[] uniqueOffsets)
+    public void Create(BinaryReader br, RtpcV03PropertyHeader[] uniqueOffsets)
     {
         {
             var uniqueStringsCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.String);
@@ -86,7 +93,7 @@ public class OffsetValueMaps
                 OffsetStringMap.Add(offset, stringZ);
             }
         }
-
+        ;
         {
             var uniqueVec2Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector2);
             for (var i = 0; i < uniqueVec2Count; i++)
@@ -99,7 +106,7 @@ public class OffsetValueMaps
                 OffsetVec2Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueVec3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector3);
             for (var i = 0; i < uniqueVec3Count; i++)
@@ -112,20 +119,20 @@ public class OffsetValueMaps
                 OffsetVec3Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueVec4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector4);
             for (var i = 0; i < uniqueVec4Count; i++)
             {
-                br.Align(16);
+                br.Align(4);
 
-                var offset = (uint)br.Position();
+                var offset = (uint) br.Position();
                 var f32Array = ReadFixedF32Array(br, 4);
 
                 OffsetVec4Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueMat3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix3X3);
             for (var i = 0; i < uniqueMat3Count; i++)
@@ -138,7 +145,7 @@ public class OffsetValueMaps
                 OffsetMat3X3Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueMat4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix4X4);
             for (var i = 0; i < uniqueMat4Count; i++)
@@ -151,7 +158,7 @@ public class OffsetValueMaps
                 OffsetMat4X4Map.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueU32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.UInteger32Array);
             for (var i = 0; i < uniqueU32ArrayCount; i++)
@@ -164,7 +171,7 @@ public class OffsetValueMaps
                 OffsetU32ArrayMap.Add(offset, u32Array);
             }
         }
-
+        ;
         {
             var uniqueF32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Float32Array);
             for (var i = 0; i < uniqueF32ArrayCount; i++)
@@ -174,10 +181,10 @@ public class OffsetValueMaps
                 var offset = (uint)br.Position();
                 var f32Array = ReadF32Array(br);
 
-                OffsetF3Array2Map.Add(offset, f32Array);
+                OffsetF32ArrayMap.Add(offset, f32Array);
             }
         }
-
+        ;
         {
             var uniqueByteArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ByteArray);
             for (var i = 0; i < uniqueByteArrayCount; i++)
@@ -190,7 +197,7 @@ public class OffsetValueMaps
                 OffsetByteArrayMap.Add(offset, byteArray);
             }
         }
-
+        ;
         {
             var uniqueEventArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Event);
             for (var i = 0; i < uniqueEventArrayCount; i++)
@@ -212,7 +219,7 @@ public class OffsetValueMaps
                 OffsetEventMap.Add(offset, eventArray);
             }
         }
-
+        ;
         {
             var uniqueOIdCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ObjectId);
             for (var i = 0; i < uniqueOIdCount; i++)

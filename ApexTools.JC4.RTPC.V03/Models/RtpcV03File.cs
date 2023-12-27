@@ -1,13 +1,14 @@
 ﻿using System.Xml.Linq;
-using ApexTools.JC4.RTPC.V03.NewModels.Data;
+using ApexTools.JC4.RTPC.V03.Abstractions;
+using ApexTools.JC4.RTPC.V03.Models.Data;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
-public class RtpcV03File : IApexFile, IXDocFile
+public class RtpcV03File : IApexFile, IXmlFile
 {
     public RtpcV03Header Header;
     public RtpcV03Container Container;
@@ -69,7 +70,7 @@ public class RtpcV03File : IApexFile, IXDocFile
         bw.Write(Container, VoMaps);
     }
 
-    public void FromXDoc(string targetPath)
+    public void FromXml(string targetPath)
     {
         var xd = XDocument.Load(targetPath);
         VoMaps.Create(xd);
@@ -85,24 +86,24 @@ public class RtpcV03File : IApexFile, IXDocFile
         Container = rtpcNode.ReadRtpcV03Container();
     }
 
-    public void ToXDoc(string targetPath)
+    public void ToXml(string targetPath)
     {
         if (Settings.PerformHashLookUp.Value)
         {
             Container.LookupNameHash();
         }
         
-        if (Settings.SortRtpcProperties.Value)
-        {
-            Container.Sort();
-        }
+        // if (Settings.SortRtpcProperties.Value)
+        // {
+        //     Container.Sort();
+        // }
         
         var xd = new XDocument();
         var xe = new XElement(XmlName);
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
         
-        xe.Write(Container, OvMaps);
+        xe.Write(Container, OvMaps, false);
         
         xd.Add(xe);
         xd.Save(targetPath);

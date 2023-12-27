@@ -3,10 +3,11 @@ using System.Numerics;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using ApexTools.JC4.RTPC.V03.Utils;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
+namespace ApexTools.JC4.RTPC.V03.Models;
 
 public class RtpcV03ValueOffsetMaps
 {

@@ -1,6 +1,4 @@
-﻿using ApexTools.JC4.RTPC.V03.Abstractions;
-
-namespace ApexTools.JC4.RTPC.V03.NewModels;
+﻿namespace ApexTools.JC4.RTPC.V03.Abstractions;
 
 public interface IApexFile : IFromApex, IToApex
 {

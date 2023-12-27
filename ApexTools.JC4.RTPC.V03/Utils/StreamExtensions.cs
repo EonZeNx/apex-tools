@@ -1,6 +1,6 @@
-﻿namespace ApexTools.JC4.RTPC.V03;
+﻿namespace ApexTools.JC4.RTPC.V03.Utils;
 
-public static class StreamUtilsV03
+public static class StreamExtensions
 {
     public static void Write(this BinaryWriter bw, IList<float> values, bool writeCount = false)
     {

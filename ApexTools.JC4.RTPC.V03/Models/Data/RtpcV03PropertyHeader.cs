@@ -1,26 +1,29 @@
 ﻿using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using ApexTools.JC4.RTPC.V03.NewModels.Utils;
+using ApexTools.JC4.RTPC.V03.Utils;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
+namespace ApexTools.JC4.RTPC.V03.Models.Data;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03PropertyHeader
 {
-    public uint NameHash = 0;
-    public byte[] RawData = new byte[4];
-    public EVariantType VariantType = EVariantType.Unassigned;
+    public uint NameHash;
+    public byte[] RawData;
+    public EVariantType VariantType;
 
     public string XmlData = string.Empty;
     public string Name = string.Empty;
     
     public static int SizeOf() => 4 + 4 + 1;
 
-    public RtpcV03PropertyHeader(){}
+    public RtpcV03PropertyHeader()
+    {
+        NameHash = 0;
+        RawData = new byte[4];
+        VariantType = EVariantType.Unassigned;
+    }
 }
 
 public static class RtpcV03PropertyHeaderExtension

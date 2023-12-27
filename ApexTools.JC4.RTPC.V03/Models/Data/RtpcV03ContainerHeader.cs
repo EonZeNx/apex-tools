@@ -1,21 +1,25 @@
-﻿using System.Runtime.InteropServices;
-using EonZeNx.ApexTools.Core.Utils.Hash;
+﻿using EonZeNx.ApexTools.Core.Utils.Hash;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
+namespace ApexTools.JC4.RTPC.V03.Models.Data;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03ContainerHeader
 {
-    public uint NameHash = 0;
-    public uint BodyOffset = 0;
-    public ushort PropertyCount = 0;
-    public ushort ContainerCount = 0;
+    public uint NameHash;
+    public uint BodyOffset;
+    public ushort PropertyCount;
+    public ushort ContainerCount;
     
     public string Name = string.Empty;
     
     public static int SizeOf(bool withValid = false) => 4 + 4 + 2 + 2 + (withValid ? 4 : 0);
 
-    public RtpcV03ContainerHeader() {}
+    public RtpcV03ContainerHeader()
+    {
+        NameHash = 0;
+        BodyOffset = 0;
+        PropertyCount = 0;
+        ContainerCount = 0;
+    }
 }
 
 public static class RtpcV03ContainerHeaderExtension

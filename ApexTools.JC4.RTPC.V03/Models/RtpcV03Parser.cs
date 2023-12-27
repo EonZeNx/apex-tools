@@ -1,44 +1,46 @@
-﻿using System.Xml;
-
-namespace ApexTools.JC4.RTPC.V03.Models;
+﻿namespace ApexTools.JC4.RTPC.V03.Models;
 
 public static class RtpcV03Parser
 {
-    public static RtpcV03 FromApex(string targetPath)
+    public static RtpcV03File FromApex(string targetPath)
     {
         using var br = new BinaryReader(new FileStream(targetPath, FileMode.Open));
         
-        var sRtpcV03 = new RtpcV03
+        var rtpcV03 = new RtpcV03File
         {
-            Extension = Path.GetExtension(targetPath)
+            ApexExtension = Path.GetExtension(targetPath)
         };
 
-        sRtpcV03.FromApexHeader(br);
-        sRtpcV03.FromApex(br);
+        rtpcV03.FromApex(br);
             
-        return sRtpcV03;
+        return rtpcV03;
     }
     
-    public static void ToXml(RtpcV03 rtpcV03, string targetPath)
+    public static void ToXml(RtpcV03File rtpcV03, string targetPath)
     {
-        var settings = new XmlWriterSettings{ Indent = true, IndentChars = "\t" };
-        using var xw = XmlWriter.Create($"{targetPath}.xml", settings);
-        rtpcV03.ToXml(xw);
+        var targetFilePath = Path.GetDirectoryName(targetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+
+        var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
+        rtpcV03.ToXml(targetXmlFilePath);
     }
     
-    public static RtpcV03 FromXml(string targetPath)
+    public static RtpcV03File FromXml(string targetPath)
     {
-        using var xr = XmlReader.Create(targetPath);
-        
-        var rtpcV03 = new RtpcV03();
-        rtpcV03.FromXml(xr);
+        var rtpcV03 = new RtpcV03File();
+        rtpcV03.FromXml(targetPath);
 
         return rtpcV03;
     }
     
-    public static void ToApex(RtpcV03 rtpcV03, string targetPath)
+    public static void ToApex(RtpcV03File rtpcV03, string targetPath)
     {
-        using var bw = new BinaryWriter(new FileStream($"{targetPath}{rtpcV03.Extension}", FileMode.Create));
+        var targetFilePath = Path.GetDirectoryName(targetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+
+        var targetApexFilePath = Path.Join(targetFilePath, $"{targetFileName}{rtpcV03.ApexExtension}");
+        using var bw = new BinaryWriter(new FileStream(targetApexFilePath, FileMode.Create));
+        
         rtpcV03.ToApex(bw);
     }
 }

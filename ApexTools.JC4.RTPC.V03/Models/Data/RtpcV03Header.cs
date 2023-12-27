@@ -1,18 +1,20 @@
-﻿using System.Runtime.InteropServices;
-using EonZeNx.ApexTools.Core;
+﻿using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Utils;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
+namespace ApexTools.JC4.RTPC.V03.Models.Data;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03Header
 {
-    public EFourCc FourCc = EFourCc.Rtpc;
-    public uint Version = 3;
+    public EFourCc FourCc;
+    public uint Version;
     
     public static int SizeOf() => 4 + 4;
 
-    public RtpcV03Header() {}
+    public RtpcV03Header()
+    {
+        FourCc = EFourCc.Rtpc;
+        Version = 3;
+    }
 }
 
 public static class RtpcV03HeaderExtension

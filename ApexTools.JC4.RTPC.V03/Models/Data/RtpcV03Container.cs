@@ -1,27 +1,83 @@
-﻿using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using ApexTools.JC4.RTPC.V03.NewModels.Utils;
+﻿using System.Xml.Linq;
+using ApexTools.JC4.RTPC.V03.Utils;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 
-namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
+namespace ApexTools.JC4.RTPC.V03.Models.Data;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct RtpcV03Container
 {
-    public RtpcV03ContainerHeader Header = new();
-    public RtpcV03PropertyHeader[] PropertyHeaders = Array.Empty<RtpcV03PropertyHeader>();
-    public RtpcV03ContainerHeader[] ContainerHeaders = Array.Empty<RtpcV03ContainerHeader>();
-    public uint ValidProperties = 0;
+    public RtpcV03ContainerHeader Header;
+    public RtpcV03PropertyHeader[] PropertyHeaders;
+    public RtpcV03ContainerHeader[] ContainerHeaders;
+    public uint ValidProperties;
 
     public RtpcV03Container[] Containers = Array.Empty<RtpcV03Container>();
 
     public static string XmlName = "Container";
 
-    public RtpcV03Container() {}
+    public RtpcV03Container()
+    {
+        Header = new RtpcV03ContainerHeader();
+        PropertyHeaders = Array.Empty<RtpcV03PropertyHeader>();
+        ContainerHeaders = Array.Empty<RtpcV03ContainerHeader>();
+        ValidProperties = 0;
+    }
 }
 
 public static class RtpcV03ContainerExtension
 {
+    public static List<uint> ClassHashes = new()
+    {
+        // 49639034,
+        // 130186728,
+        // 131178563,
+        // 223103978,
+        // 302102125,
+        // 349766449,
+        // 784662036,
+        // 854750954,
+        // 985770513,
+        // 1078578751,
+        // 1089081654,
+        // 1256626520,
+        // 1263718194,
+        // 1267387985,
+        // 1310083454,
+        // 1313213895,
+        // 1313580645,
+        // 1516962764,
+        // 1538251111,
+        // 1603476123,
+        // TODO: This is fucked 1713244665,
+        // 1732484761,
+        // 1822804832,
+        // 1891047768,
+        // 2029116022,
+        // 2071185270,
+        // 2350009519,
+        // 2400941364,
+        // 2495072499,
+        // 2510826771,
+        // 3166021335,
+        // 3221305917,
+        // 3283921524,
+        // 3359915272,
+        // 3431567010,
+        // 3431661127,
+        // TODO: This is fucked 3457537195,
+        // 3478510451,
+        // 3511785762,
+        // 3548386982,
+        // 3608552463,
+        // 3665801671,
+        // 3672051056,
+        // 3734839025,
+        // 3788215443,
+        // 4029389064,
+        // 4095556453,
+        // 4231742465
+    };
+    
     public static void LookupNameHash(this ref RtpcV03Container container)
     {
         container.Header.LookupNameHash();
@@ -39,11 +95,24 @@ public static class RtpcV03ContainerExtension
     
     public static void Sort(this ref RtpcV03Container container)
     {
-        container.PropertyHeaders = container.PropertyHeaders
-            .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
-            .ThenBy(ph => ph.Name)
-            .ThenBy(ph => ph.NameHash)
+        // TODO: Temporary
+        var uniqueClass = container.PropertyHeaders
+            .Where(h => ClassHashes.Contains(BitConverter.ToUInt32(h.RawData)))
             .ToArray();
+        if (uniqueClass.Length == 1)
+        {
+            container.PropertyHeaders = container.PropertyHeaders
+                .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
+                .ThenBy(ph => ph.Name)
+                .ThenBy(ph => ph.NameHash)
+                .ToArray();
+        }
+        
+        // container.PropertyHeaders = container.PropertyHeaders
+        //     .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
+        //     .ThenBy(ph => ph.Name)
+        //     .ThenBy(ph => ph.NameHash)
+        //     .ToArray();
 
         for (var i = 0; i < container.Containers.Length; i++)
         {
@@ -158,8 +227,22 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
+    public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps, bool performCheck = false)
     {
+        // if (performCheck)
+        // {
+        //     var uniqueClass = container.PropertyHeaders
+        //         .Where(h => ClassHashes.Contains(BitConverter.ToUInt32(h.RawData)))
+        //         .ToArray();
+        //     if (uniqueClass.Length != 1)
+        //     {
+        //         return;
+        //     }
+        //
+        //     var classHash = BitConverter.ToUInt32(uniqueClass[0].RawData);
+        //     ClassHashes.Remove(classHash);
+        // }
+        
         var xe = new XElement(RtpcV03Container.XmlName);
         
         xe.WriteNameOrHash(container.Header.NameHash, container.Header.Name);
