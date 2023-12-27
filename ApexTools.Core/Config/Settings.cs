@@ -16,7 +16,7 @@ public static class Settings
         .SetDescription("Track progress of each file");
     
     public static Setting<bool> AutoClose { get; set; } = Setting<bool>
-        .Create(true)
+        .Create(false)
         .SetName(nameof(AutoClose))
         .SetDescription("Automatically close the tool after an action");
     
@@ -116,6 +116,8 @@ public static class Settings
             throw new XmlSchemaException($"{XmlName} does not exist in file");
         }
 
+        var allSettings = settingsXElement.Elements(Setting<bool>.XmlName).ToArray();
+
         LogProgress.Value = LoadSetting(settingsXElement, LogProgress);
         AutoClose.Value = LoadSetting(settingsXElement, AutoClose);
         DatabasePath.Value = LoadSetting(settingsXElement, DatabasePath);
@@ -156,7 +158,18 @@ public static class Settings
     private static T LoadSetting<T>(this XContainer xContainer, Setting<T> setting)
     {
         var settingNode = xContainer.Element(Setting<T>.XmlName);
-        if (settingNode is null)
+        var settingNameNode = settingNode?.Element(nameof(setting.Name));
+        
+        while (settingNode is not null)
+        {
+            if (settingNameNode?.Value == setting.Name) break;
+            if (settingNode.NextNode is null) break;
+            
+            settingNode = (XElement) settingNode.NextNode;
+            settingNameNode = settingNode?.Element(nameof(setting.Name));
+        }
+        
+        if (settingNameNode?.Value != setting.Name)
         {
             return setting.Value;
         }

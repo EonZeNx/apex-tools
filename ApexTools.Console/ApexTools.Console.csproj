@@ -9,16 +9,24 @@
         <RootNamespace>ApexTools.Console</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
     <ItemGroup>
-      <ProjectReference Include="..\ApexFormat.RTPC.V03.JC4\ApexFormat.RTPC.V03.JC4.csproj" />
-      <ProjectReference Include="..\ApexFormat.AAF.V01\ApexFormat.AAF.V01.csproj" />
-      <ProjectReference Include="..\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj" />
-      <ProjectReference Include="..\ApexFormat.IRTPC.V01.Debug\ApexFormat.IRTPC.V01.Debug.csproj" />
-      <ProjectReference Include="..\ApexFormat.IRTPC.V01\ApexFormat.IRTPC.V01.csproj" />
-      <ProjectReference Include="..\ApexFormat.RTPC.V03\ApexFormat.RTPC.V03.csproj" />
-      <ProjectReference Include="..\ApexFormat.SARC.V02\ApexFormat.SARC.V02.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03.JC4\ApexFormat.RTPC.V03.JC4.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.AAF.V01\ApexFormat.AAF.V01.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.IRTPC.V01.Debug\ApexFormat.IRTPC.V01.Debug.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.IRTPC.V01\ApexFormat.IRTPC.V01.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03\ApexFormat.RTPC.V03.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.SARC.V02\ApexFormat.SARC.V02.csproj" />
       <ProjectReference Include="..\ApexTools.Core\ApexTools.Core.csproj" />
-      <ProjectReference Include="..\ApexTools.PassThrough\ApexTools.PassThrough.csproj" />
+      <ProjectReference Include="..\ApexTools.Chain\ApexTools.Chain.csproj" />
     </ItemGroup>
 
 </Project>

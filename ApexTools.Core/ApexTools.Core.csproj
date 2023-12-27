@@ -14,4 +14,10 @@
       <Folder Include="db" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="db\ApexTools.Core.db">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

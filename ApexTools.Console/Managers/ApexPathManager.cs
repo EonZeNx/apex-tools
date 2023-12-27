@@ -5,12 +5,12 @@ using ApexFormat.RTPC.V03.JC4.Managers;
 using ApexFormat.RTPC.V03.Managers;
 using ApexFormat.SARC.V02.Managers;
 using ApexFormat.SARC.V02.Models;
+using ApexTools.Chain.Managers;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Config;
 using ApexTools.Core.Exceptions;
 using ApexTools.Core.Utils;
-using ApexTools.PassThrough.Managers;
 
 namespace ApexTools.Console.Managers;
 
@@ -33,7 +33,7 @@ public class ApexPathManager
 
         IPathProcessor processor = fourCc switch
         {
-            EFourCc.Aaf => new AafSarcPassThroughManager(FilePath),
+            EFourCc.Aaf => new AafSarcChainManager(FilePath),
             EFourCc.Rtpc => Settings.RtpcUseJc4.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
