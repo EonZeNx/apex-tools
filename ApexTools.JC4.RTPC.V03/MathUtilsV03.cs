@@ -1,4 +1,6 @@
-﻿namespace ApexTools.JC4.RTPC.V03;
+﻿using System.Numerics;
+
+namespace ApexTools.JC4.RTPC.V03;
 
 public static class MathUtilsV03
 {
@@ -13,7 +15,7 @@ public static class MathUtilsV03
     }
 }
 
-public class ListComparer<T> : IEqualityComparer<IList<T>>
+public class ListEqualityComparer<T> : IEqualityComparer<IList<T>>
 {
     public bool Equals(IList<T>? x, IList<T>? y)
     {
@@ -44,5 +46,29 @@ public class U64BComparer : IEqualityComparer<(ulong, byte)>
     public int GetHashCode((ulong, byte) tuple)
     {
         return tuple.Item1.GetHashCode() ^ tuple.Item2.GetHashCode();
+    }
+}
+
+public class ListComparer<T> : Comparer<IList<T>> where T : INumber<T>
+{
+    public override int Compare(IList<T>? x, IList<T>? y)
+    {
+        if (x is null) return 1;
+        if (y is null) return -1;
+
+        if (x.Count != y.Count)
+        {
+            return x.Count < y.Count ? -1 : 1;
+        }
+
+        for (var i = 0; i < x.Count; i++)
+        {
+            if (x[i] != y[i])
+            {
+                return x[i] < y[i] ? -1 : 1;
+            }
+        }
+
+        return 0;
     }
 }

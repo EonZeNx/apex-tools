@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using System.Xml;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using ApexTools.JC4.RTPC.V03.NewModels.Utils;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
-using EonZeNx.ApexTools.Core.Utils;
+using EonZeNx.ApexTools.Config;
+using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 
@@ -13,7 +15,8 @@ public struct RtpcV03PropertyHeader
     public byte[] RawData = new byte[4];
     public EVariantType VariantType = EVariantType.Unassigned;
 
-    public string XmlData = "";
+    public string XmlData = string.Empty;
+    public string Name = string.Empty;
     
     public static int SizeOf() => 4 + 4 + 1;
 
@@ -32,6 +35,11 @@ public static class RtpcV03PropertyHeaderExtension
         };
 
         return result;
+    }
+    
+    public static void LookupNameHash(this ref RtpcV03PropertyHeader propertyHeader)
+    {
+        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash);
     }
 
     private static IList<float> ParseF32Array(string data, int count = 0)
@@ -63,7 +71,9 @@ public static class RtpcV03PropertyHeaderExtension
     private static IList<byte> ParseByteArray(string data, int count = 0)
     {
         var strValues = data.Split(",");
-        var values = Array.ConvertAll(strValues, byte.Parse);
+        var values = strValues
+            .Select(s => byte.Parse(s, NumberStyles.HexNumber))
+            .ToArray();
 
         if (count != 0 && values.Length != count)
         {
@@ -120,13 +130,14 @@ public static class RtpcV03PropertyHeaderExtension
                 bw.Write(voMaps.ByteArrayOffsetMap[byteValues]);
                 break;
             case EVariantType.ObjectId:
-                var oidValue = ulong.Parse(header.XmlData);
+                var oidValue = ulong.Parse(header.XmlData, NumberStyles.HexNumber);
                 bw.Write(voMaps.ObjectIdOffsetMap[oidValue]);
                 break;
             case EVariantType.Event:
                 var strValues = header.XmlData.Split(",");
                 var eventArray = strValues
-                    .Select(sv => Array.ConvertAll(sv.Split("="), uint.Parse))
+                    .Select(sv => sv.Split("=")
+                        .Select(s => uint.Parse(s, NumberStyles.HexNumber)).ToArray())
                     .Select(events => (events[0], events[1]))
                     .ToList();
                 bw.Write(voMaps.EventOffsetMap[eventArray]);
@@ -141,84 +152,15 @@ public static class RtpcV03PropertyHeaderExtension
         bw.Write((byte) header.VariantType);
     }
 
-    public static void WriteRtpcV03Property(this XmlWriter xw, RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
-    {
-        xw.WriteStartElement($"{header.VariantType}");
-        
-        xw.WriteAttributeString(nameof(header.NameHash), $"{header.NameHash}");
-
-        var uint32Data = BitConverter.ToUInt32(header.RawData);
-        switch (header.VariantType)
-        {
-            case EVariantType.Unassigned:
-                break;
-            case EVariantType.UInteger32:
-                xw.WriteValue(uint32Data);
-                break;
-            case EVariantType.Float32:
-                var floatValue = BitConverter.ToSingle(header.RawData);
-                xw.WriteValue(floatValue);
-                break;
-            case EVariantType.String:
-                xw.WriteValue(ovMaps.OffsetStringMap[uint32Data]);
-                break;
-            case EVariantType.Vector2:
-                var vector2 = ovMaps.OffsetVec2Map[uint32Data];
-                xw.WriteValue(string.Join(",", vector2));
-                break;
-            case EVariantType.Vector3:
-                var vector3 = ovMaps.OffsetVec3Map[uint32Data];
-                xw.WriteValue(string.Join(",", vector3));
-                break;
-            case EVariantType.Vector4:
-                var vector4 = ovMaps.OffsetVec4Map[uint32Data];
-                xw.WriteValue(string.Join(",", vector4));
-                break;
-            case EVariantType.Matrix3X3:
-                var matrix3 = ovMaps.OffsetMat3X3Map[uint32Data];
-                xw.WriteValue(string.Join(",", matrix3));
-                break;
-            case EVariantType.Matrix4X4:
-                var matrix4 = ovMaps.OffsetMat4X4Map[uint32Data];
-                xw.WriteValue(string.Join(",", matrix4));
-                break;
-            case EVariantType.UInteger32Array:
-                var uint32Array = ovMaps.OffsetU32ArrayMap[uint32Data];
-                xw.WriteValue(string.Join(",", uint32Array));
-                break;
-            case EVariantType.Float32Array:
-                var floatArray = ovMaps.OffsetF32ArrayMap[uint32Data];
-                xw.WriteValue(string.Join(",", floatArray));
-                break;
-            case EVariantType.ByteArray:
-                var byteArray = ovMaps.OffsetByteArrayMap[uint32Data];
-                xw.WriteValue(string.Join(",", byteArray));
-                break;
-            case EVariantType.Deprecated:
-                break;
-            case EVariantType.ObjectId:
-                var objectId = ovMaps.OffsetObjectIdMap[uint32Data];
-                xw.WriteValue($"{objectId}");
-                break;
-            case EVariantType.Event:
-                var eventPairArray = ovMaps.OffsetEventMap[uint32Data];
-                var eventPairStringArray = eventPairArray.Select(ep => $"{ep.Item1}={ep.Item2}");
-                var eventString = string.Join(",", eventPairStringArray);
-                xw.WriteValue(eventString);
-                break;
-            case EVariantType.Total:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-        
-        xw.WriteEndElement();
-    }
-    
     public static void Write(this XElement pxe, RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
     {
+        if (Settings.SkipUnassignedRtpcProperties.Value && header.VariantType == EVariantType.Unassigned)
+        {
+            return;
+        }
+        
         var xe = new XElement(header.VariantType.GetXmlName());
-        xe.SetAttributeValue(nameof(header.NameHash), header.NameHash);
+        xe.WriteNameOrHash(header.NameHash, header.Name);
 
         var uint32Data = BitConverter.ToUInt32(header.RawData);
         switch (header.VariantType)
@@ -265,17 +207,17 @@ public static class RtpcV03PropertyHeaderExtension
                 break;
             case EVariantType.ByteArray:
                 var byteArray = ovMaps.OffsetByteArrayMap[uint32Data];
-                xe.SetValue(string.Join(",", byteArray));
+                xe.SetValue(string.Join(",", byteArray.Select(b => $"{b:X2}")));
                 break;
             case EVariantType.Deprecated:
                 break;
             case EVariantType.ObjectId:
                 var objectId = ovMaps.OffsetObjectIdMap[uint32Data];
-                xe.SetValue(objectId);
+                xe.SetValue($"{objectId:X16}");
                 break;
             case EVariantType.Event:
                 var eventPairArray = ovMaps.OffsetEventMap[uint32Data];
-                var eventPairStringArray = eventPairArray.Select(ep => $"{ep.Item1}={ep.Item2}");
+                var eventPairStringArray = eventPairArray.Select(ep => $"{ep.Item1:X8}={ep.Item2:X8}");
                 var eventString = string.Join(",", eventPairStringArray);
                 xe.SetValue(eventString);
                 break;
@@ -290,11 +232,11 @@ public static class RtpcV03PropertyHeaderExtension
 
     public static RtpcV03PropertyHeader ReadRtpcV03PropertyHeader(this XElement xe)
     {
-        var result = new RtpcV03PropertyHeader();
-        var nameHashAttr = xe.Attribute(nameof(result.NameHash));
-
-        result.NameHash = uint.Parse(nameHashAttr?.Value ?? "0");
-        result.VariantType = EVariantTypeExtensions.GetVariant(xe.Name.ToString());
+        var result = new RtpcV03PropertyHeader
+        {
+            NameHash = xe.GetNameHash(),
+            VariantType = xe.GetVariant()
+        };
 
         switch (result.VariantType)
         {

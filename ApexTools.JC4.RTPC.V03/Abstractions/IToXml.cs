@@ -7,3 +7,8 @@ public interface IToXml
     string XmlName { get; }
     void ToXml(XmlWriter xw);
 }
+
+public interface IToXDoc
+{
+    void ToXDoc(string path);
+}

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using System.Xml;
 using System.Xml.Linq;
+using ApexTools.JC4.RTPC.V03.NewModels.Utils;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 
 namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
@@ -22,10 +22,39 @@ public struct RtpcV03Container
 
 public static class RtpcV03ContainerExtension
 {
+    public static void LookupNameHash(this ref RtpcV03Container container)
+    {
+        container.Header.LookupNameHash();
+        
+        for (var i = 0; i < container.PropertyHeaders.Length; i++)
+        {
+            container.PropertyHeaders[i].LookupNameHash();
+        }
+        
+        for (var i = 0; i < container.Containers.Length; i++)
+        {
+            container.Containers[i].LookupNameHash();
+        }
+    }
+    
+    public static void Sort(this ref RtpcV03Container container)
+    {
+        container.PropertyHeaders = container.PropertyHeaders
+            .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
+            .ThenBy(ph => ph.Name)
+            .ThenBy(ph => ph.NameHash)
+            .ToArray();
+
+        for (var i = 0; i < container.Containers.Length; i++)
+        {
+            container.Containers[i].Sort();
+        }
+    }
+    
     public static uint DataSize(this RtpcV03Container container, bool withValid = false)
     {
         var propertySize = container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
-        var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOfWithValid();
+        var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf(true);
         const int validPropertySize = 4;
         
         var result = (uint) (propertySize + containerHeaderSize +
@@ -55,7 +84,7 @@ public static class RtpcV03ContainerExtension
         return containerOffset;
     }
     
-    public static List<RtpcV03PropertyHeader> GetAllPropertyHeaders(this RtpcV03Container container)
+    public static IEnumerable<RtpcV03PropertyHeader> GetAllPropertyHeaders(this RtpcV03Container container)
     {
         var result = new List<RtpcV03PropertyHeader>(container.PropertyHeaders);
         foreach (var subContainer in container.Containers)
@@ -132,7 +161,8 @@ public static class RtpcV03ContainerExtension
     public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
     {
         var xe = new XElement(RtpcV03Container.XmlName);
-        xe.SetAttributeValue(nameof(container.Header.NameHash), container.Header.NameHash);
+        
+        xe.WriteNameOrHash(container.Header.NameHash, container.Header.Name);
         
         foreach (var propertyHeader in container.PropertyHeaders)
         {
@@ -146,35 +176,18 @@ public static class RtpcV03ContainerExtension
         
         pxe.Add(xe);
     }
-
-    public static void WriteRtpcV03Container(this XmlWriter xw, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
-    {
-        xw.WriteStartElement("Container");
-        
-        xw.WriteAttributeString(nameof(container.Header.NameHash), $"{container.Header.NameHash}");
-        foreach (var propertyHeader in container.PropertyHeaders)
-        {
-            xw.WriteRtpcV03Property(propertyHeader, ovMaps);
-        }
-        
-        foreach (var subContainer in container.Containers)
-        {
-            xw.WriteRtpcV03Container(subContainer, ovMaps);
-        }
-        
-        xw.WriteEndElement();
-    }
     
     public static RtpcV03Container ReadRtpcV03Container(this XElement xe)
     {
-        var properties = (from element in xe.Elements()
-            where element.Name.ToString() is not "Container"
-            select element).ToArray();
-        var containers = xe.Elements("Container").ToArray();
+        var properties = xe.Elements()
+            .Where(e => e.Name.ToString() != RtpcV03Container.XmlName)
+            .ToArray();
+        var containers = xe.Elements(RtpcV03Container.XmlName)
+            .ToArray();
 
         var header = new RtpcV03ContainerHeader
         {
-            NameHash = uint.Parse(xe.Attribute("NameHash")?.Value ?? "0"),
+            NameHash = xe.GetNameHash(),
             ContainerCount = (ushort) containers.Length,
             PropertyCount = (ushort) properties.Length
         };
@@ -189,14 +202,20 @@ public static class RtpcV03ContainerExtension
         for (var i = 0; i < header.PropertyCount; i++)
         {
             var node = properties?[i];
-            result.PropertyHeaders[i] = node.ReadRtpcV03PropertyHeader();
+            if (node != null)
+            {
+                result.PropertyHeaders[i] = node.ReadRtpcV03PropertyHeader();
+            }
         }
 
         for (var i = 0; i < header.ContainerCount; i++)
         {
             var node = containers?[i];
-            result.Containers[i] = node.ReadRtpcV03Container();
-            result.ContainerHeaders[i] = result.Containers[i].Header;
+            if (node != null)
+            {
+                result.Containers[i] = node.ReadRtpcV03Container();
+                result.ContainerHeaders[i] = result.Containers[i].Header;
+            }
         }
 
         result.ValidProperties = (uint) (properties?.Count(p => p.Name != EVariantType.Unassigned.GetXmlName()) ?? 0);

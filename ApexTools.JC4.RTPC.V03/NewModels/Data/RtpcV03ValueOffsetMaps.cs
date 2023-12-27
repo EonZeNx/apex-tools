@@ -1,4 +1,6 @@
-﻿using System.Xml;
+﻿using System.Globalization;
+using System.Numerics;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
@@ -9,16 +11,16 @@ namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 public class RtpcV03ValueOffsetMaps
 {
     public readonly Dictionary<string, uint> StringOffsetMap = new();
-    public readonly Dictionary<IList<float>, uint> Vec2OffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<float>, uint> Vec3OffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<float>, uint> Vec4OffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<float>, uint> Mat3OffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<float>, uint> Mat4OffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<uint>, uint> U32ArrayOffsetMap = new(new ListComparer<uint>());
-    public readonly Dictionary<IList<float>, uint> F32ArrayOffsetMap = new(new ListComparer<float>());
-    public readonly Dictionary<IList<byte>, uint> ByteArrayOffsetMap = new(new ListComparer<byte>());
+    public readonly Dictionary<IList<float>, uint> Vec2OffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<float>, uint> Vec3OffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<float>, uint> Vec4OffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<float>, uint> Mat3OffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<float>, uint> Mat4OffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<uint>, uint> U32ArrayOffsetMap = new(new ListEqualityComparer<uint>());
+    public readonly Dictionary<IList<float>, uint> F32ArrayOffsetMap = new(new ListEqualityComparer<float>());
+    public readonly Dictionary<IList<byte>, uint> ByteArrayOffsetMap = new(new ListEqualityComparer<byte>());
     public readonly Dictionary<ulong, uint> ObjectIdOffsetMap = new();
-    public readonly Dictionary<IList<(uint, uint)>, uint> EventOffsetMap = new(new ListComparer<(uint, uint)>());
+    public readonly Dictionary<IList<(uint, uint)>, uint> EventOffsetMap = new(new ListEqualityComparer<(uint, uint)>());
     
     protected static HashSet<IList<(uint, uint)>> ReadEvents(XmlNodeList nodes, uint count = 0)
     {
@@ -74,7 +76,9 @@ public class RtpcV03ValueOffsetMaps
             throw new XmlSchemaException($"ByteArray node does not contain {count} values");
         }
         
-        var values = Array.ConvertAll(rawValues, byte.Parse).ToList();
+        var values = rawValues
+            .Select(s => byte.Parse(s, NumberStyles.HexNumber))
+            .ToArray();
         return values;
     }
     
@@ -159,8 +163,9 @@ public class RtpcV03ValueOffsetMaps
         {
             var rawValues = node.Value.Split(",");
             var eventTuples = rawValues
-                .Select(value => value.Split("="))
-                .Select(eventPairs => (uint.Parse(eventPairs[0]), uint.Parse(eventPairs[1])))
+                .Select(value => value.Split("=")
+                    .Select(v => uint.Parse(v, NumberStyles.HexNumber)).ToArray())
+                .Select(eventPairs => (eventPairs[0], eventPairs[1]))
                 .ToList();
             
             EventOffsetMap.TryAdd(eventTuples, 0);
@@ -169,7 +174,7 @@ public class RtpcV03ValueOffsetMaps
         nodes = xd.Descendants(EVariantType.ObjectId.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
-            var value = ulong.Parse(node.Value);
+            var value = ulong.Parse(node.Value, NumberStyles.HexNumber);
             ObjectIdOffsetMap.TryAdd(value, 0);
         }
     }
@@ -177,95 +182,127 @@ public class RtpcV03ValueOffsetMaps
 
 public static class RtpcV03ValueOffsetMapsExtensions
 {
+    public static IEnumerable<string> SortStringKeys(this RtpcV03ValueOffsetMaps _, IEnumerable<string> strKeys)
+    {
+        var sortedKeys = strKeys.ToList();
+        sortedKeys.Sort(StringComparer.Ordinal);
+
+        return sortedKeys;
+    }
+    
+    public static IEnumerable<IList<T>> SortNumericArrayKeys<T>(this RtpcV03ValueOffsetMaps _, IEnumerable<IList<T>> arrayKeys) where T : INumber<T>
+    {
+        var sortedKeys = arrayKeys.OrderBy(k => k, new ListComparer<T>());
+
+        return sortedKeys;
+    }
+    
+    public static IEnumerable<IList<float>> SortF32ArrayKeys(this RtpcV03ValueOffsetMaps _, IEnumerable<IList<float>> f32ArrayKeys)
+    {
+        var sortedKeys = f32ArrayKeys.OrderBy(k => k, new ListComparer<float>());
+
+        return sortedKeys;
+    }
+    
     public static void Write(this BinaryWriter bw, RtpcV03ValueOffsetMaps voMaps)
     {
-        var strKeys = voMaps.StringOffsetMap.Keys.ToArray();
-        var sortedStrKeys = strKeys.ToList();
-        sortedStrKeys.Sort(StringComparer.Ordinal);
+        // ReSharper disable JoinDeclarationAndInitializer
+        IEnumerable<string> sortedStrKeys;
+        IEnumerable<IList<float>> sortedF32ArrayKeys;
+        // ReSharper enable JoinDeclarationAndInitializer
         
-        foreach (var value in sortedStrKeys)
+        sortedStrKeys = voMaps.SortStringKeys(voMaps.StringOffsetMap.Keys);
+        foreach (var key in sortedStrKeys)
         {
             bw.Align(EVariantType.String.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.StringOffsetMap[value] = offset;
+            voMaps.StringOffsetMap[key] = offset;
             
-            bw.WriteStringZ(value);
+            bw.WriteStringZ(key);
         }
         ;
-        foreach (var value in voMaps.Vec2OffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec2OffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Vector2.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.Vec2OffsetMap[value] = offset;
+            voMaps.Vec2OffsetMap[key] = offset;
             
-            bw.Write(value);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.Vec3OffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec3OffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Vector3.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.Vec3OffsetMap[value] = offset;
+            voMaps.Vec3OffsetMap[key] = offset;
             
-            bw.Write(value);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.Vec4OffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec4OffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Vector4.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.Vec4OffsetMap[value] = offset;
+            voMaps.Vec4OffsetMap[key] = offset;
             
-            bw.Write(value);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.Mat3OffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Mat3OffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Matrix3X3.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.Mat3OffsetMap[value] = offset;
+            voMaps.Mat3OffsetMap[key] = offset;
             
-            bw.Write(value);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.Mat4OffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Mat4OffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Matrix4X4.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.Mat4OffsetMap[value] = offset;
+            voMaps.Mat4OffsetMap[key] = offset;
             
-            bw.Write(value);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.U32ArrayOffsetMap.Keys)
+        var sortedU32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.U32ArrayOffsetMap.Keys);
+        foreach (var key in sortedU32ArrayKeys)
         {
             bw.Align(EVariantType.UInteger32Array.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.U32ArrayOffsetMap[value] = offset;
+            voMaps.U32ArrayOffsetMap[key] = offset;
             
-            bw.Write((uint) value.Count);
-            bw.Write(value);
+            bw.Write((uint) key.Count);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.F32ArrayOffsetMap.Keys)
+        sortedF32ArrayKeys = voMaps.SortF32ArrayKeys(voMaps.F32ArrayOffsetMap.Keys);
+        foreach (var key in sortedF32ArrayKeys)
         {
             bw.Align(EVariantType.Float32Array.GetAlignment());
             
             var offset = (uint) bw.Position();
-            voMaps.F32ArrayOffsetMap[value] = offset;
+            voMaps.F32ArrayOffsetMap[key] = offset;
             
-            bw.Write((uint) value.Count);
-            bw.Write(value);
+            bw.Write((uint) key.Count);
+            bw.Write(key);
         }
         ;
-        foreach (var value in voMaps.ByteArrayOffsetMap.Keys)
+        var sortedByteArrayKeys = voMaps.SortNumericArrayKeys(voMaps.ByteArrayOffsetMap.Keys);
+        foreach (var value in sortedByteArrayKeys)
         {
             bw.Align(EVariantType.ByteArray.GetAlignment());
             
@@ -291,7 +328,8 @@ public static class RtpcV03ValueOffsetMapsExtensions
             }
         }
         ;
-        foreach (var value in voMaps.ObjectIdOffsetMap.Keys)
+        var sortedOIdArrayKeys = voMaps.ObjectIdOffsetMap.Keys.ToList().OrderBy(k => k);
+        foreach (var value in sortedOIdArrayKeys)
         {
             bw.Align(EVariantType.ObjectId.GetAlignment());
             

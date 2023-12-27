@@ -1,13 +1,13 @@
-﻿using System.Xml;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using ApexTools.JC4.RTPC.V03.NewModels.Data;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
+using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core;
 using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.NewModels;
 
-public class RtpcV03File : IApexFile, IXmlFile
+public class RtpcV03File : IApexFile, IXDocFile
 {
     public RtpcV03Header Header;
     public RtpcV03Container Container;
@@ -16,7 +16,7 @@ public class RtpcV03File : IApexFile, IXmlFile
     public RtpcV03ValueOffsetMaps VoMaps = new();
     
     public string ApexExtension { get; set; } = ".rtpc";
-    public string XmlName => "RTPC";
+    public static string XmlName => "RTPC";
     public string XmlExtension => ".xml";
     
     public void FromApex(BinaryReader br)
@@ -55,9 +55,9 @@ public class RtpcV03File : IApexFile, IXmlFile
         var containerCount = Container.CountAllContainerHeaders();
         
         var propertyDataOffset = (uint) (RtpcV03Header.SizeOf() + 
-            RtpcV03ContainerHeader.SizeOfWithValid() +
+            RtpcV03ContainerHeader.SizeOf(true) +
             propertyCount * RtpcV03PropertyHeader.SizeOf() + 
-            containerCount * RtpcV03ContainerHeader.SizeOfWithValid()
+            containerCount * RtpcV03ContainerHeader.SizeOf(true)
         );
         
         bw.Seek((int) propertyDataOffset, SeekOrigin.Begin);
@@ -69,10 +69,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         bw.Write(Container, VoMaps);
     }
 
-    public void FromXml(XmlReader xr)
-    {}
-
-    public void FromXml(string targetPath)
+    public void FromXDoc(string targetPath)
     {
         var xd = XDocument.Load(targetPath);
         VoMaps.Create(xd);
@@ -84,15 +81,22 @@ public class RtpcV03File : IApexFile, IXmlFile
             Version = 3
         };
         
-        var rtpcNode = xd.Element("RTPC")?.Element("Container");
+        var rtpcNode = xd.Element(XmlName)?.Element(RtpcV03Container.XmlName);
         Container = rtpcNode.ReadRtpcV03Container();
     }
-    
-    public void ToXml(XmlWriter xw)
-    {}
 
-    public void ToXml(string targetPath)
+    public void ToXDoc(string targetPath)
     {
+        if (Settings.PerformHashLookUp.Value)
+        {
+            Container.LookupNameHash();
+        }
+        
+        if (Settings.SortRtpcProperties.Value)
+        {
+            Container.Sort();
+        }
+        
         var xd = new XDocument();
         var xe = new XElement(XmlName);
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);

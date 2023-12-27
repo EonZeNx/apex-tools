@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using ApexTools.JC4.RTPC.V03.Models;
 using ApexTools.JC4.RTPC.V03.NewModels;
 using EonZeNx.ApexTools.Config;
 using EonZeNx.ApexTools.Core.Utils;

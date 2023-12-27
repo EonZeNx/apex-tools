@@ -6,3 +6,8 @@ public interface IFromXml
 {
     void FromXml(XmlReader xr);
 }
+
+public interface IFromXDoc
+{
+    void FromXDoc(string path);
+}

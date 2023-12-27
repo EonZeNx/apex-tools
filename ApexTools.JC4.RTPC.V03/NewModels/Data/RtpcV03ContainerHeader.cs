@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using EonZeNx.ApexTools.Core.Utils.Hash;
 
 namespace ApexTools.JC4.RTPC.V03.NewModels.Data;
 
@@ -10,14 +11,20 @@ public struct RtpcV03ContainerHeader
     public ushort PropertyCount = 0;
     public ushort ContainerCount = 0;
     
-    public static int SizeOf() => 4 + 4 + 2 + 2;
-    public static int SizeOfWithValid() => SizeOf() + 4;
+    public string Name = string.Empty;
+    
+    public static int SizeOf(bool withValid = false) => 4 + 4 + 2 + 2 + (withValid ? 4 : 0);
 
     public RtpcV03ContainerHeader() {}
 }
 
 public static class RtpcV03ContainerHeaderExtension
 {
+    public static void LookupNameHash(this ref RtpcV03ContainerHeader header)
+    {
+        header.Name = HashUtils.Lookup(header.NameHash);
+    }
+    
     public static RtpcV03ContainerHeader ReadRtpcV03ContainerHeader(this BinaryReader br)
     {
         var result = new RtpcV03ContainerHeader

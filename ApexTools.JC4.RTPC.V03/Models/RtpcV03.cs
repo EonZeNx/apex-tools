@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml;
+﻿using System.Xml;
 using ApexTools.JC4.RTPC.V03.Abstractions;
 using ApexTools.JC4.RTPC.V03.ValueOffsetMap;
 using ApexTools.JC4.RTPC.V03.Variants;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
-using EonZeNx.ApexTools.Core.Utils;
 
 namespace ApexTools.JC4.RTPC.V03.Models;
 
@@ -25,16 +23,16 @@ public class RtpcV03 : IFromApex, IToXml, IFromXml, IToApex
     #region Variant maps
 
     protected readonly ValueOffsetMapV03<string, VariantStr> StringOffsetMap = new(EVariantType.String, 0);
-    protected readonly ValueOffsetMapV03<IList<float>, VariantVec2> Vec2OffsetMap = new(EVariantType.Vector2, new ListComparer<float>());
-    protected readonly ValueOffsetMapV03<IList<float>, VariantVec3> Vec3OffsetMap = new(EVariantType.Vector3, new ListComparer<float>());
-    protected readonly ValueOffsetMapV03<IList<float>, VariantVec4> Vec4OffsetMap = new(EVariantType.Vector4, new ListComparer<float>());
-    protected readonly ValueOffsetMapV03<IList<float>, VariantMat3X3> Mat3X3OffsetMap = new(EVariantType.Matrix3X3, new ListComparer<float>());
-    protected readonly ValueOffsetMapV03<IList<float>, VariantMat4X4> Mat4X4OffsetMap = new(EVariantType.Matrix4X4, new ListComparer<float>(), 16);
-    protected readonly ValueOffsetMapV03<IList<uint>, VariantU32Array> U32ArrayOffsetMap = new(EVariantType.UInteger32Array, new ListComparer<uint>());
-    protected readonly ValueOffsetMapV03<IList<float>, VariantF32Array> F32ArrayOffsetMap = new(EVariantType.Float32Array, new ListComparer<float>());
-    protected readonly ValueOffsetMapV03<IList<byte>, VariantByteArray> ByteArrayOffsetMap = new(EVariantType.ByteArray, new ListComparer<byte>(), 16);
+    protected readonly ValueOffsetMapV03<IList<float>, VariantVec2> Vec2OffsetMap = new(EVariantType.Vector2, new ListEqualityComparer<float>());
+    protected readonly ValueOffsetMapV03<IList<float>, VariantVec3> Vec3OffsetMap = new(EVariantType.Vector3, new ListEqualityComparer<float>());
+    protected readonly ValueOffsetMapV03<IList<float>, VariantVec4> Vec4OffsetMap = new(EVariantType.Vector4, new ListEqualityComparer<float>());
+    protected readonly ValueOffsetMapV03<IList<float>, VariantMat3X3> Mat3X3OffsetMap = new(EVariantType.Matrix3X3, new ListEqualityComparer<float>());
+    protected readonly ValueOffsetMapV03<IList<float>, VariantMat4X4> Mat4X4OffsetMap = new(EVariantType.Matrix4X4, new ListEqualityComparer<float>(), 16);
+    protected readonly ValueOffsetMapV03<IList<uint>, VariantU32Array> U32ArrayOffsetMap = new(EVariantType.UInteger32Array, new ListEqualityComparer<uint>());
+    protected readonly ValueOffsetMapV03<IList<float>, VariantF32Array> F32ArrayOffsetMap = new(EVariantType.Float32Array, new ListEqualityComparer<float>());
+    protected readonly ValueOffsetMapV03<IList<byte>, VariantByteArray> ByteArrayOffsetMap = new(EVariantType.ByteArray, new ListEqualityComparer<byte>(), 16);
     protected readonly ValueOffsetMapV03<(ulong, byte), VariantObjectId> ObjectIdOffsetMap = new(EVariantType.ObjectId, new U64BComparer());
-    protected readonly ValueOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventOffsetMap = new(EVariantType.Event, new ListComparer<(uint, uint)>());
+    protected readonly ValueOffsetMapV03<IList<(uint, uint)>, VariantEvent> EventOffsetMap = new(EVariantType.Event, new ListEqualityComparer<(uint, uint)>());
 
     protected readonly OffsetValueMaps OvMaps = new();
 

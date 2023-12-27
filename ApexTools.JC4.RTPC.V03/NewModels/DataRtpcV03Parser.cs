@@ -22,14 +22,13 @@ public static class DataRtpcV03Parser
         var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
 
         var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
-        rtpcV03.ToXml(targetXmlFilePath);
+        rtpcV03.ToXDoc(targetXmlFilePath);
     }
     
     public static RtpcV03File FromXml(string targetPath)
     {
         var rtpcV03 = new RtpcV03File();
-        
-        rtpcV03.FromXml(targetPath);
+        rtpcV03.FromXDoc(targetPath);
 
         return rtpcV03;
     }

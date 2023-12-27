@@ -1,4 +1,3 @@
-using ApexTools.JC4.RTPC.V03.Models;
 using EonZeNx.ApexFormats.RTPC.V03.Models.Properties;
 using PropertyHeaderV03 = ApexTools.JC4.RTPC.V03.Models.PropertyHeaderV03;
 

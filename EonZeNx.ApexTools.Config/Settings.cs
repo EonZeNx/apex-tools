@@ -13,7 +13,7 @@ public static class Settings
         Name = nameof(LogProgress),
         Value = true,
         Description = "Track progress of each file",
-        DefaultValue = true
+        Default = true
     };
     
     public static Setting<bool> AutoClose { get; set; } = new()
@@ -21,15 +21,15 @@ public static class Settings
         Name = nameof(AutoClose),
         Value = true,
         Description = "Automatically close the tool after an action",
-        DefaultValue = false
+        Default = false
     };
     
     public static Setting<string> DatabasePath { get; set; } = new()
     {
         Name = nameof(DatabasePath),
-        Value = @"E:\Projects\Just Cause Tools\Apex.Tools.Refresh\EonZeNx.ApexTools.Core\db\ApexToolsMain.db",
+        Value = @"E:\Projects\Just Cause Tools\Apex.Tools.Refresh\EonZeNx.ApexTools.Core\db\ApexDatabase.db",
         Description = "Absolute path to the database file",
-        DefaultValue = @"C:\Fake\Path\To\Database.db"
+        Default = @"C:\Fake\Path\To\Database.db"
     };
     
     public static Setting<bool> PerformHashLookUp { get; set; } = new()
@@ -37,7 +37,7 @@ public static class Settings
         Name = nameof(PerformHashLookUp),
         Value = true,
         Description = "Try lookup the hash for values where possible",
-        DefaultValue = true
+        Default = true
     };
     
     public static Setting<ushort> HashCacheSize { get; set; } = new()
@@ -45,7 +45,7 @@ public static class Settings
         Name = nameof(HashCacheSize),
         Value = 250,
         Description = "The maximum amount of hashes to cache",
-        DefaultValue = 250
+        Default = 250
     };
     
     public static Setting<bool> AlwaysOutputHash { get; set; } = new()
@@ -53,7 +53,7 @@ public static class Settings
         Name = nameof(AlwaysOutputHash),
         Value = true,
         Description = "Always output the hash even if the hash lookup was successful",
-        DefaultValue = true
+        Default = true
     };
     
     public static Setting<bool> OutputValueOffset { get; set; } = new()
@@ -61,7 +61,7 @@ public static class Settings
         Name = nameof(OutputValueOffset),
         Value = true,
         Description = "Whether or not to output the offset of each value",
-        DefaultValue = true
+        Default = true
     };
     
     public static Setting<bool> SortRtpcContainers { get; set; } = new()
@@ -69,7 +69,7 @@ public static class Settings
         Name = nameof(SortRtpcContainers),
         Value = false,
         Description = "Whether or not to sort the containers of Runtime Containers (I/RTPC files)",
-        DefaultValue = false
+        Default = false
     };
     
     public static Setting<bool> SortRtpcProperties { get; set; } = new()
@@ -77,7 +77,7 @@ public static class Settings
         Name = nameof(SortRtpcProperties),
         Value = true,
         Description = "Whether or not to sort the properties of Runtime Containers (I/RTPC files)",
-        DefaultValue = true
+        Default = true
     };
     
     public static Setting<bool> SkipUnassignedRtpcProperties { get; set; } = new()
@@ -85,7 +85,7 @@ public static class Settings
         Name = nameof(SkipUnassignedRtpcProperties),
         Value = true,
         Description = "Whether or not to skip unassigned properties of Runtime Containers (I/RTPC files)",
-        DefaultValue = true
+        Default = true
     };
 
     #endregion
@@ -97,7 +97,17 @@ public static class Settings
             
         if (!File.Exists(ExeFilepath)) DumpDefaultSettings();
 
-        LoadWrittenSettings();
+        try
+        {
+            LoadWrittenSettings();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            
+            DumpDefaultSettings();
+            LoadWrittenSettings();
+        }
     }
 
     #region IO Functions
@@ -146,8 +156,8 @@ public static class Settings
         xw.WriteStartElement(setting.Name);
             
         xw.WriteStartElement(nameof(setting.Value));
-        xw.WriteAttributeString(nameof(setting.DefaultValue), $"{setting.DefaultValue}");
-        xw.WriteValue($"{setting.DefaultValue}");
+        xw.WriteAttributeString(nameof(setting.Default), $"{setting.Default}");
+        xw.WriteValue($"{setting.Default}");
         xw.WriteEndElement();
             
         xw.WriteStartElement(nameof(setting.Description));
@@ -161,12 +171,12 @@ public static class Settings
     {
         if (!xr.ReadToFollowing(setting.Name))
         {
-            return setting.DefaultValue ?? default(T);
+            return setting.Default ?? default(T);
         }
         
         if (!xr.ReadToFollowing(nameof(setting.Value)))
         {
-            return setting.DefaultValue ?? default(T);
+            return setting.Default ?? default(T);
         }
         
         var value = xr.ReadElementContentAsString();
@@ -176,7 +186,7 @@ public static class Settings
         }
         catch
         {
-            return setting.DefaultValue ?? default(T);
+            return setting.Default ?? default(T);
         }
         
     }
@@ -202,5 +212,5 @@ public class Setting<T>
     public string Name { get; set; } = string.Empty;
     public T? Value { get; set; }
     public string Description { get; set; } = string.Empty;
-    public T? DefaultValue { get; set; }
+    public T? Default { get; set; }
 }
