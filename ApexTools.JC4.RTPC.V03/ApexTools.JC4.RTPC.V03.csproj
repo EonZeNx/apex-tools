@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <RootNamespace>ApexTools.JC4.RTPC.V03</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>ApexTools.JC4.RTPC.V03</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EonZeNx.ApexFormats.RTPC.V03\EonZeNx.ApexFormats.RTPC.V03.csproj" />
+    </ItemGroup>
+
+</Project>

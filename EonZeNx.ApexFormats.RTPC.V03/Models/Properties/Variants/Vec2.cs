@@ -3,7 +3,7 @@
 public class Vec2 : FloatArray
 {
     public override string XmlName => "Vec2";
-    public override EVariantType VariantType => EVariantType.Vec2;
+    public override EVariantType VariantType => EVariantType.Vector2;
     
     public override int Count { get; set; } = 2;
     

@@ -3,7 +3,7 @@
 public class Vec4 : FloatArray
 {
     public override string XmlName => "Vec4";
-    public override EVariantType VariantType => EVariantType.Vec4;
+    public override EVariantType VariantType => EVariantType.Vector4;
     public override int Alignment => 16;
     
     

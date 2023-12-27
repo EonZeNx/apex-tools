@@ -26,7 +26,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public override string XmlName => "Container";
     public static int HeaderSize => 4 + 4 + 2 + 2;
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public string HexNameHash => ByteUtils.ToHex(NameHash);
     public string Name { get; set; } = string.Empty;
     public uint Offset { get; set; }
@@ -46,7 +46,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public void FromApexHeader(BinaryReader br)
     {
         // Read variables
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         Offset = br.ReadUInt32();
         PropertyCount = br.ReadUInt16();
         ContainerCount = br.ReadUInt16();
@@ -103,11 +103,11 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
                 EVariantType.UInteger32 => new UnsignedInt32(header),
                 EVariantType.Float32 => new F32(header),
                 EVariantType.String => new Str(header),
-                EVariantType.Vec2 => new Vec2(header),
-                EVariantType.Vec3 => new Vec3(header),
-                EVariantType.Vec4 => new Vec4(header),
-                EVariantType.Mat3X3 => new Mat3X3(header),
-                EVariantType.Mat4X4 => new Mat4X4(header),
+                EVariantType.Vector2 => new Vec2(header),
+                EVariantType.Vector3 => new Vec3(header),
+                EVariantType.Vector4 => new Vec4(header),
+                EVariantType.Matrix3X3 => new Mat3X3(header),
+                EVariantType.Matrix4X4 => new Mat4X4(header),
                 EVariantType.UInteger32Array => new UInt32Array(header),
                 EVariantType.Float32Array => new FloatArray(header),
                 EVariantType.ByteArray => new ByteArray(header),
@@ -200,13 +200,19 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     public void SortProperties()
     {
         // Sort properties using NameHash
-        if (Settings.SortRtpcProperties.Value) Array.Sort(Properties, new PropertyV03Comparer());
+        if (Settings.SortRtpcProperties.Value)
+        {
+            Array.Sort(Properties, new PropertyV03Comparer());
+        }
     }
     
     public void SortContainers()
     {
         // Sort properties using NameHash
-        if (Settings.SortRtpcContainers.Value) Array.Sort(Containers, new ContainerV03Comparer());
+        if (Settings.SortRtpcContainers.Value)
+        {
+            Array.Sort(Containers, new ContainerV03Comparer());
+        }
     }
 
     #endregion
@@ -234,6 +240,11 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
         xw.WriteStartElement(XmlName);
         
         XmlUtils.WriteNameOrNameHash(xw, HexNameHash, Name);
+
+        if (Settings.OutputValueOffset.Value)
+        {
+            xw.WriteAttributeString("Offset", $"{Offset}");
+        }
         
         foreach (var property in Properties) property.ToXml(xw);
         foreach (var container in Containers) container.ToXml(xw);

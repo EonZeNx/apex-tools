@@ -12,7 +12,7 @@ public abstract class PropertyBaseV03 : XmlSerializable, IApexSerializable
     public abstract EVariantType VariantType { get; }
     public abstract bool Primitive { get; }
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public string HexNameHash => ByteUtils.ToHex(NameHash);
     public byte[] RawData { get; set; } = Array.Empty<byte>();
     

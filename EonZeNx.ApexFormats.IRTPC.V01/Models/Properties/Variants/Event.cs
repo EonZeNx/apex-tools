@@ -51,7 +51,7 @@ public class Event : BasePropertyV01
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
 
-        var value = xr.ReadString();
+        var value = xr.ReadElementContentAsString();
         if (value.Length == 0)
         {
             Value = Array.Empty<(uint, uint)>();
@@ -66,7 +66,7 @@ public class Event : BasePropertyV01
 
         Value = (from eventString in eventStringArray 
             select eventString.Split("=") into eventStrings 
-            select Array.ConvertAll(eventStrings, ByteUtils.HexToUint) into eventsArray 
+            select Array.ConvertAll(eventStrings, ByteUtils.HexToUInt) into eventsArray 
             select (eventsArray[0], eventsArray[1])
         ).ToArray();
         

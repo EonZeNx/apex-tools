@@ -20,7 +20,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "Container";
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public byte Version01 { get; set; }
     public ushort Version02 { get; set; }
     public ushort PropertyCount { get; set; }
@@ -33,7 +33,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable
     
     public void FromApex(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         Version01 = br.ReadByte();
         Version02 = br.ReadUInt16();
         PropertyCount = br.ReadUInt16();

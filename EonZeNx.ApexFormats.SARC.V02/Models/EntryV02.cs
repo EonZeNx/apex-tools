@@ -41,7 +41,7 @@ public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerial
         IsReference = bool.Parse(XmlUtils.GetAttribute(xr, "IsReference"));
         Size = uint.Parse(XmlUtils.GetAttribute(xr, "Size"));
             
-        FilePath = xr.ReadString().Replace("\\", "/");
+        FilePath = xr.ReadElementContentAsString().Replace("\\", "/");
         PathLength = (uint) FilePath.Length;
         
         if (IsReference) return;

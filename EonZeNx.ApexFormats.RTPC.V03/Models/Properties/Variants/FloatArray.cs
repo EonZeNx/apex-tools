@@ -55,7 +55,7 @@ public class FloatArray : BaseArray<float>
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         if (floatString.Length == 0)
         {
             Values = Array.Empty<float>();

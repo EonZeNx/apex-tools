@@ -11,7 +11,7 @@ public class HashJenkinsL3
     /// <param name="index"></param>
     /// <param name="seed"></param>
     /// <returns></returns>
-    public static int Hash(string data, int index = 0, uint seed = 0)
+    public static uint Hash(string data, int index = 0, uint seed = 0)
     {
         return Hash(Encoding.UTF8.GetBytes(data), index, seed);
     }
@@ -23,7 +23,7 @@ public class HashJenkinsL3
     /// <param name="index">Index to start at. Default is 0</param>
     /// <param name="seed">Passable seed variable. Default is 0</param>
     /// <returns>Hashed value as a uint</returns>
-    public static int Hash(byte[] data, int index = 0, uint seed = 0)
+    public static uint Hash(byte[] data, int index = 0, uint seed = 0)
     {
         uint a = 0xDEADBEEF + (uint) data.Length + seed;
         uint b = a;
@@ -77,7 +77,7 @@ public class HashJenkinsL3
             case 3: a += (uint) data[currentOffset + 2] << 16; goto case 2;
             case 2: a += (uint) data[currentOffset + 1] << 8; goto case 1;
             case 1:
-                a += (uint) data[currentOffset];
+                a += data[currentOffset];
 
                 Final(ref a, ref b, ref c);
                 break;
@@ -85,7 +85,7 @@ public class HashJenkinsL3
         
         // return BitConverter.GetBytes(c);
         // return c;
-        return (int) c;
+        return c;
     }
     
     private static void Mix(ref uint a, ref uint b, ref uint c)

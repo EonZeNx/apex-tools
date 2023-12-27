@@ -21,7 +21,7 @@ public class Mat3X4 : FloatArray
     {
         NameHash = XmlUtils.ReadNameIfValid(xr);
             
-        var floatString = xr.ReadString();
+        var floatString = xr.ReadElementContentAsString();
         var vectorString = floatString.Split(", ");
 
         var floats = new List<float>();

@@ -17,7 +17,7 @@ public class RootContainer : XmlSerializable, IApexSerializable
 {
     public override string XmlName => "RootContainer";
     
-    public int NameHash { get; set; }
+    public uint NameHash { get; set; }
     public byte Flag01 { get; set; }
     public ushort Flag02 { get; set; }
     public ushort PropertyContainerCount { get; set; }
@@ -30,7 +30,7 @@ public class RootContainer : XmlSerializable, IApexSerializable
     
     public void FromApex(BinaryReader br)
     {
-        NameHash = br.ReadInt32();
+        NameHash = br.ReadUInt32();
         Flag01 = br.ReadByte();
         Flag02 = br.ReadUInt16();
         PropertyContainerCount = br.ReadUInt16();
