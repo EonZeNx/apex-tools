@@ -1,7 +1,7 @@
 ﻿using ApexTools.Core;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.RTPC.V03.JC4.Models.Data;
+namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03Header
 {

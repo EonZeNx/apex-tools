@@ -1,4 +1,4 @@
-﻿namespace ApexFormat.RTPC.V03.JC4.Utils;
+﻿namespace ApexFormat.RTPC.V03.Flat.Utils;
 
 public static class StreamExtensions
 {

@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-using ApexFormat.RTPC.V03.JC4.Utils;
+using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
 using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Models.Data;
+namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03PropertyHeader
 {
@@ -42,7 +42,8 @@ public static class RtpcV03PropertyHeaderExtension
     
     public static void LookupNameHash(this ref RtpcV03PropertyHeader propertyHeader)
     {
-        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash);
+        const EHashType flags = EHashType.Property | EHashType.Misc;
+        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash, flags);
     }
 
     private static IList<float> ParseF32Array(string data, int count = 0)

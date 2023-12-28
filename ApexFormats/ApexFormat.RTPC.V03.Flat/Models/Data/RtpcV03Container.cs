@@ -1,8 +1,11 @@
 ﻿using System.Xml.Linq;
-using ApexFormat.RTPC.V03.JC4.Utils;
+using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
+using ApexTools.Core.Config;
+using ApexTools.Core.Utils;
+using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Models.Data;
+namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03Container
 {
@@ -114,8 +117,6 @@ public static class RtpcV03ContainerExtension
     
     public static void LookupNameHash(this ref RtpcV03Container container)
     {
-        container.Header.LookupNameHash();
-        
         for (var i = 0; i < container.PropertyHeaders.Length; i++)
         {
             container.PropertyHeaders[i].LookupNameHash();
@@ -129,24 +130,11 @@ public static class RtpcV03ContainerExtension
     
     public static void Sort(this ref RtpcV03Container container)
     {
-        // TODO: Temporary
-        var uniqueClass = container.PropertyHeaders
-            .Where(h => ClassHashes.Contains(BitConverter.ToUInt32(h.RawData)))
+        container.PropertyHeaders = container.PropertyHeaders
+            .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
+            .ThenBy(ph => ph.Name)
+            .ThenBy(ph => ph.NameHash)
             .ToArray();
-        if (uniqueClass.Length == 1)
-        {
-            container.PropertyHeaders = container.PropertyHeaders
-                .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
-                .ThenBy(ph => ph.Name)
-                .ThenBy(ph => ph.NameHash)
-                .ToArray();
-        }
-        
-        // container.PropertyHeaders = container.PropertyHeaders
-        //     .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
-        //     .ThenBy(ph => ph.Name)
-        //     .ThenBy(ph => ph.NameHash)
-        //     .ToArray();
 
         for (var i = 0; i < container.Containers.Length; i++)
         {
@@ -198,6 +186,30 @@ public static class RtpcV03ContainerExtension
         return result;
     }
     
+    public static IEnumerable<FRtpcV03Class> CreateAllContainerClasses(this RtpcV03Container container)
+    {
+        var result = new List<FRtpcV03Class>();
+        result.AddRange(container.Containers.Select(sc => sc.CreateContainerClass()));
+
+        return result;
+    }
+    
+    public static FRtpcV03Class CreateContainerClass(this RtpcV03Container container)
+    {
+        var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0xE65940D0));
+        var result = new FRtpcV03Class
+        {
+            ClassHash = BitConverter.ToUInt32(classHashHeader.RawData),
+            Members = container.PropertyHeaders.Select(h => new FRtpcV03ClassMember
+            {
+                NameHash = h.NameHash,
+                VariantType = h.VariantType
+            }).ToList()
+        }.FilterDefaultMembers();
+
+        return result;
+    }
+    
     public static int CountAllPropertyHeaders(this RtpcV03Container container)
     {
         return container.Header.PropertyCount + 
@@ -241,7 +253,7 @@ public static class RtpcV03ContainerExtension
         return result;
     }
     
-    public static void Write(this BinaryWriter bw, RtpcV03Container container, in RtpcV03ValueOffsetMaps voMaps)
+    public static void Write(this BinaryWriter bw, in RtpcV03Container container, in RtpcV03ValueOffsetMaps voMaps)
     {
         foreach (var propertyHeader in container.PropertyHeaders)
         {
@@ -261,21 +273,70 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
+    public static void Write(this XElement pxe, in RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps, in FRtpcV03Class[] classDefinitions, bool isRoot = false)
     {
         var xe = new XElement(RtpcV03Container.XmlName);
         
-        xe.WriteNameOrHash(container.Header.NameHash, container.Header.Name);
         xe.SetAttributeValue(nameof(container.Flat), container.Flat);
-        
-        foreach (var propertyHeader in container.PropertyHeaders)
+
+        if (isRoot)
         {
-            xe.Write(propertyHeader, ovMaps);
+            var unknown = container.PropertyHeaders.First(h => h.NameHash == 0x95C1191D);
+            xe.SetAttributeValue("Unknown", BitConverter.ToUInt32(unknown.RawData));
+        }
+        else
+        {
+            {
+                // Class
+                var classHash = ByteUtils.ReverseBytes(0xE65940D0);
+                var classHeader = container.PropertyHeaders.First(h => h.NameHash == classHash);
+
+                var classValue = BitConverter.ToUInt32(classHeader.RawData);
+                var classStr = $"{classValue:X8}";
+                
+                if (Settings.PerformHashLookUp.Value)
+                {
+                    var result = HashUtils.Lookup(classValue, EHashType.Class);
+                    classStr = string.IsNullOrEmpty(result) ? classStr : result;
+                }
+                
+                xe.SetAttributeValue("Class", classStr);
+            }
+
+            {
+                // Object ID
+                var objectIdHash = ByteUtils.ReverseBytes(0x0584FFCF);
+                var oIdHeader = container.PropertyHeaders.First(h => h.NameHash == objectIdHash);
+                
+                var oIdOffset = BitConverter.ToUInt32(oIdHeader.RawData);
+                var oId = ovMaps.OffsetObjectIdMap[oIdOffset];
+                xe.SetAttributeValue("OID", $"{oId:X16}");
+            }
+            
+            {
+                // Name (optional)
+                var nameHash = ByteUtils.ReverseBytes(0x84B61AD3);
+                if (container.PropertyHeaders.Any(h => h.NameHash == nameHash))
+                {
+                    var nameHeader = container.PropertyHeaders.First(h => h.NameHash == nameHash);
+                    
+                    var nameOffset = BitConverter.ToUInt32(nameHeader.RawData);
+                    var name = ovMaps.OffsetStringMap[nameOffset];
+                    xe.SetAttributeValue("Name", name);
+                }
+            }
+
+            var writableProperties = FRtpcV03ClassExtensions.FilterDefaultMembers(container.PropertyHeaders)
+                .Where(h => h.VariantType != EVariantType.Unassigned);
+            foreach (var header in writableProperties)
+            {
+                xe.Write(header, ovMaps);
+            }
         }
         
         foreach (var subContainer in container.Containers)
         {
-            xe.Write(subContainer, ovMaps);
+            xe.Write(subContainer, ovMaps, classDefinitions);
         }
         
         pxe.Add(xe);

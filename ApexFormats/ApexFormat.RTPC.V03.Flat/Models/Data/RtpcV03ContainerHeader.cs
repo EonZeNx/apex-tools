@@ -1,6 +1,6 @@
 ﻿using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Models.Data;
+namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03ContainerHeader
 {
@@ -24,11 +24,6 @@ public struct RtpcV03ContainerHeader
 
 public static class RtpcV03ContainerHeaderExtension
 {
-    public static void LookupNameHash(this ref RtpcV03ContainerHeader header)
-    {
-        header.Name = HashUtils.Lookup(header.NameHash);
-    }
-    
     public static RtpcV03ContainerHeader ReadRtpcV03ContainerHeader(this BinaryReader br)
     {
         var result = new RtpcV03ContainerHeader

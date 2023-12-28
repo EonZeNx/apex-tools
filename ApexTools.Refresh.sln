@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexFormat.RTPC.V03", "Apex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexFormat.ADF.V04", "ApexFormats\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj", "{472E153F-DC9D-4F41-9534-97DC681B5679}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexFormat.RTPC.V03.JC4", "ApexFormats\ApexFormat.RTPC.V03.JC4\ApexFormat.RTPC.V03.JC4.csproj", "{C98F57B2-6540-4C9D-BA23-28E0C24C6018}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexFormat.RTPC.V03.Flat", "ApexFormats\ApexFormat.RTPC.V03.Flat\ApexFormat.RTPC.V03.Flat.csproj", "{C98F57B2-6540-4C9D-BA23-28E0C24C6018}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexTools.Chain", "ApexTools.Chain\ApexTools.Chain.csproj", "{951AC660-7501-41D5-BD21-E48175663EBD}"
 EndProject

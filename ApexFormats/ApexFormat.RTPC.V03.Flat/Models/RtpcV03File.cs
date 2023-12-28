@@ -1,12 +1,12 @@
 ﻿using System.Xml.Linq;
-using ApexFormat.RTPC.V03.JC4.Abstractions;
-using ApexFormat.RTPC.V03.JC4.Models.Data;
+using ApexFormat.RTPC.V03.Flat.Abstractions;
+using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.RTPC.V03.JC4.Models;
+namespace ApexFormat.RTPC.V03.Flat.Models;
 
 public class RtpcV03File : IApexFile, IXmlFile
 {
@@ -15,6 +15,7 @@ public class RtpcV03File : IApexFile, IXmlFile
     
     public RtpcV03OffsetValueMaps OvMaps = new();
     public RtpcV03ValueOffsetMaps VoMaps = new();
+    public FRtpcV03Class[] ClassDefinitions = Array.Empty<FRtpcV03Class>();
     
     public string ApexExtension { get; set; } = ".rtpc";
     public static string XmlName => "RTPC";
@@ -38,6 +39,8 @@ public class RtpcV03File : IApexFile, IXmlFile
             .ToArray();
         
         OvMaps.Create(br, uniqueOffsets);
+
+        SaveClassDefinitions();
     }
 
     public void ToApex(BinaryWriter bw)
@@ -85,6 +88,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         
         var rtpcNode = xd.Element(XmlName)?.Element(RtpcV03Container.XmlName);
         Container = rtpcNode.ReadRtpcV03Container();
+        
+        LoadClassDefinitions();
     }
 
     public void ToXml(string targetPath)
@@ -94,24 +99,86 @@ public class RtpcV03File : IApexFile, IXmlFile
         var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
         Container.UnFlatten(parentIndexArray);
         
+        // TODO: Support 0x8F1D6E5A byte array ADF
+        // Other 3 properties can be inferred by container structure
+        Container.PropertyHeaders = Container.PropertyHeaders
+            .Where(h => h.NameHash == 0x95C1191D)
+            .ToArray();
+        
         if (Settings.PerformHashLookUp.Value)
         {
             Container.LookupNameHash();
         }
         
-        // if (Settings.SortRtpcProperties.Value)
-        // {
-        //     Container.Sort();
-        // }
+        if (Settings.RtpcSortProperties.Value)
+        {
+            Container.Sort();
+        }
         
         var xd = new XDocument();
         var xe = new XElement(XmlName);
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
-        
-        xe.Write(Container, OvMaps);
+
+        xe.Write(Container, OvMaps, ClassDefinitions, true);
         
         xd.Add(xe);
         xd.Save(targetPath);
+    }
+
+
+    protected void SaveClassDefinitions()
+    {
+        var classDirectory = Settings.RtpcClassDirectory.Value;
+        if (!Directory.Exists(classDirectory))
+        {
+            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDirectory)} not found: \"{classDirectory}\"");
+        }
+
+        var allContainerClasses = Container.CreateAllContainerClasses();
+        ClassDefinitions = allContainerClasses
+            .GroupBy(c => c.ClassHash)
+            .Select(g => g.First())
+            .ToArray();
+        
+        foreach (var containerClass in ClassDefinitions)
+        {
+            var containerClassFile = Path.Join(classDirectory, $"{containerClass.ClassHash:X8}.xml");
+            if (File.Exists(containerClassFile))
+            {
+                continue;
+            }
+        
+            var xd = new XDocument();
+            var xe = new XElement("Definition");
+            xe.SetAttributeValue(nameof(containerClass.ClassHash), $"{containerClass.ClassHash:X8}");
+            
+            foreach (var member in containerClass.Members)
+            {
+                var mxe = new XElement("Member");
+                mxe.SetAttributeValue(nameof(member.NameHash), $"{member.NameHash:X8}");
+                mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType}");
+                
+                xe.Add(mxe);
+            }
+            
+            xd.Add(xe);
+            xe.Save(containerClassFile);
+        }
+    }
+    
+    protected static void LoadClassDefinitions()
+    {
+        var classDirectory = Settings.RtpcClassDirectory.Value;
+        if (!Directory.Exists(classDirectory))
+        {
+            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDirectory)} not found: \"{classDirectory}\"");
+        }
+
+        var xmlFiles = Directory.GetFiles(classDirectory, "*.xml");
+        foreach (var xmlFile in xmlFiles)
+        {
+            var xd = XDocument.Load(xmlFile);
+        }
     }
 }

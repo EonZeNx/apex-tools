@@ -4,13 +4,14 @@ using ApexTools.Core.Config;
 
 namespace ApexTools.Core.Utils.Hash;
 
+[Flags]
 public enum EHashType
 {
-    Unknown,
-    FilePath,
-    Property,
-    Class,
-    Misc,
+    Unknown = 0,
+    FilePath = 1,
+    Property = 2,
+    Class = 4,
+    Misc = 8
 }
 
 public static class HashUtils
@@ -42,25 +43,22 @@ public static class HashUtils
         if (DbConnection == null && !TriedToOpenDb) OpenDatabaseConnection();
         if (DbConnection?.State != ConnectionState.Open) return string.Empty;
         
-        var tables = new[]{ "properties", "classes", "misc", "filepaths" };
-        switch (hashType)
+        var tables = new List<string>();
+        if (HasFlag(hashType, EHashType.FilePath))
         {
-            case EHashType.FilePath:
-                tables = new[] { "filepaths" };
-                break;
-            case EHashType.Property:
-                tables = new[] { "properties" };
-                break;
-            case EHashType.Class:
-                tables = new[] { "classes" };
-                break;
-            case EHashType.Misc:
-                tables = new[] { "misc" };
-                break;
-            case EHashType.Unknown:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(hashType), hashType, null);
+            tables.Add("filepaths");
+        }
+        if (HasFlag(hashType, EHashType.Property))
+        {
+            tables.Add("properties");
+        }
+        if (HasFlag(hashType, EHashType.Class))
+        {
+            tables.Add("classes");
+        }
+        if (HasFlag(hashType, EHashType.Misc))
+        {
+            tables.Add("misc");
         }
         
         var command = DbConnection.CreateCommand();
@@ -85,5 +83,29 @@ public static class HashUtils
         }
         
         return foundValue;
+    }
+    
+    public static bool HasFlag<T>(T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        return (flagsValue & flagValue) != 0;
+    }
+    
+    public static void Set<T>(ref T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        flags = (T)(object)(flagsValue | flagValue);
+    }
+
+    public static void Unset<T>(ref T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        flags = (T)(object)(flagsValue & (~flagValue));
     }
 }

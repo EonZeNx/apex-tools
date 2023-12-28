@@ -6,6 +6,7 @@ namespace ApexTools.Core.Config;
 public static class Settings
 {
     public static string XmlName => "Settings";
+    private static string XmlFileName { get; set; } = "config.xml";
     private static string XmlFilePath { get; set; } = string.Empty;
     
     #region Variables
@@ -21,7 +22,7 @@ public static class Settings
         .SetDescription("Automatically close the tool after an action");
     
     public static Setting<string> DatabasePath { get; set; } = Setting<string>
-        .Create(@"C:\Fake\Path\To\Database.db")
+        .Create(Path.Join(AppContext.BaseDirectory, "resources", "databases", "ApexTools.Core.db"))
         .SetName(nameof(DatabasePath))
         .SetDescription("Absolute path to the database file");
     
@@ -59,13 +60,18 @@ public static class Settings
         .Create(true)
         .SetName(nameof(RtpcUseJc4))
         .SetDescription("Use JC4 RTPC v3(.1) instead of RTPC v3");
+    
+    public static Setting<string> RtpcClassDirectory { get; set; } = Setting<string>
+        .Create(Path.Join(AppContext.BaseDirectory, "resources", "rtpc_class_definitions"))
+        .SetName(nameof(RtpcClassDirectory))
+        .SetDescription("Location of flat RTPC v03 class definitions");
 
     #endregion
 
     public static void Load()
     {
         var exeDirectory = AppContext.BaseDirectory;
-        XmlFilePath = Path.Combine(exeDirectory, "config.xml");
+        XmlFilePath = Path.Combine(exeDirectory, XmlFileName);
             
         if (!File.Exists(XmlFilePath))
         {
@@ -101,6 +107,7 @@ public static class Settings
         WriteSetting(xElement, RtpcSortProperties);
         WriteSetting(xElement, RtpcSkipUnassignedProperties);
         WriteSetting(xElement, RtpcUseJc4);
+        WriteSetting(xElement, RtpcClassDirectory);
             
         xDocument.Add(xElement);
         xDocument.Save(XmlFilePath);
@@ -116,8 +123,6 @@ public static class Settings
             throw new XmlSchemaException($"{XmlName} does not exist in file");
         }
 
-        var allSettings = settingsXElement.Elements(Setting<bool>.XmlName).ToArray();
-
         LogProgress.Value = LoadSetting(settingsXElement, LogProgress);
         AutoClose.Value = LoadSetting(settingsXElement, AutoClose);
         DatabasePath.Value = LoadSetting(settingsXElement, DatabasePath);
@@ -127,6 +132,7 @@ public static class Settings
         RtpcSortProperties.Value = LoadSetting(settingsXElement, RtpcSortProperties);
         RtpcSkipUnassignedProperties.Value = LoadSetting(settingsXElement, RtpcSkipUnassignedProperties);
         RtpcUseJc4.Value = LoadSetting(settingsXElement, RtpcUseJc4);
+        RtpcClassDirectory.Value = LoadSetting(settingsXElement, RtpcClassDirectory);
     }
     
     private static void WriteSetting<T>(XContainer parentXContainer, Setting<T> setting)
@@ -168,16 +174,16 @@ public static class Settings
             settingNode = (XElement) settingNode.NextNode;
             settingNameNode = settingNode?.Element(nameof(setting.Name));
         }
-        
-        if (settingNameNode?.Value != setting.Name)
+
+        if (settingNode is null || settingNameNode?.Value != setting.Name)
         {
-            return setting.Value;
+            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, missing setting node");
         }
 
         var valueNode = settingNode.Element(nameof(setting.Value));
         if (valueNode is null)
         {
-            return setting.Value;
+            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, missing value node");
         }
         
         var value = valueNode.Value;
@@ -187,7 +193,7 @@ public static class Settings
         }
         catch
         {
-            return setting.Value;
+            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, invalid value");
         }
     }
 

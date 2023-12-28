@@ -11,11 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="db" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="db\ApexTools.Core.db">
+      <None Update="resources\databases\ApexTools.Core.db">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="resources\rtpc_class_definitions\_.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

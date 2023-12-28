@@ -1,8 +1,8 @@
-﻿using ApexFormat.RTPC.V03.JC4.Models.Data;
+﻿using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.RTPC.V03.JC4.Models;
+namespace ApexFormat.RTPC.V03.Flat.Models;
 
 public class RtpcV03OffsetValueMaps
 {
