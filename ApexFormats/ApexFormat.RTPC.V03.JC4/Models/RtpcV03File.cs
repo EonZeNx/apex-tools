@@ -10,8 +10,8 @@ namespace ApexFormat.RTPC.V03.JC4.Models;
 
 public class RtpcV03File : IApexFile, IXmlFile
 {
-    public RtpcV03Header Header;
-    public RtpcV03Container Container;
+    public RtpcV03Header Header = new();
+    public RtpcV03Container Container = new();
     
     public RtpcV03OffsetValueMaps OvMaps = new();
     public RtpcV03ValueOffsetMaps VoMaps = new();
@@ -19,7 +19,7 @@ public class RtpcV03File : IApexFile, IXmlFile
     public string ApexExtension { get; set; } = ".rtpc";
     public static string XmlName => "RTPC";
     public string XmlExtension => ".xml";
-    
+
     public void FromApex(BinaryReader br)
     {
         br.Seek(0);
@@ -27,6 +27,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         Header = br.ReadRtpcV03Header();
         var containerHeader = br.ReadRtpcV03ContainerHeader();
         Container = br.ReadRtpcV03Container(containerHeader);
+        Container.Flat = true; // To distinguish between RTPC v3 and flat RTPC v3, root container must have flat = true
         
         var allPropertyHeaders = Container.GetAllPropertyHeaders();
         var uniqueOffsets = allPropertyHeaders
@@ -88,6 +89,11 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToXml(string targetPath)
     {
+        var parentIndexArrayOffset = Container.PropertyHeaders
+            .First(h => h.NameHash == 0xCFD7B43E).RawData;
+        var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
+        Container.UnFlatten(parentIndexArray);
+        
         if (Settings.PerformHashLookUp.Value)
         {
             Container.LookupNameHash();
@@ -103,7 +109,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
         
-        xe.Write(Container, OvMaps, false);
+        xe.Write(Container, OvMaps);
         
         xd.Add(xe);
         xd.Save(targetPath);

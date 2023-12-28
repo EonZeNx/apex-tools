@@ -11,7 +11,8 @@ public struct RtpcV03Container
     public RtpcV03ContainerHeader[] ContainerHeaders;
     public uint ValidProperties;
 
-    public RtpcV03Container[] Containers = Array.Empty<RtpcV03Container>();
+    public bool Flat;
+    public RtpcV03Container[] Containers;
 
     public static string XmlName = "Container";
 
@@ -21,6 +22,9 @@ public struct RtpcV03Container
         PropertyHeaders = Array.Empty<RtpcV03PropertyHeader>();
         ContainerHeaders = Array.Empty<RtpcV03ContainerHeader>();
         ValidProperties = 0;
+        
+        Flat = false;
+        Containers = Array.Empty<RtpcV03Container>();
     }
 }
 
@@ -77,6 +81,36 @@ public static class RtpcV03ContainerExtension
         // 4095556453,
         // 4231742465
     };
+
+    public static void UnFlatten(this ref RtpcV03Container container, IList<uint> parentIndexArray)
+    {
+        var i = parentIndexArray.Count - 1;
+        while (i >= 0)
+        {
+            var parentIndex = parentIndexArray[i];
+            if (parentIndex != 0xFFFFFFFF)
+            {
+                var subContainer = container.Containers[i];
+                subContainer.Flat = true;
+
+                container.Containers[parentIndex].Containers = container.Containers[parentIndex].Containers.Append(subContainer).ToArray();
+            }
+
+            i -= 1;
+        }
+
+        // Mask parent index array with target index
+        var indicesToRemove = parentIndexArray
+            .Select((pIndex, j) => (uint) Math.Max(pIndex, j))
+            .Where(j => j < uint.MaxValue);
+        
+        container.Containers = container.Containers
+            .Where((c, j) => !indicesToRemove.Contains((uint) j))
+            .ToArray();
+        container.ContainerHeaders = container.ContainerHeaders
+            .Where((c, j) => !indicesToRemove.Contains((uint) j))
+            .ToArray();
+    }
     
     public static void LookupNameHash(this ref RtpcV03Container container)
     {
@@ -227,25 +261,12 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps, bool performCheck = false)
+    public static void Write(this XElement pxe, RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
     {
-        // if (performCheck)
-        // {
-        //     var uniqueClass = container.PropertyHeaders
-        //         .Where(h => ClassHashes.Contains(BitConverter.ToUInt32(h.RawData)))
-        //         .ToArray();
-        //     if (uniqueClass.Length != 1)
-        //     {
-        //         return;
-        //     }
-        //
-        //     var classHash = BitConverter.ToUInt32(uniqueClass[0].RawData);
-        //     ClassHashes.Remove(classHash);
-        // }
-        
         var xe = new XElement(RtpcV03Container.XmlName);
         
         xe.WriteNameOrHash(container.Header.NameHash, container.Header.Name);
+        xe.SetAttributeValue(nameof(container.Flat), container.Flat);
         
         foreach (var propertyHeader in container.PropertyHeaders)
         {
