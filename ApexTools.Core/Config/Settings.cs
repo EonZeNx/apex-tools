@@ -61,15 +61,20 @@ public static class Settings
         .SetName(nameof(RtpcSkipUnassignedProperties))
         .SetDescription("Skip unassigned properties of Runtime Containers (I/RTPC files)");
     
-    public static Setting<bool> RtpcUseJc4 { get; set; } = Setting<bool>
+    public static Setting<bool> RtpcPreferFlat { get; set; } = Setting<bool>
         .Create(true)
-        .SetName(nameof(RtpcUseJc4))
-        .SetDescription("Use JC4 RTPC v3(.1) instead of RTPC v3");
+        .SetName(nameof(RtpcPreferFlat))
+        .SetDescription("Prefer flat RTPC v3");
     
     public static Setting<string> RtpcClassDirectory { get; set; } = Setting<string>
         .Create(Path.Join(AppContext.BaseDirectory, "resources", "rtpc_class_definitions"))
         .SetName(nameof(RtpcClassDirectory))
         .SetDescription("Location of flat RTPC v03 class definitions");
+    
+    public static Setting<bool> RtpcUpdateClassDefinitions { get; set; } = Setting<bool>
+        .Create(true)
+        .SetName(nameof(RtpcUpdateClassDefinitions))
+        .SetDescription("Always write RTPC class definitions");
 
     #endregion
 
@@ -112,8 +117,9 @@ public static class Settings
         xElement.WriteSetting(OutputValueOffset);
         xElement.WriteSetting(RtpcSortProperties);
         xElement.WriteSetting(RtpcSkipUnassignedProperties);
-        xElement.WriteSetting(RtpcUseJc4);
+        xElement.WriteSetting(RtpcPreferFlat);
         xElement.WriteSetting(RtpcClassDirectory);
+        xElement.WriteSetting(RtpcUpdateClassDefinitions);
             
         xDocument.Add(xElement);
         xDocument.Save(XmlFilePath);
@@ -138,8 +144,9 @@ public static class Settings
         OutputValueOffset.Value = settingsXElement.LoadSetting(OutputValueOffset);
         RtpcSortProperties.Value = settingsXElement.LoadSetting(RtpcSortProperties);
         RtpcSkipUnassignedProperties.Value = settingsXElement.LoadSetting(RtpcSkipUnassignedProperties);
-        RtpcUseJc4.Value = settingsXElement.LoadSetting(RtpcUseJc4);
+        RtpcPreferFlat.Value = settingsXElement.LoadSetting(RtpcPreferFlat);
         RtpcClassDirectory.Value = settingsXElement.LoadSetting(RtpcClassDirectory);
+        RtpcUpdateClassDefinitions.Value = settingsXElement.LoadSetting(RtpcUpdateClassDefinitions);
     }
 
     #endregion

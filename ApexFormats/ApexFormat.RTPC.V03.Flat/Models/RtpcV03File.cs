@@ -3,10 +3,12 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Flat.Abstractions;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
+using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
 using ApexTools.Core.Utils;
+using ApexTools.Core.Utils.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 
@@ -47,14 +49,31 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToApex(BinaryWriter bw)
     {
+        var parentIndices = new List<uint>();
+        var flatContainers = new List<RtpcV03Container>();
+        
+        foreach (ref var subContainer in Container.Containers.AsSpan())
+        {
+            if (!subContainer.Flat) continue;
+            flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
+        }
+        
+        Container.Containers = flatContainers.ToArray();
+        Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
+        Container.Header.ContainerCount = (ushort) Container.Containers.Length;
+        
+        Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
+
+        var containerId = 1;
+        Container.SetContainerNameHash(ref containerId);
+        
         var containerOffset = (uint) (RtpcV03Header.SizeOf() + 1 * RtpcV03ContainerHeader.SizeOf());
         Container.Header.BodyOffset = containerOffset;
         {
             var propertySize = Container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
-            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf();
-            const int validPropertySize = 4;
+            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf(true);
             
-            containerOffset += (uint) (propertySize + containerHeaderSize + validPropertySize);
+            containerOffset += (uint) (propertySize + containerHeaderSize);
         }
         Container.SetBodyOffset(containerOffset);
         
@@ -104,8 +123,9 @@ public class RtpcV03File : IApexFile, IXmlFile
     {
         var parentIndexArrayOffset = Container.PropertyHeaders
             .First(h => h.NameHash == 0xCFD7B43E).RawData;
+        
         var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
-        Container.UnFlatten(parentIndexArray);
+        Container.UnFlatten(in parentIndexArray);
         
         // TODO: Support 0x8F1D6E5A byte array ADF
         // Other 3 properties can be inferred by container structure
@@ -127,6 +147,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         var xe = new XElement(XmlName);
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
+        xe.SetAttributeValue("Flat", true);
 
         xe.Write(Container, OvMaps, true);
         
@@ -151,8 +172,20 @@ public class RtpcV03File : IApexFile, IXmlFile
         
         foreach (var containerClass in ClassDefinitions)
         {
-            var containerClassFile = Path.Join(classDirectory, $"{containerClass.ClassHash:X8}.xml");
-            if (File.Exists(containerClassFile))
+            var name = string.Empty;
+            if (Settings.PerformHashLookUp.Value)
+            {
+                name = HashUtils.Lookup(containerClass.ClassHash, EHashType.Class);
+            }
+
+            var fileName = $"{containerClass.ClassHash:X8}";
+            if (!string.IsNullOrEmpty(name))
+            {
+                fileName = $"{fileName}_{name}";
+            }
+            
+            var containerClassFile = Path.Join(classDirectory, $"{fileName}.xml");
+            if (File.Exists(containerClassFile) && !Settings.RtpcUpdateClassDefinitions.Value)
             {
                 continue;
             }
@@ -160,12 +193,18 @@ public class RtpcV03File : IApexFile, IXmlFile
             var xd = new XDocument();
             var xe = new XElement("Definition");
             xe.SetAttributeValue(nameof(containerClass.ClassHash), $"{containerClass.ClassHash:X8}");
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                xe.SetAttributeValue(XElementExtensions.NameAttributeName, name);
+            }
             
             foreach (var member in containerClass.Members)
             {
                 var mxe = new XElement("Member");
                 mxe.SetAttributeValue(nameof(member.NameHash), $"{member.NameHash:X8}");
                 mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType.GetXmlName()}");
+                mxe.SetAttributeValue(nameof(member.Name), $"{member.Name}");
                 
                 xe.Add(mxe);
             }
@@ -209,6 +248,12 @@ public class RtpcV03File : IApexFile, IXmlFile
             
             classDefinition.ClassHash = uint.Parse(classHashAttribute.Value, NumberStyles.HexNumber);
             
+            var classNameAttribute = xd.Root?.Attribute(nameof(dummyClass.Name));
+            if (classNameAttribute is not null)
+            {
+                classDefinition.Name = classNameAttribute.Value;
+            }
+            
             var memberElements = xd.Root?.Elements("Member") ?? Array.Empty<XElement>();
             foreach (var xe in memberElements)
             {
@@ -221,6 +266,13 @@ public class RtpcV03File : IApexFile, IXmlFile
                 }
                 
                 classMember.NameHash = uint.Parse(nameHashAttribute.Value, NumberStyles.HexNumber);
+                classMember.NameHashHex = nameHashAttribute.Value;
+                
+                var memberNameAttribute = xe.Attribute(nameof(dummyMember.Name));
+                if (memberNameAttribute is not null)
+                {
+                    classMember.Name = memberNameAttribute.Value;
+                }
                 
                 var variantAttribute = xe.Attribute(nameof(dummyMember.VariantType));
                 if (variantAttribute is null)

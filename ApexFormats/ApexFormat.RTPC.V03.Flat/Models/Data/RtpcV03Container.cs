@@ -35,65 +35,29 @@ public struct RtpcV03Container
 
 public static class RtpcV03ContainerExtension
 {
-    public static List<uint> ClassHashes = new()
+    public static void SetContainerNameHash(ref this RtpcV03Container container, ref int id)
     {
-        // 49639034,
-        // 130186728,
-        // 131178563,
-        // 223103978,
-        // 302102125,
-        // 349766449,
-        // 784662036,
-        // 854750954,
-        // 985770513,
-        // 1078578751,
-        // 1089081654,
-        // 1256626520,
-        // 1263718194,
-        // 1267387985,
-        // 1310083454,
-        // 1313213895,
-        // 1313580645,
-        // 1516962764,
-        // 1538251111,
-        // 1603476123,
-        // TODO: This is fucked 1713244665,
-        // 1732484761,
-        // 1822804832,
-        // 1891047768,
-        // 2029116022,
-        // 2071185270,
-        // 2350009519,
-        // 2400941364,
-        // 2495072499,
-        // 2510826771,
-        // 3166021335,
-        // 3221305917,
-        // 3283921524,
-        // 3359915272,
-        // 3431567010,
-        // 3431661127,
-        // TODO: This is fucked 3457537195,
-        // 3478510451,
-        // 3511785762,
-        // 3548386982,
-        // 3608552463,
-        // 3665801671,
-        // 3672051056,
-        // 3734839025,
-        // 3788215443,
-        // 4029389064,
-        // 4095556453,
-        // 4231742465
-    };
+        foreach (ref var subContainer in container.Containers.AsSpan())
+        {
+            subContainer.Header.NameHash = (uint) id;
+            id += 1;
+        }
+        
+        foreach (ref var subContainer in container.Containers.AsSpan())
+        {
+            subContainer.SetContainerNameHash(ref id);
+        }
 
-    public static void ApplyClassDefinition(this ref RtpcV03Container container, in FRtpcV03Class[] classDefinitions, bool isRoot = false)
+        container.ContainerHeaders = container.Containers.Select(c => c.Header).ToArray();
+    }
+    
+    public static void ApplyClassDefinition(ref this RtpcV03Container container, in FRtpcV03Class[] classDefinitions, bool isRoot = false)
     {
         if (!isRoot)
         {
             FRtpcV03Class classDefinition;
             {
-                var classHash = container.CreateContainerClass().ClassHash;
+                var classHash = container.GetClassHash();
                 var filteredClassDefinitions = classDefinitions
                     .Where(d => d.ClassHash == classHash)
                     .ToList();
@@ -116,6 +80,7 @@ public static class RtpcV03ContainerExtension
                     continue;
                 }
 
+                // TODO: Optional properties on class
                 var property = properties.First(p => p.NameHash == classMember.NameHash);
                 orderedProperties.Add(property);
             }
@@ -126,14 +91,14 @@ public static class RtpcV03ContainerExtension
 
         foreach (ref var subContainer in container.Containers.AsSpan())
         {
-            if (!isRoot && subContainer.Flat)
+            if (subContainer.Flat)
             {
                 subContainer.ApplyClassDefinition(in classDefinitions);
             }
         }
     }
 
-    public static void UnFlatten(this ref RtpcV03Container container, IList<uint> parentIndexArray)
+    public static void UnFlatten(ref this RtpcV03Container container, in IList<uint> parentIndexArray)
     {
         foreach (ref var subContainer in container.Containers.AsSpan())
         {
@@ -161,14 +126,90 @@ public static class RtpcV03ContainerExtension
             .Where(j => j < uint.MaxValue);
         
         container.Containers = container.Containers
-            .Where((c, j) => !indicesToRemove.Contains((uint) j))
+            .Where((_, j) => !indicesToRemove.Contains((uint) j))
             .ToArray();
         container.ContainerHeaders = container.ContainerHeaders
-            .Where((c, j) => !indicesToRemove.Contains((uint) j))
+            .Where((_, j) => !indicesToRemove.Contains((uint) j))
             .ToArray();
     }
+
+    public static IEnumerable<RtpcV03Container> Flatten(ref this RtpcV03Container container, uint parentIndex, ref List<uint> parentIndices)
+    {
+        var flatContainers = new List<RtpcV03Container>();
+        
+        parentIndices.Add(parentIndex);
+        var index = (uint) parentIndices.Count - 1;
+        
+        foreach (ref var subContainer in container.Containers.AsSpan())
+        {
+            if (!subContainer.Flat) continue;
+            flatContainers.AddRange(subContainer.Flatten(index, ref parentIndices));
+        }
+        
+        container.Containers = container.Containers.Where(c => !c.Flat).ToArray();
+        container.ContainerHeaders = container.Containers.Select(c => c.Header).ToArray();
+        container.Header.ContainerCount = (ushort) container.Containers.Length;
+        
+        flatContainers.Insert(0, container);
+
+        return flatContainers;
+    }
+
+    public static void CreateRootFlattenedProperties(ref this RtpcV03Container container, ref RtpcV03ValueOffsetMaps voMaps, in List<uint> parentIndices)
+    {
+        var properties = new List<RtpcV03PropertyHeader>();
+        
+        { // Indices
+            var indicesProperty = new RtpcV03PropertyHeader
+            {
+                NameHash = 0xCFD7B43E,
+                RawData = new byte[4],
+                VariantType = EVariantType.UInteger32Array,
+                XmlData = string.Join(",", parentIndices)
+            };
+            properties.Add(indicesProperty);
+            
+            voMaps.U32ArrayOffsetMap.Add(parentIndices, 0);
+        }
+
+        { // Class hash
+            var classHashArray = container.Containers.Select(c => c.GetClassHash()).ToArray();
+            var classHashArrayProperty = new RtpcV03PropertyHeader
+            {
+                NameHash = 0x6AE2DDA0,
+                RawData = new byte[4],
+                VariantType = EVariantType.UInteger32Array,
+                XmlData = string.Join(",", classHashArray)
+            };
+            properties.Add(classHashArrayProperty);
+            
+            voMaps.U32ArrayOffsetMap.Add(classHashArray, 0);
+        }
+
+        { // Object ID
+            var oIdArray = container.Containers.Select(c => c.GetObjectId()).ToArray();
+            var byteArray = oIdArray.SelectMany(BitConverter.GetBytes).ToArray();
+            var hexByteArray = byteArray.Select(b => $"{b:X2}");
+            
+            var classHashArrayProperty = new RtpcV03PropertyHeader
+            {
+                NameHash = 0x0584FFCF,
+                RawData = new byte[4],
+                VariantType = EVariantType.ByteArray,
+                XmlData = string.Join(",", hexByteArray)
+            };
+            properties.Add(classHashArrayProperty);
+            
+            voMaps.ByteArrayOffsetMap.Add(byteArray, 0);
+        }
+
+        container.PropertyHeaders = container.PropertyHeaders.Concat(properties).ToArray();
+        container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
+
+        container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
+    }
     
-    public static void LookupNameHash(this ref RtpcV03Container container)
+    public static void LookupNameHash(ref this RtpcV03Container container)
     {
         for (var i = 0; i < container.PropertyHeaders.Length; i++)
         {
@@ -181,7 +222,7 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static void Sort(this ref RtpcV03Container container)
+    public static void Sort(ref this RtpcV03Container container)
     {
         container.PropertyHeaders = container.PropertyHeaders
             .OrderBy(ph => string.IsNullOrEmpty(ph.Name))
@@ -195,7 +236,7 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static uint DataSize(this RtpcV03Container container, bool withValid = false)
+    public static uint DataSize(in this RtpcV03Container container, bool withValid = false)
     {
         var propertySize = container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
         var containerHeaderSize = container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf(true);
@@ -211,7 +252,7 @@ public static class RtpcV03ContainerExtension
         return result;
     }
     
-    public static uint SetBodyOffset(this RtpcV03Container container, uint containerOffset)
+    public static uint SetBodyOffset(ref this RtpcV03Container container, uint containerOffset)
     {
         for (var i = 0; i < container.Containers.Length; i++)
         {
@@ -228,7 +269,7 @@ public static class RtpcV03ContainerExtension
         return containerOffset;
     }
     
-    public static IEnumerable<RtpcV03PropertyHeader> GetAllPropertyHeaders(this RtpcV03Container container)
+    public static IEnumerable<RtpcV03PropertyHeader> GetAllPropertyHeaders(in this RtpcV03Container container)
     {
         var result = new List<RtpcV03PropertyHeader>(container.PropertyHeaders);
         foreach (var subContainer in container.Containers)
@@ -239,26 +280,40 @@ public static class RtpcV03ContainerExtension
         return result;
     }
     
-    public static IEnumerable<FRtpcV03Class> CreateAllContainerClasses(this RtpcV03Container container)
+    public static IEnumerable<FRtpcV03Class> CreateAllContainerClasses(in this RtpcV03Container container)
     {
         var result = new List<FRtpcV03Class>();
         result.AddRange(container.Containers.Select(sc => sc.CreateContainerClass()));
 
         return result;
     }
+
+    public static ulong GetObjectId(in this RtpcV03Container container)
+    {
+        var header = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0x0584FFCF));
+        
+        return ulong.Parse(header.XmlData, NumberStyles.HexNumber);
+    }
     
-    public static FRtpcV03Class CreateContainerClass(this RtpcV03Container container)
+    public static uint GetClassHash(in this RtpcV03Container container)
     {
         var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0xE65940D0));
+        
+        return BitConverter.ToUInt32(classHashHeader.RawData);
+    }
+    
+    public static FRtpcV03Class CreateContainerClass(in this RtpcV03Container container)
+    {
         var result = new FRtpcV03Class
         {
-            ClassHash = BitConverter.ToUInt32(classHashHeader.RawData),
+            ClassHash = container.GetClassHash(),
             Members = container.PropertyHeaders.Select(h => new FRtpcV03ClassMember
             {
                 NameHash = h.NameHash,
-                VariantType = h.VariantType
+                VariantType = h.VariantType,
+                Name = Settings.PerformHashLookUp.Value ? HashUtils.Lookup(h.NameHash) : string.Empty
             }).ToList()
-        }.FilterDefaultMembers();
+        };
 
         return result;
     }
@@ -329,8 +384,11 @@ public static class RtpcV03ContainerExtension
     public static void Write(this XElement pxe, in RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps, bool isRoot = false)
     {
         var xe = new XElement(RtpcV03Container.XmlName);
-        
-        xe.SetAttributeValue(nameof(container.Flat), container.Flat);
+
+        if (!container.Flat)
+        {
+            xe.SetAttributeValue(nameof(container.Flat), container.Flat);
+        }
 
         if (isRoot)
         {
@@ -339,7 +397,7 @@ public static class RtpcV03ContainerExtension
         }
         else
         {
-            { // Class
+            { // Class hash
                 var classHash = ByteUtils.ReverseBytes(0xE65940D0);
                 var classHeader = container.PropertyHeaders.First(h => h.NameHash == classHash);
 
@@ -405,15 +463,28 @@ public static class RtpcV03ContainerExtension
         var containers = xe.Elements(RtpcV03Container.XmlName)
             .ToList();
 
-        var hasName = false;
-        if (!isRoot)
+        if (isRoot)
+        {
+            var unknownAttribute = xe.Attribute("Unknown");
+            if (unknownAttribute is null)
+            {
+                throw new XmlSchemaException("Unknown is missing from the root container");
+            }
+                
+            var unknownXe = new XElement(EVariantType.UInteger32.GetXmlName());
+            unknownXe.SetAttributeValue(XElementExtensions.NameHashAttributeName, $"{0x95C1191D:X8}");
+            unknownXe.SetValue(unknownAttribute.Value);
+                
+            properties.Add(unknownXe);
+        }
+        else
         {
             { // Class
                 var classHashAttribute = xe.Attribute("ClassHash");
                 var classAttribute = xe.Attribute("Class");
                 
                 var classXe = new XElement(EVariantType.UInteger32.GetXmlName());
-                classXe.SetAttributeValue("Name", "_class_hash");
+                classXe.SetAttributeValue(XElementExtensions.NameAttributeName, "_class_hash");
                 
                 if (classHashAttribute is not null)
                 {
@@ -441,23 +512,21 @@ public static class RtpcV03ContainerExtension
                 }
                 
                 var oIdXe = new XElement(EVariantType.ObjectId.GetXmlName());
-                oIdXe.SetAttributeValue("Name", "_object_id");
+                oIdXe.SetAttributeValue(XElementExtensions.NameAttributeName, "_object_id");
                 oIdXe.SetValue(oIdAttribute.Value);
                 
                 properties.Add(oIdXe);
             }
 
             { // Name & name hash (optional)
-                var nameAttribute = xe.Attribute("Name");
+                var nameAttribute = xe.Attribute(XElementExtensions.NameAttributeName);
                 if (nameAttribute is not null)
                 {
-                    hasName = true;
-                    
                     var nameXe = new XElement(EVariantType.String.GetXmlName());
                     var nameHashXe = new XElement(EVariantType.UInteger32.GetXmlName());
                     
-                    nameXe.SetAttributeValue("Name", "name");
-                    nameHashXe.SetAttributeValue("Name", "name_hash");
+                    nameXe.SetAttributeValue(XElementExtensions.NameAttributeName, "name");
+                    nameHashXe.SetAttributeValue(XElementExtensions.NameAttributeName, "name_hash");
                     
                     nameXe.SetValue(nameAttribute.Value);
                     
@@ -475,10 +544,6 @@ public static class RtpcV03ContainerExtension
             ContainerCount = (ushort) containers.Count,
             PropertyCount = (ushort) properties.Count
         };
-        if (!isRoot && hasName)
-        {
-            header.NameHash = xe.GetNameHash();
-        }
         
         var result = new RtpcV03Container
         {
@@ -488,10 +553,14 @@ public static class RtpcV03ContainerExtension
             Containers = new RtpcV03Container[header.ContainerCount]
         };
         
-        {
+        { // Flat (optional)
             var flatAttribute = xe.Attribute($"{nameof(result.Flat)}");
-            if (flatAttribute is null) throw new XmlSchemaException($"{nameof(result.Flat)} missing from {xe}");
-            result.Flat = bool.Parse(flatAttribute.Value);
+            
+            result.Flat = true;
+            if (flatAttribute is not null)
+            {
+                result.Flat = bool.Parse(flatAttribute.Value);
+            }
         }
 
         for (var i = 0; i < header.PropertyCount; i++)
