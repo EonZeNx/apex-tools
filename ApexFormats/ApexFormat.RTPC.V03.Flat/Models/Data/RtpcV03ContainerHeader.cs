@@ -1,6 +1,4 @@
-﻿using ApexTools.Core.Utils.Hash;
-
-namespace ApexFormat.RTPC.V03.Flat.Models.Data;
+﻿namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03ContainerHeader
 {

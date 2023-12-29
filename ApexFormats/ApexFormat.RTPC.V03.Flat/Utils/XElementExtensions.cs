@@ -41,7 +41,8 @@ public static class XElementExtensions
             return nameHash;
         }
 
-        throw new XmlSyntaxException($"Both {NameHashAttributeName} and {NameAttributeName} attributes missing from {xe}");
+        var nodePosition = xe.ElementsBeforeSelf().Count();
+        throw new XmlSyntaxException($"Both {NameHashAttributeName} and {NameAttributeName} attributes missing from node #{nodePosition}");
     }
     
     public static EVariantType GetVariant(this XElement xe)

@@ -44,7 +44,9 @@ public static class FRtpcV03ClassExtensions
     
     public static IEnumerable<RtpcV03PropertyHeader> FilterDefaultMembers(IEnumerable<RtpcV03PropertyHeader> headers)
     {
-        var hashes = DefaultMemberHashes.Select(m => m.NameHash);
-        return headers.Where(h => !hashes.Contains(h.NameHash));
+        var hashesToFilter = DefaultMemberHashes.Select(m => m.NameHash);
+        var filteredHeaders = headers.Where(h => !hashesToFilter.Contains(h.NameHash));
+        
+        return filteredHeaders;
     }
 }

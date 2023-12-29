@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using System.Globalization;
+using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Flat.Abstractions;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
@@ -76,9 +78,11 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void FromXml(string targetPath)
     {
+        LoadClassDefinitions();
+        
         var xd = XDocument.Load(targetPath);
         VoMaps.Create(xd);
-
+        
         ApexExtension = xd.Root?.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
         Header = new RtpcV03Header
         {
@@ -87,9 +91,13 @@ public class RtpcV03File : IApexFile, IXmlFile
         };
         
         var rtpcNode = xd.Element(XmlName)?.Element(RtpcV03Container.XmlName);
-        Container = rtpcNode.ReadRtpcV03Container();
+        if (rtpcNode is null)
+        {
+            throw new XmlSchemaException($"{XmlName} missing from \"{targetPath}\"");
+        }
         
-        LoadClassDefinitions();
+        Container = rtpcNode.ReadRtpcV03Container(true);
+        Container.ApplyClassDefinition(in ClassDefinitions, true);
     }
 
     public void ToXml(string targetPath)
@@ -120,7 +128,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
 
-        xe.Write(Container, OvMaps, ClassDefinitions, true);
+        xe.Write(Container, OvMaps, true);
         
         xd.Add(xe);
         xd.Save(targetPath);
@@ -157,7 +165,7 @@ public class RtpcV03File : IApexFile, IXmlFile
             {
                 var mxe = new XElement("Member");
                 mxe.SetAttributeValue(nameof(member.NameHash), $"{member.NameHash:X8}");
-                mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType}");
+                mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType.GetXmlName()}");
                 
                 xe.Add(mxe);
             }
@@ -167,18 +175,67 @@ public class RtpcV03File : IApexFile, IXmlFile
         }
     }
     
-    protected static void LoadClassDefinitions()
+    protected void LoadClassDefinitions()
     {
         var classDirectory = Settings.RtpcClassDirectory.Value;
         if (!Directory.Exists(classDirectory))
         {
             throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDirectory)} not found: \"{classDirectory}\"");
         }
-
+        
         var xmlFiles = Directory.GetFiles(classDirectory, "*.xml");
+
+        // ReSharper disable EntityNameCapturedOnly.Local
+        FRtpcV03Class dummyClass;
+        FRtpcV03ClassMember dummyMember;
+        // ReSharper enable EntityNameCapturedOnly.Local
+        
+        var classDefinitions = new List<FRtpcV03Class>();
         foreach (var xmlFile in xmlFiles)
         {
             var xd = XDocument.Load(xmlFile);
+            if (xd.Root is null)
+            {
+                throw new XmlSchemaException($"No valid root found in \"{xmlFile}\"");
+            }
+
+            var classDefinition = new FRtpcV03Class();
+            
+            var classHashAttribute = xd.Root?.Attribute(nameof(dummyClass.ClassHash));
+            if (classHashAttribute is null)
+            {
+                throw new XmlSchemaException($"{nameof(dummyClass.ClassHash)} missing from \"{xmlFile}\"");
+            }
+            
+            classDefinition.ClassHash = uint.Parse(classHashAttribute.Value, NumberStyles.HexNumber);
+            
+            var memberElements = xd.Root?.Elements("Member") ?? Array.Empty<XElement>();
+            foreach (var xe in memberElements)
+            {
+                var classMember = new FRtpcV03ClassMember();
+                
+                var nameHashAttribute = xe.Attribute(nameof(dummyMember.NameHash));
+                if (nameHashAttribute is null)
+                {
+                    throw new XmlSchemaException($"{nameof(dummyMember.NameHash)} missing from \"{xmlFile}\"");
+                }
+                
+                classMember.NameHash = uint.Parse(nameHashAttribute.Value, NumberStyles.HexNumber);
+                
+                var variantAttribute = xe.Attribute(nameof(dummyMember.VariantType));
+                if (variantAttribute is null)
+                {
+                    throw new XmlSchemaException($"{nameof(dummyMember.VariantType)} missing from \"{xmlFile}\"");
+                }
+                
+                classMember.VariantType = EVariantTypeExtensions.GetVariant(variantAttribute.Value);
+                
+                classDefinition.Members.Add(classMember);
+            }
+            
+            classDefinitions.Add(classDefinition);
         }
+
+        ClassDefinitions = classDefinitions.ToArray();
     }
 }
