@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SQLite;
+using System.Net.Http.Headers;
 using ApexTools.Core.Config;
 
 namespace ApexTools.Core.Utils.Hash;
@@ -19,6 +20,14 @@ public static class HashUtils
     public static SQLiteConnection? DbConnection { get; set; } = null;
     public static HashCache Hashes { get; set; } = new();
     public static bool TriedToOpenDb { get; set; } = false;
+
+    public static readonly Dictionary<EHashType, string> HashTypeToTable = new()
+    {
+        { EHashType.FilePath, "filepaths" },
+        { EHashType.Property, "properties" },
+        { EHashType.Class, "classes" },
+        { EHashType.Misc, "misc" },
+    };
     
     
     public static void OpenDatabaseConnection()
@@ -46,19 +55,19 @@ public static class HashUtils
         var tables = new List<string>();
         if (HasFlag(hashType, EHashType.FilePath))
         {
-            tables.Add("filepaths");
+            tables.Add(HashTypeToTable[EHashType.FilePath]);
         }
         if (HasFlag(hashType, EHashType.Property))
         {
-            tables.Add("properties");
+            tables.Add(HashTypeToTable[EHashType.Property]);
         }
         if (HasFlag(hashType, EHashType.Class))
         {
-            tables.Add("classes");
+            tables.Add(HashTypeToTable[EHashType.Class]);
         }
         if (HasFlag(hashType, EHashType.Misc))
         {
-            tables.Add("misc");
+            tables.Add(HashTypeToTable[EHashType.Misc]);
         }
         
         var command = DbConnection.CreateCommand();
@@ -84,6 +93,31 @@ public static class HashUtils
         
         return foundValue;
     }
+
+    public static void LoadAll()
+    {
+        if (!Settings.PerformHashLookUp.Value) return;
+
+        if (DbConnection == null && !TriedToOpenDb) OpenDatabaseConnection();
+        if (DbConnection?.State != ConnectionState.Open) return;
+        
+        var command = DbConnection.CreateCommand();
+        var tables = new List<string>(HashTypeToTable.Values);
+        
+        foreach (var table in tables)
+        {
+            command.CommandText = $"SELECT Hash, Value FROM '{table}'";
+            using var dbr = command.ExecuteReader();
+            while (dbr.Read())
+            {
+                var hash = (uint) dbr.GetInt32(0);
+                var value = dbr.GetString(1);
+                
+                Hashes.Add(hash, value);
+            }
+        }
+    }
+    
     
     public static bool HasFlag<T>(T flags, T flag) where T : struct
     {

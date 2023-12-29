@@ -31,8 +31,13 @@ public static class Settings
         .SetName(nameof(PerformHashLookUp))
         .SetDescription("Try lookup hash values");
     
-    public static Setting<bool> AlwaysOutputHash { get; set; } = Setting<bool>
+    public static Setting<bool> LoadAllHashes { get; set; } = Setting<bool>
         .Create(true)
+        .SetName(nameof(LoadAllHashes))
+        .SetDescription("Pre-load all hashes on startup");
+    
+    public static Setting<bool> AlwaysOutputHash { get; set; } = Setting<bool>
+        .Create(false)
         .SetName(nameof(AlwaysOutputHash))
         .SetDescription("Always output the hash even if the hash lookup was successful");
     
@@ -98,16 +103,17 @@ public static class Settings
         var xDocument = new XDocument();
         var xElement = new XElement(XmlName);
 
-        WriteSetting(xElement, LogProgress);
-        WriteSetting(xElement, AutoClose);
-        WriteSetting(xElement, DatabasePath);
-        WriteSetting(xElement, PerformHashLookUp);
-        WriteSetting(xElement, AlwaysOutputHash);
-        WriteSetting(xElement, OutputValueOffset);
-        WriteSetting(xElement, RtpcSortProperties);
-        WriteSetting(xElement, RtpcSkipUnassignedProperties);
-        WriteSetting(xElement, RtpcUseJc4);
-        WriteSetting(xElement, RtpcClassDirectory);
+        xElement.WriteSetting(LogProgress);
+        xElement.WriteSetting(AutoClose);
+        xElement.WriteSetting(DatabasePath);
+        xElement.WriteSetting(PerformHashLookUp);
+        xElement.WriteSetting(LoadAllHashes);
+        xElement.WriteSetting(AlwaysOutputHash);
+        xElement.WriteSetting(OutputValueOffset);
+        xElement.WriteSetting(RtpcSortProperties);
+        xElement.WriteSetting(RtpcSkipUnassignedProperties);
+        xElement.WriteSetting(RtpcUseJc4);
+        xElement.WriteSetting(RtpcClassDirectory);
             
         xDocument.Add(xElement);
         xDocument.Save(XmlFilePath);
@@ -123,118 +129,18 @@ public static class Settings
             throw new XmlSchemaException($"{XmlName} does not exist in file");
         }
 
-        LogProgress.Value = LoadSetting(settingsXElement, LogProgress);
-        AutoClose.Value = LoadSetting(settingsXElement, AutoClose);
-        DatabasePath.Value = LoadSetting(settingsXElement, DatabasePath);
-        PerformHashLookUp.Value = LoadSetting(settingsXElement, PerformHashLookUp);
-        AlwaysOutputHash.Value = LoadSetting(settingsXElement, AlwaysOutputHash);
-        OutputValueOffset.Value = LoadSetting(settingsXElement, OutputValueOffset);
-        RtpcSortProperties.Value = LoadSetting(settingsXElement, RtpcSortProperties);
-        RtpcSkipUnassignedProperties.Value = LoadSetting(settingsXElement, RtpcSkipUnassignedProperties);
-        RtpcUseJc4.Value = LoadSetting(settingsXElement, RtpcUseJc4);
-        RtpcClassDirectory.Value = LoadSetting(settingsXElement, RtpcClassDirectory);
-    }
-    
-    private static void WriteSetting<T>(XContainer parentXContainer, Setting<T> setting)
-    {
-        var settingXElement = new XElement(Setting<T>.XmlName);
-        
-        var nameXElement = new XElement(nameof(setting.Name))
-        {
-            Value = setting.Name
-        };
-        
-        var descriptionXElement = new XElement(nameof(setting.Description))
-        {
-            Value = setting.Description
-        };
-
-        var valueXElement = new XElement(nameof(setting.Value))
-        {
-            Value = $"{setting.Value}"
-        };
-        
-        settingXElement.Add(nameXElement);
-        settingXElement.Add(descriptionXElement);
-        settingXElement.Add(valueXElement);
-        
-        parentXContainer.Add(settingXElement);
-    }
-    
-    private static T LoadSetting<T>(this XContainer xContainer, Setting<T> setting)
-    {
-        var settingNode = xContainer.Element(Setting<T>.XmlName);
-        var settingNameNode = settingNode?.Element(nameof(setting.Name));
-        
-        while (settingNode is not null)
-        {
-            if (settingNameNode?.Value == setting.Name) break;
-            if (settingNode.NextNode is null) break;
-            
-            settingNode = (XElement) settingNode.NextNode;
-            settingNameNode = settingNode?.Element(nameof(setting.Name));
-        }
-
-        if (settingNode is null || settingNameNode?.Value != setting.Name)
-        {
-            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, missing setting node");
-        }
-
-        var valueNode = settingNode.Element(nameof(setting.Value));
-        if (valueNode is null)
-        {
-            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, missing value node");
-        }
-        
-        var value = valueNode.Value;
-        try
-        {
-            return (T) Convert.ChangeType(value, typeof(T));
-        }
-        catch
-        {
-            throw new XmlSchemaException($"{XmlFileName} could not load {setting.Name}, invalid value");
-        }
+        LogProgress.Value = settingsXElement.LoadSetting(LogProgress);
+        AutoClose.Value = settingsXElement.LoadSetting(AutoClose);
+        DatabasePath.Value = settingsXElement.LoadSetting(DatabasePath);
+        PerformHashLookUp.Value = settingsXElement.LoadSetting(PerformHashLookUp);
+        LoadAllHashes.Value = settingsXElement.LoadSetting(LoadAllHashes);
+        AlwaysOutputHash.Value = settingsXElement.LoadSetting(AlwaysOutputHash);
+        OutputValueOffset.Value = settingsXElement.LoadSetting(OutputValueOffset);
+        RtpcSortProperties.Value = settingsXElement.LoadSetting(RtpcSortProperties);
+        RtpcSkipUnassignedProperties.Value = settingsXElement.LoadSetting(RtpcSkipUnassignedProperties);
+        RtpcUseJc4.Value = settingsXElement.LoadSetting(RtpcUseJc4);
+        RtpcClassDirectory.Value = settingsXElement.LoadSetting(RtpcClassDirectory);
     }
 
     #endregion
-}
-
-/// <summary>
-/// Struct for generic settings, containing a value and a description
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public class Setting<T>
-{
-    public string Name;
-    public T Value;
-    public string Description;
-
-    public static string XmlName => "Setting";
-    
-    public Setting(T value)
-    {
-        Name = string.Empty;
-        Value = value;
-        Description = string.Empty;
-    }
-
-    public static Setting<T> Create(T value)
-    {
-        return new Setting<T>(value);
-    }
-
-    public Setting<T> SetName(string name)
-    {
-        Name = name;
-
-        return this;
-    }
-
-    public Setting<T> SetDescription(string description)
-    {
-        Description = description;
-
-        return this;
-    }
 }
