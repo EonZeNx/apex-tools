@@ -51,11 +51,11 @@ public static class RtpcV03ContainerExtension
         container.ContainerHeaders = container.Containers.Select(c => c.Header).ToArray();
     }
     
-    public static void ApplyClassDefinition(ref this RtpcV03Container container, in FRtpcV03Class[] classDefinitions, bool isRoot = false)
+    public static void ApplyClassDefinition(ref this RtpcV03Container container, in FRtpcV03ClassDefinition[] classDefinitions, bool isRoot = false)
     {
         if (!isRoot)
         {
-            FRtpcV03Class classDefinition;
+            FRtpcV03ClassDefinition classDefinitionDefinition;
             {
                 var classHash = container.GetClassHash();
                 var filteredClassDefinitions = classDefinitions
@@ -66,13 +66,13 @@ public static class RtpcV03ContainerExtension
                     throw new XmlSchemaException("Class hash was not found in class definitions");
                 }
 
-                classDefinition = filteredClassDefinitions[0];
+                classDefinitionDefinition = filteredClassDefinitions[0];
             }
 
             var properties = container.PropertyHeaders;
             var orderedProperties = new List<RtpcV03PropertyHeader>();
         
-            foreach (var classMember in classDefinition.Members)
+            foreach (var classMember in classDefinitionDefinition.Members)
             {
                 if (classMember.VariantType == EVariantType.Unassigned)
                 {
@@ -280,9 +280,9 @@ public static class RtpcV03ContainerExtension
         return result;
     }
     
-    public static IEnumerable<FRtpcV03Class> CreateAllContainerClasses(in this RtpcV03Container container)
+    public static IEnumerable<FRtpcV03ClassDefinition> CreateAllClassDefinitions(in this RtpcV03Container container)
     {
-        var result = new List<FRtpcV03Class>();
+        var result = new List<FRtpcV03ClassDefinition>();
         result.AddRange(container.Containers.Select(sc => sc.CreateContainerClass()));
 
         return result;
@@ -302,12 +302,12 @@ public static class RtpcV03ContainerExtension
         return BitConverter.ToUInt32(classHashHeader.RawData);
     }
     
-    public static FRtpcV03Class CreateContainerClass(in this RtpcV03Container container)
+    public static FRtpcV03ClassDefinition CreateContainerClass(in this RtpcV03Container container)
     {
-        var result = new FRtpcV03Class
+        var result = new FRtpcV03ClassDefinition
         {
             ClassHash = container.GetClassHash(),
-            Members = container.PropertyHeaders.Select(h => new FRtpcV03ClassMember
+            Members = container.PropertyHeaders.Select(h => new FRtpcV03ClassDefinitionMember
             {
                 NameHash = h.NameHash,
                 VariantType = h.VariantType,

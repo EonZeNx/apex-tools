@@ -19,7 +19,7 @@ public class RtpcV03File : IApexFile, IXmlFile
     
     public RtpcV03OffsetValueMaps OvMaps = new();
     public RtpcV03ValueOffsetMaps VoMaps = new();
-    public FRtpcV03Class[] ClassDefinitions = Array.Empty<FRtpcV03Class>();
+    public Dictionary<uint, List<FRtpcV03ClassDefinition>> ClassDefinitions = new();
     
     public string ApexExtension { get; set; } = ".rtpc";
     public static string XmlName => "RTPC";
@@ -116,7 +116,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         }
         
         Container = rtpcNode.ReadRtpcV03Container(true);
-        Container.ApplyClassDefinition(in ClassDefinitions, true);
+        // TODO: Readd this
+        // Container.ApplyClassDefinition(in ClassDefinitions, true);
     }
 
     public void ToXml(string targetPath)
@@ -156,80 +157,82 @@ public class RtpcV03File : IApexFile, IXmlFile
     }
 
 
+    /// <summary>
+    /// Class definitions can have optional properties, track each one
+    /// </summary>
+    /// <exception cref="DirectoryNotFoundException"></exception>
     protected void SaveClassDefinitions()
     {
-        var classDirectory = Settings.RtpcClassDirectory.Value;
-        if (!Directory.Exists(classDirectory))
+        var definitionDirectory = Settings.RtpcClassDefinitionDirectory.Value;
+        if (!Directory.Exists(definitionDirectory))
         {
-            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDirectory)} not found: \"{classDirectory}\"");
+            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDefinitionDirectory)} not found: \"{definitionDirectory}\"");
         }
 
-        var allContainerClasses = Container.CreateAllContainerClasses();
-        ClassDefinitions = allContainerClasses
-            .GroupBy(c => c.ClassHash)
-            .Select(g => g.First())
+        var unique = Container.CreateAllClassDefinitions()
+            .Distinct()
             .ToArray();
         
-        foreach (var containerClass in ClassDefinitions)
+        if (Settings.PerformHashLookUp.Value)
         {
-            var name = string.Empty;
-            if (Settings.PerformHashLookUp.Value)
+            var uniqueSpan = unique.AsSpan();
+            foreach (ref var definition in uniqueSpan)
             {
-                name = HashUtils.Lookup(containerClass.ClassHash, EHashType.Class);
+                definition.Name = HashUtils.Lookup(definition.ClassHash, EHashType.Class);
             }
+        }
 
-            var fileName = $"{containerClass.ClassHash:X8}";
-            if (!string.IsNullOrEmpty(name))
-            {
-                fileName = $"{fileName}_{name}";
-            }
-            
-            var containerClassFile = Path.Join(classDirectory, $"{fileName}.xml");
-            if (File.Exists(containerClassFile) && !Settings.RtpcUpdateClassDefinitions.Value)
+        ClassDefinitions = unique
+            .GroupBy(d => d.ClassHash)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var (classHash, definitions) in ClassDefinitions)
+        {
+            var fileName = $"{classHash:X8}";
+            var definitionFile = Directory.GetFiles(definitionDirectory, $"{fileName}*.xml").FirstOrDefault();
+            if (string.IsNullOrEmpty(definitionFile))
             {
                 continue;
             }
-        
-            var xd = new XDocument();
-            var xe = new XElement("Definition");
-            xe.SetAttributeValue(nameof(containerClass.ClassHash), $"{containerClass.ClassHash:X8}");
+            
+            var xd = File.Exists(definitionFile) ? XDocument.Load(definitionFile) : new XDocument();
+            if (xd.Root is null)
+            {
+                xd.Add(new XElement("Definitions"));
+            }
 
-            if (!string.IsNullOrEmpty(name))
+            var savedDXeList = xd.Descendants("Definition")
+                .Select(xe => xe.DefinitionFromXElement())
+                .ToArray();
+            var dxeList = definitions.Where(d => !savedDXeList.Contains(d))
+                .Select(d => d.CreateXElement())
+                .ToArray();
+
+            foreach (var dxe in dxeList)
             {
-                xe.SetAttributeValue(XElementExtensions.NameAttributeName, name);
+                xd.Root?.Add(dxe);
             }
             
-            foreach (var member in containerClass.Members)
-            {
-                var mxe = new XElement("Member");
-                mxe.SetAttributeValue(nameof(member.NameHash), $"{member.NameHash:X8}");
-                mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType.GetXmlName()}");
-                mxe.SetAttributeValue(nameof(member.Name), $"{member.Name}");
-                
-                xe.Add(mxe);
-            }
-            
-            xd.Add(xe);
-            xe.Save(containerClassFile);
+            xd.Save(definitionFile);
         }
     }
     
     protected void LoadClassDefinitions()
     {
-        var classDirectory = Settings.RtpcClassDirectory.Value;
+        var classDirectory = Settings.RtpcClassDefinitionDirectory.Value;
         if (!Directory.Exists(classDirectory))
         {
-            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDirectory)} not found: \"{classDirectory}\"");
+            throw new DirectoryNotFoundException($"{nameof(Settings.RtpcClassDefinitionDirectory)} not found: \"{classDirectory}\"");
         }
         
         var xmlFiles = Directory.GetFiles(classDirectory, "*.xml");
 
         // ReSharper disable EntityNameCapturedOnly.Local
-        FRtpcV03Class dummyClass;
-        FRtpcV03ClassMember dummyMember;
+        FRtpcV03ClassDefinition dummyClassDefinition;
+        FRtpcV03ClassDefinitionMember dummyDefinitionMember;
         // ReSharper enable EntityNameCapturedOnly.Local
         
-        var classDefinitions = new List<FRtpcV03Class>();
+        var classDefinitions = new List<FRtpcV03ClassDefinition>();
         foreach (var xmlFile in xmlFiles)
         {
             var xd = XDocument.Load(xmlFile);
@@ -238,17 +241,17 @@ public class RtpcV03File : IApexFile, IXmlFile
                 throw new XmlSchemaException($"No valid root found in \"{xmlFile}\"");
             }
 
-            var classDefinition = new FRtpcV03Class();
+            var classDefinition = new FRtpcV03ClassDefinition();
             
-            var classHashAttribute = xd.Root?.Attribute(nameof(dummyClass.ClassHash));
+            var classHashAttribute = xd.Root?.Attribute(nameof(dummyClassDefinition.ClassHash));
             if (classHashAttribute is null)
             {
-                throw new XmlSchemaException($"{nameof(dummyClass.ClassHash)} missing from \"{xmlFile}\"");
+                throw new XmlSchemaException($"{nameof(dummyClassDefinition.ClassHash)} missing from \"{xmlFile}\"");
             }
             
             classDefinition.ClassHash = uint.Parse(classHashAttribute.Value, NumberStyles.HexNumber);
             
-            var classNameAttribute = xd.Root?.Attribute(nameof(dummyClass.Name));
+            var classNameAttribute = xd.Root?.Attribute(nameof(dummyClassDefinition.Name));
             if (classNameAttribute is not null)
             {
                 classDefinition.Name = classNameAttribute.Value;
@@ -257,27 +260,27 @@ public class RtpcV03File : IApexFile, IXmlFile
             var memberElements = xd.Root?.Elements("Member") ?? Array.Empty<XElement>();
             foreach (var xe in memberElements)
             {
-                var classMember = new FRtpcV03ClassMember();
+                var classMember = new FRtpcV03ClassDefinitionMember();
                 
-                var nameHashAttribute = xe.Attribute(nameof(dummyMember.NameHash));
+                var nameHashAttribute = xe.Attribute(nameof(dummyDefinitionMember.NameHash));
                 if (nameHashAttribute is null)
                 {
-                    throw new XmlSchemaException($"{nameof(dummyMember.NameHash)} missing from \"{xmlFile}\"");
+                    throw new XmlSchemaException($"{nameof(dummyDefinitionMember.NameHash)} missing from \"{xmlFile}\"");
                 }
                 
                 classMember.NameHash = uint.Parse(nameHashAttribute.Value, NumberStyles.HexNumber);
                 classMember.NameHashHex = nameHashAttribute.Value;
                 
-                var memberNameAttribute = xe.Attribute(nameof(dummyMember.Name));
+                var memberNameAttribute = xe.Attribute(nameof(dummyDefinitionMember.Name));
                 if (memberNameAttribute is not null)
                 {
                     classMember.Name = memberNameAttribute.Value;
                 }
                 
-                var variantAttribute = xe.Attribute(nameof(dummyMember.VariantType));
+                var variantAttribute = xe.Attribute(nameof(dummyDefinitionMember.VariantType));
                 if (variantAttribute is null)
                 {
-                    throw new XmlSchemaException($"{nameof(dummyMember.VariantType)} missing from \"{xmlFile}\"");
+                    throw new XmlSchemaException($"{nameof(dummyDefinitionMember.VariantType)} missing from \"{xmlFile}\"");
                 }
                 
                 classMember.VariantType = EVariantTypeExtensions.GetVariant(variantAttribute.Value);
@@ -288,6 +291,7 @@ public class RtpcV03File : IApexFile, IXmlFile
             classDefinitions.Add(classDefinition);
         }
 
-        ClassDefinitions = classDefinitions.ToArray();
+        // TODO: Readd this
+        // ClassDefinitions = classDefinitions.ToArray();
     }
 }

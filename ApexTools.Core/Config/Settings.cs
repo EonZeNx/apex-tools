@@ -66,9 +66,9 @@ public static class Settings
         .SetName(nameof(RtpcPreferFlat))
         .SetDescription("Prefer flat RTPC v3");
     
-    public static Setting<string> RtpcClassDirectory { get; set; } = Setting<string>
+    public static Setting<string> RtpcClassDefinitionDirectory { get; set; } = Setting<string>
         .Create(Path.Join(AppContext.BaseDirectory, "resources", "rtpc_class_definitions"))
-        .SetName(nameof(RtpcClassDirectory))
+        .SetName(nameof(RtpcClassDefinitionDirectory))
         .SetDescription("Location of flat RTPC v03 class definitions");
     
     public static Setting<bool> RtpcUpdateClassDefinitions { get; set; } = Setting<bool>
@@ -118,7 +118,7 @@ public static class Settings
         xElement.WriteSetting(RtpcSortProperties);
         xElement.WriteSetting(RtpcSkipUnassignedProperties);
         xElement.WriteSetting(RtpcPreferFlat);
-        xElement.WriteSetting(RtpcClassDirectory);
+        xElement.WriteSetting(RtpcClassDefinitionDirectory);
         xElement.WriteSetting(RtpcUpdateClassDefinitions);
             
         xDocument.Add(xElement);
@@ -145,7 +145,7 @@ public static class Settings
         RtpcSortProperties.Value = settingsXElement.LoadSetting(RtpcSortProperties);
         RtpcSkipUnassignedProperties.Value = settingsXElement.LoadSetting(RtpcSkipUnassignedProperties);
         RtpcPreferFlat.Value = settingsXElement.LoadSetting(RtpcPreferFlat);
-        RtpcClassDirectory.Value = settingsXElement.LoadSetting(RtpcClassDirectory);
+        RtpcClassDefinitionDirectory.Value = settingsXElement.LoadSetting(RtpcClassDefinitionDirectory);
         RtpcUpdateClassDefinitions.Value = settingsXElement.LoadSetting(RtpcUpdateClassDefinitions);
     }
 
