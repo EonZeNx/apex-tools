@@ -51,42 +51,55 @@ public static class RtpcV03ContainerExtension
         container.ContainerHeaders = container.Containers.Select(c => c.Header).ToArray();
     }
     
-    public static void ApplyClassDefinition(ref this RtpcV03Container container, in FRtpcV03ClassDefinition[] classDefinitions, bool isRoot = false)
+    public static void ApplyClassDefinition(ref this RtpcV03Container container, in Dictionary<uint, List<FRtpcV03ClassDefinition>> classDefinitions, bool isRoot = false)
     {
         if (!isRoot)
         {
-            FRtpcV03ClassDefinition classDefinitionDefinition;
+            var classHash = container.GetClassHash();
+            if (!classDefinitions.ContainsKey(classHash))
             {
-                var classHash = container.GetClassHash();
-                var filteredClassDefinitions = classDefinitions
-                    .Where(d => d.ClassHash == classHash)
-                    .ToList();
-                if (filteredClassDefinitions.Count != 1)
-                {
-                    throw new XmlSchemaException("Class hash was not found in class definitions");
-                }
-
-                classDefinitionDefinition = filteredClassDefinitions[0];
+                throw new Exception("Unknown class hash");
             }
+            var definitions = classDefinitions[classHash];
 
             var properties = container.PropertyHeaders;
             var orderedProperties = new List<RtpcV03PropertyHeader>();
-        
-            foreach (var classMember in classDefinitionDefinition.Members)
+
+            var failed = false;
+            foreach (var classDefinition in definitions)
             {
-                if (classMember.VariantType == EVariantType.Unassigned)
+                failed = false;
+                foreach (var classMember in classDefinition.Members)
                 {
-                    orderedProperties.Add(new RtpcV03PropertyHeader());
-                    continue;
+                    var property = new RtpcV03PropertyHeader();
+                    if (classMember.VariantType != EVariantType.Unassigned)
+                    {
+                        if (properties.All(h => h.NameHash != classMember.NameHash))
+                        {
+                            failed = true;
+                            break;
+                        }
+                        property = properties.First(h => h.NameHash == classMember.NameHash);
+                    }
+                
+                    orderedProperties.Add(property);
                 }
 
-                // TODO: Optional properties on class
-                var property = properties.First(p => p.NameHash == classMember.NameHash);
-                orderedProperties.Add(property);
+                if (failed)
+                {
+                    orderedProperties.Clear();
+                    continue;
+                }
+                
+                container.PropertyHeaders = orderedProperties.ToArray();
+                container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
+                break;
             }
-        
-            container.PropertyHeaders = orderedProperties.ToArray();
-            container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
+
+            if (failed)
+            {
+                throw new Exception("Unknown class hash");
+            }
         }
 
         foreach (ref var subContainer in container.Containers.AsSpan())

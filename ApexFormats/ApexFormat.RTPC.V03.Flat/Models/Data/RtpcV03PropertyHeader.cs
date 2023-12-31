@@ -15,7 +15,14 @@ public struct RtpcV03PropertyHeader
 
     public string XmlData = string.Empty;
     public string Name = string.Empty;
-    
+
+    public override string ToString()
+    {
+        var bytes = string.Join("", RawData.Select(b => $"{b:X2}"));
+        var data = !string.IsNullOrEmpty(XmlData) ? XmlData : bytes;
+        return $"{NameHash:X8}: {VariantType} = {data}";
+    }
+
     public static int SizeOf() => 4 + 4 + 1;
 
     public RtpcV03PropertyHeader()

@@ -3,7 +3,6 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Flat.Abstractions;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
-using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
@@ -116,8 +115,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         }
         
         Container = rtpcNode.ReadRtpcV03Container(true);
-        // TODO: Readd this
-        // Container.ApplyClassDefinition(in ClassDefinitions, true);
+        Container.ApplyClassDefinition(in ClassDefinitions, true);
     }
 
     public void ToXml(string targetPath)
@@ -192,7 +190,13 @@ public class RtpcV03File : IApexFile, IXmlFile
             var definitionFile = Directory.GetFiles(definitionDirectory, $"{fileName}*.xml").FirstOrDefault();
             if (string.IsNullOrEmpty(definitionFile))
             {
-                continue;
+                var className = definitions.First().Name;
+                if (!string.IsNullOrEmpty(className))
+                {
+                    fileName += $"_{className}";
+                }
+                
+                definitionFile = Path.Join(definitionDirectory, $"{fileName}.xml");
             }
             
             var xd = File.Exists(definitionFile) ? XDocument.Load(definitionFile) : new XDocument();
@@ -201,7 +205,7 @@ public class RtpcV03File : IApexFile, IXmlFile
                 xd.Add(new XElement("Definitions"));
             }
 
-            var savedDXeList = xd.Descendants("Definition")
+            var savedDXeList = xd.Descendants(FRtpcV03ClassDefinition.XmlName)
                 .Select(xe => xe.DefinitionFromXElement())
                 .ToArray();
             var dxeList = definitions.Where(d => !savedDXeList.Contains(d))
@@ -226,13 +230,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         }
         
         var xmlFiles = Directory.GetFiles(classDirectory, "*.xml");
-
-        // ReSharper disable EntityNameCapturedOnly.Local
-        FRtpcV03ClassDefinition dummyClassDefinition;
-        FRtpcV03ClassDefinitionMember dummyDefinitionMember;
-        // ReSharper enable EntityNameCapturedOnly.Local
+        var classDefinitions = new Dictionary<uint, List<FRtpcV03ClassDefinition>>();
         
-        var classDefinitions = new List<FRtpcV03ClassDefinition>();
         foreach (var xmlFile in xmlFiles)
         {
             var xd = XDocument.Load(xmlFile);
@@ -241,57 +240,13 @@ public class RtpcV03File : IApexFile, IXmlFile
                 throw new XmlSchemaException($"No valid root found in \"{xmlFile}\"");
             }
 
-            var classDefinition = new FRtpcV03ClassDefinition();
+            var definitions = xd.DefinitionsFromXDocument();
+            if (definitions.Count == 0) continue;
             
-            var classHashAttribute = xd.Root?.Attribute(nameof(dummyClassDefinition.ClassHash));
-            if (classHashAttribute is null)
-            {
-                throw new XmlSchemaException($"{nameof(dummyClassDefinition.ClassHash)} missing from \"{xmlFile}\"");
-            }
-            
-            classDefinition.ClassHash = uint.Parse(classHashAttribute.Value, NumberStyles.HexNumber);
-            
-            var classNameAttribute = xd.Root?.Attribute(nameof(dummyClassDefinition.Name));
-            if (classNameAttribute is not null)
-            {
-                classDefinition.Name = classNameAttribute.Value;
-            }
-            
-            var memberElements = xd.Root?.Elements("Member") ?? Array.Empty<XElement>();
-            foreach (var xe in memberElements)
-            {
-                var classMember = new FRtpcV03ClassDefinitionMember();
-                
-                var nameHashAttribute = xe.Attribute(nameof(dummyDefinitionMember.NameHash));
-                if (nameHashAttribute is null)
-                {
-                    throw new XmlSchemaException($"{nameof(dummyDefinitionMember.NameHash)} missing from \"{xmlFile}\"");
-                }
-                
-                classMember.NameHash = uint.Parse(nameHashAttribute.Value, NumberStyles.HexNumber);
-                classMember.NameHashHex = nameHashAttribute.Value;
-                
-                var memberNameAttribute = xe.Attribute(nameof(dummyDefinitionMember.Name));
-                if (memberNameAttribute is not null)
-                {
-                    classMember.Name = memberNameAttribute.Value;
-                }
-                
-                var variantAttribute = xe.Attribute(nameof(dummyDefinitionMember.VariantType));
-                if (variantAttribute is null)
-                {
-                    throw new XmlSchemaException($"{nameof(dummyDefinitionMember.VariantType)} missing from \"{xmlFile}\"");
-                }
-                
-                classMember.VariantType = EVariantTypeExtensions.GetVariant(variantAttribute.Value);
-                
-                classDefinition.Members.Add(classMember);
-            }
-            
-            classDefinitions.Add(classDefinition);
+            var first = definitions.First();
+            classDefinitions.Add(first.ClassHash, definitions);
         }
 
-        // TODO: Readd this
-        // ClassDefinitions = classDefinitions.ToArray();
+        ClassDefinitions = classDefinitions;
     }
 }

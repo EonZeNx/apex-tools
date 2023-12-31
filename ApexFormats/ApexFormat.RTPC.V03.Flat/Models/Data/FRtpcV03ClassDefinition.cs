@@ -14,6 +14,7 @@ public struct FRtpcV03ClassDefinitionMember
     
     public string NameHashHex = string.Empty;
     public string Name = string.Empty;
+    public static string XmlName => "Member";
 
     public override string ToString() => $"{NameHash:X8}: {VariantType}";
 
@@ -52,6 +53,7 @@ public struct FRtpcV03ClassDefinition
     public List<FRtpcV03ClassDefinitionMember> Members = new();
     
     public string Name = string.Empty;
+    public static string XmlName => "Definition";
 
     public override string ToString() => $"{ClassHash:X8}: Member count {Members.Count}";
 
@@ -60,7 +62,7 @@ public struct FRtpcV03ClassDefinition
     public override int GetHashCode()
     {
         var classHashHash = ClassHash.GetHashCode();
-        var membersHash = Members.Aggregate(0, (c, member) => c ^ member.GetHashCode());
+        var membersHash = Members.Aggregate(0, (c, member) => c*13 ^ member.GetHashCode());
 
         return classHashHash + membersHash;
     }
@@ -106,8 +108,8 @@ public static class FRtpcV03ClassExtensions
 
     public static XElement CreateXElement(in this FRtpcV03ClassDefinition definition)
     {
-        var xe = new XElement("Definition");
-        xe.SetAttributeValue("ClassHash", $"{definition.ClassHash:X8}");
+        var xe = new XElement(FRtpcV03ClassDefinition.XmlName);
+        xe.SetAttributeValue(nameof(definition.ClassHash), $"{definition.ClassHash:X8}");
         
         if (!string.IsNullOrEmpty(definition.Name))
         {
@@ -116,7 +118,7 @@ public static class FRtpcV03ClassExtensions
         
         foreach (var member in definition.Members)
         {
-            var mxe = new XElement("Member");
+            var mxe = new XElement(FRtpcV03ClassDefinitionMember.XmlName);
             mxe.SetAttributeValue(nameof(member.NameHash), $"{member.NameHash:X8}");
             mxe.SetAttributeValue(nameof(member.VariantType), $"{member.VariantType.GetXmlName()}");
             mxe.SetAttributeValue(nameof(member.Name), $"{member.Name}");
@@ -131,11 +133,11 @@ public static class FRtpcV03ClassExtensions
     {
         var result = new FRtpcV03ClassDefinition();
 
-        var classHashAttribute = xe.Attribute("ClassHash");
-        if (classHashAttribute is null) throw new XmlSchemaException("ClassHash is missing from definition");
+        var classHashAttribute = xe.Attribute(nameof(result.ClassHash));
+        if (classHashAttribute is null) throw new XmlSchemaException($"{nameof(result.ClassHash)} is missing from definition");
         result.ClassHash = uint.Parse(classHashAttribute.Value, NumberStyles.HexNumber);
 
-        var mxeList = xe.Elements("Member");
+        var mxeList = xe.Elements(FRtpcV03ClassDefinitionMember.XmlName);
         foreach (var mxe in mxeList)
         {
             var member = new FRtpcV03ClassDefinitionMember();
@@ -152,5 +154,17 @@ public static class FRtpcV03ClassExtensions
         }
 
         return result;
+    }
+
+    public static List<FRtpcV03ClassDefinition> DefinitionsFromXDocument(this XDocument xd)
+    {
+        if (xd.Root is null)
+        {
+            throw new XmlSchemaException("No valid root found");
+        }
+
+        var dxeList = xd.Root.Descendants(FRtpcV03ClassDefinition.XmlName);
+
+        return dxeList.Select(dxe => dxe.DefinitionFromXElement()).ToList();
     }
 }
