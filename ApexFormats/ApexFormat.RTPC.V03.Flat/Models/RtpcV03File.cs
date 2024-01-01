@@ -60,6 +60,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         // Container.Containers = flatContainers.ToArray();
         // Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
+        Container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
         
         // Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 
@@ -70,9 +71,10 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container.Header.BodyOffset = containerOffset;
         {
             var propertySize = Container.Header.PropertyCount * RtpcV03PropertyHeader.SizeOf();
-            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf(true);
+            var containerHeaderSize = Container.Header.ContainerCount * RtpcV03ContainerHeader.SizeOf();
             
-            containerOffset += (uint) (propertySize + containerHeaderSize);
+            // +4 from root container valid property count
+            containerOffset += (uint) (propertySize + containerHeaderSize + 4);
         }
         Container.SetBodyOffset(containerOffset);
         
