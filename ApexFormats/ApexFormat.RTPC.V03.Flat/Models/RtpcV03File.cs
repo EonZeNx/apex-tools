@@ -48,20 +48,20 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToApex(BinaryWriter bw)
     {
-        var parentIndices = new List<uint>();
-        var flatContainers = new List<RtpcV03Container>();
+        // var parentIndices = new List<uint>();
+        // var flatContainers = new List<RtpcV03Container>();
+        //
+        // foreach (ref var subContainer in Container.Containers.AsSpan())
+        // {
+        //     if (!subContainer.Flat) continue;
+        //     flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
+        // }
         
-        foreach (ref var subContainer in Container.Containers.AsSpan())
-        {
-            if (!subContainer.Flat) continue;
-            flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
-        }
-        
-        Container.Containers = flatContainers.ToArray();
-        Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
+        // Container.Containers = flatContainers.ToArray();
+        // Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
         
-        Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
+        // Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 
         var containerId = 1;
         Container.SetContainerNameHash(ref containerId);
@@ -120,18 +120,6 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToXml(string targetPath)
     {
-        var parentIndexArrayOffset = Container.PropertyHeaders
-            .First(h => h.NameHash == 0xCFD7B43E).RawData;
-        
-        var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
-        Container.UnFlatten(in parentIndexArray);
-        
-        // TODO: Support 0x8F1D6E5A byte array ADF
-        // Other 3 properties can be inferred by container structure
-        Container.PropertyHeaders = Container.PropertyHeaders
-            .Where(h => h.NameHash == 0x95C1191D)
-            .ToArray();
-        
         if (Settings.PerformHashLookUp.Value)
         {
             Container.LookupNameHash();
@@ -144,9 +132,10 @@ public class RtpcV03File : IApexFile, IXmlFile
         
         var xd = new XDocument();
         var xe = new XElement(XmlName);
+        
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
-        xe.SetAttributeValue("Flat", true);
+        xe.SetAttributeValue(nameof(Container.Flat), true);
 
         xe.Write(Container, OvMaps, true);
         

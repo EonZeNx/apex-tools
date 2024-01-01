@@ -402,62 +402,10 @@ public static class RtpcV03ContainerExtension
         {
             xe.SetAttributeValue(nameof(container.Flat), container.Flat);
         }
-
-        if (isRoot)
+        
+        foreach (var header in container.PropertyHeaders)
         {
-            var unknown = container.PropertyHeaders.First(h => h.NameHash == 0x95C1191D);
-            xe.SetAttributeValue("Unknown", BitConverter.ToUInt32(unknown.RawData));
-        }
-        else
-        {
-            { // Class hash
-                var classHash = ByteUtils.ReverseBytes(0xE65940D0);
-                var classHeader = container.PropertyHeaders.First(h => h.NameHash == classHash);
-
-                var classValue = BitConverter.ToUInt32(classHeader.RawData);
-                var classStr = $"{classValue:X8}";
-                var classXmlAttributeName = "ClassHash";
-                
-                if (Settings.PerformHashLookUp.Value)
-                {
-                    var result = HashUtils.Lookup(classValue, EHashType.Class);
-                    if (!string.IsNullOrEmpty(result))
-                    {
-                        classStr = result;
-                        classXmlAttributeName = "Class";
-                    }
-                }
-                
-                xe.SetAttributeValue(classXmlAttributeName, classStr);
-            }
-
-            { // Object ID
-                var objectIdHash = ByteUtils.ReverseBytes(0x0584FFCF);
-                var oIdHeader = container.PropertyHeaders.First(h => h.NameHash == objectIdHash);
-                
-                var oIdOffset = BitConverter.ToUInt32(oIdHeader.RawData);
-                var oId = ovMaps.OffsetObjectIdMap[oIdOffset];
-                xe.SetAttributeValue("OID", $"{oId:X16}");
-            }
-            
-            { // Name (optional)
-                var nameHash = ByteUtils.ReverseBytes(0x84B61AD3);
-                if (container.PropertyHeaders.Any(h => h.NameHash == nameHash))
-                {
-                    var nameHeader = container.PropertyHeaders.First(h => h.NameHash == nameHash);
-                    
-                    var nameOffset = BitConverter.ToUInt32(nameHeader.RawData);
-                    var name = ovMaps.OffsetStringMap[nameOffset];
-                    xe.SetAttributeValue("Name", name);
-                }
-            }
-
-            var writableProperties = FRtpcV03ClassExtensions.FilterDefaultMembers(container.PropertyHeaders)
-                .Where(h => h.VariantType != EVariantType.Unassigned);
-            foreach (var header in writableProperties)
-            {
-                xe.Write(header, ovMaps);
-            }
+            xe.Write(header, ovMaps);
         }
         
         foreach (var subContainer in container.Containers)
@@ -475,82 +423,6 @@ public static class RtpcV03ContainerExtension
             .ToList();
         var containers = xe.Elements(RtpcV03Container.XmlName)
             .ToList();
-
-        if (isRoot)
-        {
-            var unknownAttribute = xe.Attribute("Unknown");
-            if (unknownAttribute is null)
-            {
-                throw new XmlSchemaException("Unknown is missing from the root container");
-            }
-                
-            var unknownXe = new XElement(EVariantType.UInteger32.GetXmlName());
-            unknownXe.SetAttributeValue(XElementExtensions.NameHashAttributeName, $"{0x95C1191D:X8}");
-            unknownXe.SetValue(unknownAttribute.Value);
-                
-            properties.Add(unknownXe);
-        }
-        else
-        {
-            { // Class
-                var classHashAttribute = xe.Attribute("ClassHash");
-                var classAttribute = xe.Attribute("Class");
-                
-                var classXe = new XElement(EVariantType.UInteger32.GetXmlName());
-                classXe.SetAttributeValue(XElementExtensions.NameAttributeName, "_class_hash");
-                
-                if (classHashAttribute is not null)
-                {
-                    classXe.SetValue(classHashAttribute.Value);
-                }
-                else if (classAttribute is not null)
-                {
-                    var classHash = HashJenkinsL3.Hash(classAttribute.Value);
-                    classXe.SetValue($"{classHash}");
-                }
-                else
-                {
-                    var nodePosition = xe.ElementsBeforeSelf().Count();
-                    throw new XmlSchemaException($"Both ClassHash & Class attributes are missing from node #{nodePosition}");
-                }
-                
-                properties.Add(classXe);
-            }
-
-            { // Object ID
-                var oIdAttribute = xe.Attribute("OID");
-                if (oIdAttribute is null)
-                {
-                    throw new XmlSchemaException($"OID is missing from {xe}");
-                }
-                
-                var oIdXe = new XElement(EVariantType.ObjectId.GetXmlName());
-                oIdXe.SetAttributeValue(XElementExtensions.NameAttributeName, "_object_id");
-                oIdXe.SetValue(oIdAttribute.Value);
-                
-                properties.Add(oIdXe);
-            }
-
-            { // Name & name hash (optional)
-                var nameAttribute = xe.Attribute(XElementExtensions.NameAttributeName);
-                if (nameAttribute is not null)
-                {
-                    var nameXe = new XElement(EVariantType.String.GetXmlName());
-                    var nameHashXe = new XElement(EVariantType.UInteger32.GetXmlName());
-                    
-                    nameXe.SetAttributeValue(XElementExtensions.NameAttributeName, "name");
-                    nameHashXe.SetAttributeValue(XElementExtensions.NameAttributeName, "name_hash");
-                    
-                    nameXe.SetValue(nameAttribute.Value);
-                    
-                    var nameHash = HashJenkinsL3.Hash(nameAttribute.Value);
-                    nameHashXe.SetValue($"{nameHash}");
-                
-                    properties.Add(nameXe);
-                    properties.Add(nameHashXe);
-                }
-            }
-        }
         
         var header = new RtpcV03ContainerHeader
         {

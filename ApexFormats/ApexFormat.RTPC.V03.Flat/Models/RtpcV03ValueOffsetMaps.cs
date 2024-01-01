@@ -181,35 +181,35 @@ public class RtpcV03ValueOffsetMaps
             ObjectIdOffsetMap.TryAdd(value, 0);
         }
         
-        // Include container attributes
-        nodes = xd.Descendants(RtpcV03Container.XmlName).ToArray();
-        foreach (var node in nodes)
-        {
-            // Name (optional)
-            var attribute = node.Attribute(XElementExtensions.NameAttributeName);
-            if (attribute is not null)
-            {
-                StringOffsetMap.TryAdd(attribute.Value, 0);
-            }
-
-            // Object ID
-            var oIdXmlName = EVariantType.ObjectId.GetXmlName();
-        
-            attribute = node.Attribute(oIdXmlName);
-            if (attribute is not null)
-            {
-                var value = ulong.Parse(attribute.Value, NumberStyles.HexNumber);
-                ObjectIdOffsetMap.TryAdd(value, 0);
-                
-                continue;
-            }
-        
-            // Root container parent is not RtpcV03Container.XmlName
-            if (node.Parent is not null && node.Parent.Name == RtpcV03Container.XmlName)
-            {
-                throw new XmlSchemaException($"{RtpcV03Container.XmlName} does not have {oIdXmlName}");
-            }
-        }
+        // // Include container attributes
+        // nodes = xd.Descendants(RtpcV03Container.XmlName).ToArray();
+        // foreach (var node in nodes)
+        // {
+        //     // Name (optional)
+        //     var attribute = node.Attribute(XElementExtensions.NameAttributeName);
+        //     if (attribute is not null)
+        //     {
+        //         StringOffsetMap.TryAdd(attribute.Value, 0);
+        //     }
+        //
+        //     // Object ID
+        //     var oIdXmlName = EVariantType.ObjectId.GetXmlName();
+        //
+        //     attribute = node.Attribute(oIdXmlName);
+        //     if (attribute is not null)
+        //     {
+        //         var value = ulong.Parse(attribute.Value, NumberStyles.HexNumber);
+        //         ObjectIdOffsetMap.TryAdd(value, 0);
+        //         
+        //         continue;
+        //     }
+        //
+        //     // Root container parent is not RtpcV03Container.XmlName
+        //     if (node.Parent is not null && node.Parent.Name == RtpcV03Container.XmlName)
+        //     {
+        //         throw new XmlSchemaException($"{RtpcV03Container.XmlName} does not have {oIdXmlName}");
+        //     }
+        // }
     }
 }
 
