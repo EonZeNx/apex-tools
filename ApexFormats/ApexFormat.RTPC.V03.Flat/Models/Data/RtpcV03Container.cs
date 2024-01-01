@@ -56,58 +56,72 @@ public static class RtpcV03ContainerExtension
         if (!isRoot)
         {
             var classHash = container.GetClassHash();
+            var classHashHex = $"{classHash:X8}";
             if (!classDefinitions.ContainsKey(classHash))
             {
                 throw new Exception("Unknown class hash");
             }
-            var definitions = classDefinitions[classHash];
 
             var properties = container.PropertyHeaders;
-            var orderedProperties = new List<RtpcV03PropertyHeader>();
+            var propertiesNoUnassigned = properties
+                .Where(h => h.VariantType != EVariantType.Unassigned)
+                .ToArray();
 
-            var failed = false;
+            var definitions = classDefinitions[classHash].Where(d => d.Members.Count == properties.Length);
+            var definition = new FRtpcV03ClassDefinition();
             foreach (var classDefinition in definitions)
             {
-                failed = false;
-                foreach (var classMember in classDefinition.Members)
-                {
-                    var property = new RtpcV03PropertyHeader();
-                    if (classMember.VariantType != EVariantType.Unassigned)
-                    {
-                        if (properties.All(h => h.NameHash != classMember.NameHash))
-                        {
-                            failed = true;
-                            break;
-                        }
-                        property = properties.First(h => h.NameHash == classMember.NameHash);
-                    }
-                
-                    orderedProperties.Add(property);
-                }
+                var filtered = classDefinition.Members
+                    .Where(m => m.VariantType != EVariantType.Unassigned)
+                    .Select(h => h.NameHash);
 
-                if (failed)
+                var temp = filtered.Except(propertiesNoUnassigned.Select(h => h.NameHash));
+                if (temp.Any())
                 {
-                    orderedProperties.Clear();
                     continue;
                 }
-                
-                container.PropertyHeaders = orderedProperties.ToArray();
-                container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
+
+                definition = classDefinition;
                 break;
             }
-
-            if (failed)
+            
+            if (definition.ClassHash == 0)
             {
-                throw new Exception("Unknown class hash");
+                throw new Exception("Unknown class definition");
             }
+            
+            // var validDefinitions = definitions.Where(d => d.Members
+            //         .Where(m => m.VariantType != EVariantType.Unassigned)
+            //         .Select(h => h.NameHash)
+            //         .Except(propertiesNoUnassigned.Select(h => h.NameHash))
+            //         .Any())
+            //     .ToArray();
+            // if (validDefinitions.Length != 1)
+            // {
+            //     throw new Exception("Unknown class definition");
+            // }
+            //
+            // var definition = validDefinitions[0];
+            
+            var orderedProperties = new List<RtpcV03PropertyHeader>();
+            foreach (var classMember in definition.Members)
+            {
+                var property = new RtpcV03PropertyHeader();
+                if (classMember.VariantType != EVariantType.Unassigned)
+                {
+                    property = properties.First(h => h.NameHash == classMember.NameHash);
+                }
+                
+                orderedProperties.Add(property);
+            }
+
+            container.PropertyHeaders = orderedProperties.ToArray();
+            container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
         }
 
         foreach (ref var subContainer in container.Containers.AsSpan())
         {
-            if (subContainer.Flat)
-            {
-                subContainer.ApplyClassDefinition(in classDefinitions);
-            }
+            subContainer.ApplyClassDefinition(in classDefinitions);
         }
     }
 
@@ -297,6 +311,11 @@ public static class RtpcV03ContainerExtension
     {
         var result = new List<FRtpcV03ClassDefinition>();
         result.AddRange(container.Containers.Select(sc => sc.CreateContainerClass()));
+
+        foreach (var subContainer in container.Containers)
+        {
+            result.AddRange(subContainer.CreateAllClassDefinitions());
+        }
 
         return result;
     }
