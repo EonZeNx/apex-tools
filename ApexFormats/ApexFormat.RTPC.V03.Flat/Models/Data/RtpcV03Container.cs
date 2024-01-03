@@ -57,10 +57,7 @@ public static class RtpcV03ContainerExtension
         {
             var classHash = container.GetClassHash();
             var classHashHex = $"{classHash:X8}";
-            if (!classDefinitions.ContainsKey(classHash))
-            {
-                throw new Exception("Unknown class hash");
-            }
+            if (!classDefinitions.ContainsKey(classHash)) throw new Exception("Unknown class hash");
 
             var properties = container.PropertyHeaders;
             var propertiesNoUnassigned = properties
@@ -85,23 +82,7 @@ public static class RtpcV03ContainerExtension
                 break;
             }
             
-            if (definition.ClassHash == 0)
-            {
-                throw new Exception("Unknown class definition");
-            }
-            
-            // var validDefinitions = definitions.Where(d => d.Members
-            //         .Where(m => m.VariantType != EVariantType.Unassigned)
-            //         .Select(h => h.NameHash)
-            //         .Except(propertiesNoUnassigned.Select(h => h.NameHash))
-            //         .Any())
-            //     .ToArray();
-            // if (validDefinitions.Length != 1)
-            // {
-            //     throw new Exception("Unknown class definition");
-            // }
-            //
-            // var definition = validDefinitions[0];
+            if (definition.ClassHash == 0) throw new Exception("Unknown class definition");
             
             var orderedProperties = new List<RtpcV03PropertyHeader>();
             foreach (var classMember in definition.Members)
@@ -115,6 +96,7 @@ public static class RtpcV03ContainerExtension
                 orderedProperties.Add(property);
             }
 
+            // TODO: Compare sorted & unsorted properties
             container.PropertyHeaders = orderedProperties.ToArray();
             container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
         }

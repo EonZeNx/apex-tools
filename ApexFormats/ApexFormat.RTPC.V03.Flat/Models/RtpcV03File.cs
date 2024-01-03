@@ -48,6 +48,8 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToApex(BinaryWriter bw)
     {
+        Container.ApplyClassDefinition(in ClassDefinitions, true);
+        
         // var parentIndices = new List<uint>();
         // var flatContainers = new List<RtpcV03Container>();
         //
@@ -117,7 +119,6 @@ public class RtpcV03File : IApexFile, IXmlFile
         }
         
         Container = rtpcNode.ReadRtpcV03Container(true);
-        Container.ApplyClassDefinition(in ClassDefinitions, true);
     }
 
     public void ToXml(string targetPath)
