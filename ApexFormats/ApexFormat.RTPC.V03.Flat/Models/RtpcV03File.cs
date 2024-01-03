@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Flat.Abstractions;
@@ -31,12 +31,11 @@ public class RtpcV03File : IApexFile, IXmlFile
         Header = br.ReadRtpcV03Header();
         var containerHeader = br.ReadRtpcV03ContainerHeader();
         Container = br.ReadRtpcV03Container(containerHeader);
-        Container.Flat = true; // To distinguish between RTPC v3 and flat RTPC v3, root container must have flat = true
+        Container.Flat = true;
         
         var allPropertyHeaders = Container.GetAllPropertyHeaders();
         var uniqueOffsets = allPropertyHeaders
-            .Where(ph => ph.VariantType is not
-                (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32))
+            .Where(ph => ph.VariantType.IsPrimitive())
             .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
             .Select(g => g.First())
             .ToArray();
@@ -58,7 +57,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         //     if (!subContainer.Flat) continue;
         //     flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
         // }
-        
+        //
         // Container.Containers = flatContainers.ToArray();
         // Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
@@ -123,6 +122,11 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToXml(string targetPath)
     {
+        // var parentIndexArrayOffset = Container.PropertyHeaders
+        //     .First(h => h.NameHash == 0xCFD7B43E).RawData;
+        // var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
+        // Container.UnFlatten(parentIndexArray);
+        
         if (Settings.PerformHashLookUp.Value)
         {
             Container.LookupNameHash();
@@ -143,7 +147,9 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.Write(Container, OvMaps, true);
         
         xd.Add(xe);
-        xd.Save(targetPath);
+        
+        using var xw = XmlWriter.Create(targetPath, new XmlWriterSettings{ Indent = true, IndentChars = "\t" });
+        xd.Save(xw);
     }
 
 

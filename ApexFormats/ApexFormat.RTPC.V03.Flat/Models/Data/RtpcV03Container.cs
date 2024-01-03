@@ -51,20 +51,21 @@ public static class RtpcV03ContainerExtension
         container.ContainerHeaders = container.Containers.Select(c => c.Header).ToArray();
     }
     
-    public static void ApplyClassDefinition(ref this RtpcV03Container container, in Dictionary<uint, List<FRtpcV03ClassDefinition>> classDefinitions, bool isRoot = false)
+    public static void ApplyClassDefinition(ref this RtpcV03Container container, in Dictionary<uint, List<FRtpcV03ClassDefinition>> allClassDefinitions, bool isRoot = false)
     {
         if (!isRoot)
         {
             var classHash = container.GetClassHash();
             var classHashHex = $"{classHash:X8}";
-            if (!classDefinitions.ContainsKey(classHash)) throw new Exception("Unknown class hash");
+            if (!allClassDefinitions.ContainsKey(classHash)) throw new Exception("Unknown class hash");
 
             var properties = container.PropertyHeaders;
             var propertiesNoUnassigned = properties
                 .Where(h => h.VariantType != EVariantType.Unassigned)
                 .ToArray();
 
-            var definitions = classDefinitions[classHash].Where(d => d.Members.Count == properties.Length);
+            var classDefinitions = allClassDefinitions[classHash];
+            var definitions = classDefinitions.Where(d => d.Members.Count(m => m.VariantType != EVariantType.Unassigned) == properties.Length);
             var definition = new FRtpcV03ClassDefinition();
             foreach (var classDefinition in definitions)
             {
@@ -103,7 +104,7 @@ public static class RtpcV03ContainerExtension
 
         foreach (ref var subContainer in container.Containers.AsSpan())
         {
-            subContainer.ApplyClassDefinition(in classDefinitions);
+            subContainer.ApplyClassDefinition(in allClassDefinitions);
         }
     }
 
