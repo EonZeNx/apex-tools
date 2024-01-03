@@ -98,7 +98,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueVec2Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector2);
             for (var i = 0; i < uniqueVec2Count; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Vector2.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var f32Array = ReadFixedF32Array(br, 2);
@@ -111,7 +111,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueVec3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector3);
             for (var i = 0; i < uniqueVec3Count; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Vector3.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var f32Array = ReadFixedF32Array(br, 3);
@@ -124,7 +124,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueVec4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Vector4);
             for (var i = 0; i < uniqueVec4Count; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Vector4.GetAlignment());
 
                 var offset = (uint) br.Position();
                 var f32Array = ReadFixedF32Array(br, 4);
@@ -137,7 +137,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueMat3Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix3X3);
             for (var i = 0; i < uniqueMat3Count; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Matrix3X3.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var f32Array = ReadFixedF32Array(br, 9);
@@ -150,7 +150,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueMat4Count = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Matrix4X4);
             for (var i = 0; i < uniqueMat4Count; i++)
             {
-                br.Align(16);
+                br.Align(EVariantType.Matrix4X4.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var f32Array = ReadFixedF32Array(br, 16);
@@ -163,7 +163,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueU32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.UInteger32Array);
             for (var i = 0; i < uniqueU32ArrayCount; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.UInteger32Array.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var u32Array = ReadU32Array(br);
@@ -176,7 +176,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueF32ArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Float32Array);
             for (var i = 0; i < uniqueF32ArrayCount; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Float32Array.GetAlignment());
 
                 var offset = (uint)br.Position();
                 var f32Array = ReadF32Array(br);
@@ -189,7 +189,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueByteArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ByteArray);
             for (var i = 0; i < uniqueByteArrayCount; i++)
             {
-                br.Align(16);
+                br.Align(EVariantType.ByteArray.GetAlignment());
 
                 var offset = (uint) br.Position();
                 var byteArray = ReadByteArray(br);
@@ -202,7 +202,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueEventArrayCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.Event);
             for (var i = 0; i < uniqueEventArrayCount; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.Event.GetAlignment());
 
                 var offset = (uint)br.Position();
 
@@ -224,7 +224,7 @@ public class RtpcV03OffsetValueMaps
             var uniqueOIdCount = uniqueOffsets.Count(ph => ph.VariantType == EVariantType.ObjectId);
             for (var i = 0; i < uniqueOIdCount; i++)
             {
-                br.Align(4);
+                br.Align(EVariantType.ObjectId.GetAlignment());
             
                 var offset = (uint) br.Position();
                 var oid = br.ReadUInt64();

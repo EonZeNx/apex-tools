@@ -81,4 +81,10 @@ public static class EVariantTypeExtensions
     {
         return VariantAlignment[variantType];
     }
+    
+    public static bool IsPrimitive(ref this EVariantType variantType)
+    {
+        return variantType is not
+            (EVariantType.Unassigned or EVariantType.UInteger32 or EVariantType.Float32);
+    }
 }
