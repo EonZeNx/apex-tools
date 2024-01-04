@@ -1,9 +1,9 @@
-﻿using ApexFormat.RTPC.V03.JC4.Models;
+﻿using ApexFormat.RTPC.V03.Flat.Models;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.RTPC.V03.JC4.Managers;
+namespace ApexFormat.RTPC.V03.Flat.Managers;
 
 public class Jc4RtpcV03Manager : IPathProcessor
 {

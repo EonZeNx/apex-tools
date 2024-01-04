@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03.JC4\ApexFormat.RTPC.V03.JC4.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03.Flat\ApexFormat.RTPC.V03.Flat.csproj" />
       <ProjectReference Include="..\ApexFormats\ApexFormat.AAF.V01\ApexFormat.AAF.V01.csproj" />
       <ProjectReference Include="..\ApexFormats\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj" />
       <ProjectReference Include="..\ApexFormats\ApexFormat.IRTPC.V01.Debug\ApexFormat.IRTPC.V01.Debug.csproj" />

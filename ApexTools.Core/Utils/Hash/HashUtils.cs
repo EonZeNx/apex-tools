@@ -1,16 +1,18 @@
 ﻿using System.Data;
 using System.Data.SQLite;
+using System.Net.Http.Headers;
 using ApexTools.Core.Config;
 
 namespace ApexTools.Core.Utils.Hash;
 
+[Flags]
 public enum EHashType
 {
-    Unknown,
-    FilePath,
-    Property,
-    Class,
-    Misc,
+    Unknown = 0,
+    FilePath = 1,
+    Property = 2,
+    Class = 4,
+    Misc = 8
 }
 
 public static class HashUtils
@@ -18,6 +20,14 @@ public static class HashUtils
     public static SQLiteConnection? DbConnection { get; set; } = null;
     public static HashCache Hashes { get; set; } = new();
     public static bool TriedToOpenDb { get; set; } = false;
+
+    public static readonly Dictionary<EHashType, string> HashTypeToTable = new()
+    {
+        { EHashType.FilePath, "filepaths" },
+        { EHashType.Property, "properties" },
+        { EHashType.Class, "classes" },
+        { EHashType.Misc, "misc" },
+    };
     
     
     public static void OpenDatabaseConnection()
@@ -31,6 +41,11 @@ public static class HashUtils
         DbConnection = new SQLiteConnection(dataSource);
         DbConnection.Open();
     }
+
+    public static string Lookup(byte[] bytes, EHashType hashType = EHashType.Unknown)
+    {
+        return Lookup(BitConverter.ToUInt32(bytes), hashType);
+    }
     
     public static string Lookup(uint hash, EHashType hashType = EHashType.Unknown)
     {
@@ -42,25 +57,22 @@ public static class HashUtils
         if (DbConnection == null && !TriedToOpenDb) OpenDatabaseConnection();
         if (DbConnection?.State != ConnectionState.Open) return string.Empty;
         
-        var tables = new[]{ "properties", "classes", "misc", "filepaths" };
-        switch (hashType)
+        var tables = new List<string>();
+        if (HasFlag(hashType, EHashType.FilePath))
         {
-            case EHashType.FilePath:
-                tables = new[] { "filepaths" };
-                break;
-            case EHashType.Property:
-                tables = new[] { "properties" };
-                break;
-            case EHashType.Class:
-                tables = new[] { "classes" };
-                break;
-            case EHashType.Misc:
-                tables = new[] { "misc" };
-                break;
-            case EHashType.Unknown:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(hashType), hashType, null);
+            tables.Add(HashTypeToTable[EHashType.FilePath]);
+        }
+        if (HasFlag(hashType, EHashType.Property))
+        {
+            tables.Add(HashTypeToTable[EHashType.Property]);
+        }
+        if (HasFlag(hashType, EHashType.Class))
+        {
+            tables.Add(HashTypeToTable[EHashType.Class]);
+        }
+        if (HasFlag(hashType, EHashType.Misc))
+        {
+            tables.Add(HashTypeToTable[EHashType.Misc]);
         }
         
         var command = DbConnection.CreateCommand();
@@ -85,5 +97,54 @@ public static class HashUtils
         }
         
         return foundValue;
+    }
+
+    public static void LoadAll()
+    {
+        if (!Settings.PerformHashLookUp.Value) return;
+
+        if (DbConnection == null && !TriedToOpenDb) OpenDatabaseConnection();
+        if (DbConnection?.State != ConnectionState.Open) return;
+        
+        var command = DbConnection.CreateCommand();
+        var tables = new List<string>(HashTypeToTable.Values);
+        
+        foreach (var table in tables)
+        {
+            command.CommandText = $"SELECT Hash, Value FROM '{table}'";
+            using var dbr = command.ExecuteReader();
+            while (dbr.Read())
+            {
+                var hash = (uint) dbr.GetInt32(0);
+                var value = dbr.GetString(1);
+                
+                Hashes.Add(hash, value);
+            }
+        }
+    }
+    
+    
+    public static bool HasFlag<T>(T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        return (flagsValue & flagValue) != 0;
+    }
+    
+    public static void Set<T>(ref T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        flags = (T)(object)(flagsValue | flagValue);
+    }
+
+    public static void Unset<T>(ref T flags, T flag) where T : struct
+    {
+        int flagsValue = (int)(object)flags;
+        int flagValue = (int)(object)flag;
+
+        flags = (T)(object)(flagsValue & (~flagValue));
     }
 }

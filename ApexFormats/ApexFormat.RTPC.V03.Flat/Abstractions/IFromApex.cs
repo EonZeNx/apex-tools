@@ -1,4 +1,4 @@
-﻿namespace ApexFormat.RTPC.V03.JC4.Abstractions;
+﻿namespace ApexFormat.RTPC.V03.Flat.Abstractions;
 
 public interface IFromApex
 {

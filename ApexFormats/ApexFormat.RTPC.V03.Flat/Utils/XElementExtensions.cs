@@ -5,7 +5,7 @@ using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
 using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Utils;
+namespace ApexFormat.RTPC.V03.Flat.Utils;
 
 public static class XElementExtensions
 {
@@ -41,7 +41,8 @@ public static class XElementExtensions
             return nameHash;
         }
 
-        throw new XmlSyntaxException($"Both {NameHashAttributeName} and {NameAttributeName} attributes missing from {xe}");
+        var nodePosition = xe.ElementsBeforeSelf().Count();
+        throw new XmlSyntaxException($"Both {NameHashAttributeName} and {NameAttributeName} attributes missing from node #{nodePosition}");
     }
     
     public static EVariantType GetVariant(this XElement xe)

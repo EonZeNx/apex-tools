@@ -4,7 +4,9 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PackageId>ApexFormat.RTPC.V03.JC4</PackageId>
+        <PackageId>ApexFormat.RTPC.V03.Flat</PackageId>
+        <AssemblyName>ApexFormat.RTPC.V03.Flat</AssemblyName>
+        <RootNamespace>ApexFormat.RTPC.V03.Flat</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

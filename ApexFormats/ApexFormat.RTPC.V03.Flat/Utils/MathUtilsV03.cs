@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace ApexFormat.RTPC.V03.JC4.Utils;
+namespace ApexFormat.RTPC.V03.Flat.Utils;
 
 public class U64BComparer : IEqualityComparer<(ulong, byte)>
 {

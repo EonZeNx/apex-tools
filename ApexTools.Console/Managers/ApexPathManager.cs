@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using ApexFormat.ADF.V04.Managers;
 using ApexFormat.IRTPC.V01.Managers;
-using ApexFormat.RTPC.V03.JC4.Managers;
+using ApexFormat.RTPC.V03.Flat.Managers;
 using ApexFormat.RTPC.V03.Managers;
 using ApexFormat.SARC.V02.Managers;
 using ApexFormat.SARC.V02.Models;
@@ -34,7 +34,7 @@ public class ApexPathManager
         IPathProcessor processor = fourCc switch
         {
             EFourCc.Aaf => new AafSarcChainManager(FilePath),
-            EFourCc.Rtpc => Settings.RtpcUseJc4.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
+            EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
             EFourCc.Sarc => new SarcV02Manager(FilePath),

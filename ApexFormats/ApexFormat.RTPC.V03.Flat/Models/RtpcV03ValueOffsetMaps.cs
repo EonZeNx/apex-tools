@@ -3,11 +3,13 @@ using System.Numerics;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.JC4.Utils;
+using ApexFormat.RTPC.V03.Flat.Models.Data;
+using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Utils;
+using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Models;
+namespace ApexFormat.RTPC.V03.Flat.Models;
 
 public class RtpcV03ValueOffsetMaps
 {
@@ -178,6 +180,37 @@ public class RtpcV03ValueOffsetMaps
             var value = ulong.Parse(node.Value, NumberStyles.HexNumber);
             ObjectIdOffsetMap.TryAdd(value, 0);
         }
+        
+        // // Include container attributes
+        // var attributeProperties = RtpcV03ContainerExtension.AttributeProperties;
+        // nodes = xd.Descendants(RtpcV03Container.XmlName).ToArray();
+        // foreach (var node in nodes)
+        // {
+        //     var nodeAttributes = node.Attributes().ToList();
+        //     foreach (var nodeAttribute in nodeAttributes)
+        //     {
+        //         
+        //     }
+        //     
+        //     // Name (optional)
+        //     var attribute = node.Attribute(XElementExtensions.NameAttributeName);
+        //     if (attribute is not null)
+        //     {
+        //         StringOffsetMap.TryAdd(attribute.Value, 0);
+        //     }
+        //     
+        //     // Object ID
+        //     var oIdXmlName = EVariantType.ObjectId.GetXmlName();
+        //
+        //     attribute = node.Attribute(oIdXmlName);
+        //     if (attribute is not null)
+        //     {
+        //         var value = ulong.Parse(attribute.Value, NumberStyles.HexNumber);
+        //         ObjectIdOffsetMap.TryAdd(value, 0);
+        //         
+        //         continue;
+        //     }
+        // }
     }
 }
 

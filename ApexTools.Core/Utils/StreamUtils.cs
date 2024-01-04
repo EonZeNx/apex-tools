@@ -31,6 +31,11 @@ public static class StreamUtils
 
 
     #region Alignment
+    
+    public static void Align(this BinaryReader br, int align, bool force = false)
+    {
+        br.Align((uint) align, force);
+    }
 
     public static void Align(this BinaryReader br, uint align, bool force = false)
     {

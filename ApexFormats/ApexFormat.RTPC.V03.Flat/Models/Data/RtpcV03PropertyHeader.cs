@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-using ApexFormat.RTPC.V03.JC4.Utils;
+using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
 using ApexTools.Core.Utils.Hash;
 
-namespace ApexFormat.RTPC.V03.JC4.Models.Data;
+namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
 public struct RtpcV03PropertyHeader
 {
@@ -15,7 +15,14 @@ public struct RtpcV03PropertyHeader
 
     public string XmlData = string.Empty;
     public string Name = string.Empty;
-    
+
+    public override string ToString()
+    {
+        var bytes = string.Join("", RawData.Select(b => $"{b:X2}"));
+        var data = !string.IsNullOrEmpty(XmlData) ? XmlData : bytes;
+        return $"{NameHash:X8}: {VariantType} = {data}";
+    }
+
     public static int SizeOf() => 4 + 4 + 1;
 
     public RtpcV03PropertyHeader()
@@ -42,7 +49,8 @@ public static class RtpcV03PropertyHeaderExtension
     
     public static void LookupNameHash(this ref RtpcV03PropertyHeader propertyHeader)
     {
-        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash);
+        const EHashType flags = EHashType.Property | EHashType.Misc;
+        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash, flags);
     }
 
     private static IList<float> ParseF32Array(string data, int count = 0)
@@ -155,7 +163,7 @@ public static class RtpcV03PropertyHeaderExtension
         bw.Write((byte) header.VariantType);
     }
 
-    public static void Write(this XElement pxe, RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
+    public static void Write(this XElement pxe, in RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
     {
         if (Settings.RtpcSkipUnassignedProperties.Value && header.VariantType == EVariantType.Unassigned)
         {
