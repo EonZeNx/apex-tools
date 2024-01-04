@@ -163,7 +163,7 @@ public static class RtpcV03PropertyHeaderExtension
         bw.Write((byte) header.VariantType);
     }
 
-    public static void Write(this XElement pxe, RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
+    public static void Write(this XElement pxe, in RtpcV03PropertyHeader header, in RtpcV03OffsetValueMaps ovMaps)
     {
         if (Settings.RtpcSkipUnassignedProperties.Value && header.VariantType == EVariantType.Unassigned)
         {

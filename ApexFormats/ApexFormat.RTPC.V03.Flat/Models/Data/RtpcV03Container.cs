@@ -35,6 +35,38 @@ public struct RtpcV03Container
 
 public static class RtpcV03ContainerExtension
 {
+    public static readonly List<uint> RootContainerFilteredProperties = new()
+    {
+        0x6AE2DDA0, // Class hash list
+        0x8F1D6E5A, // Byte array
+        0xCFD7B43E, // Parent index array
+    };
+    
+    public static readonly List<FRtpcV03KnownPropertyData> AttributeProperties = new()
+    {
+        new FRtpcV03KnownPropertyData{ NameHash = 0x95C1191D, Name = "Unknown01", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0xD04059E6, Name = "_class_hash", VariantType = EVariantType.UInteger32, IsHash = true },
+        new FRtpcV03KnownPropertyData{ NameHash = 0xCFFF8405, Name = "_object_id", VariantType = EVariantType.ObjectId },
+        new FRtpcV03KnownPropertyData{ NameHash = 0xD337272A, Name = "_scalable", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x8CD548FF, Name = "_SEffects_adf_data", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x75239A63, Name = "_version", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x672D21CE, Name = "_rigid_object_adf_data_index", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0xCA8A3F5E, Name = "_physics_params_adf_index", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x53B6C066, Name = "_nodefaultbbox", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x3EFA8F9A, Name = "_damage_controller_adf_index", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x08F86B1B, Name = "_damageable_adf_index", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0x03DE4DA2, Name = "_damage_controller_hit_analyze_index", VariantType = EVariantType.UInteger32 },
+        new FRtpcV03KnownPropertyData{ NameHash = 0xDB24792E, Name = "_target_point_adf_index", VariantType = EVariantType.UInteger32 },
+    };
+    
+    public static void FilterRootContainerProperties(ref this RtpcV03Container container)
+    {
+        container.PropertyHeaders = container.PropertyHeaders
+            .Where(h => !RootContainerFilteredProperties.Contains(h.NameHash))
+            .ToArray();
+        container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
+    }
+    
     public static void SetContainerNameHash(ref this RtpcV03Container container, ref int id)
     {
         foreach (ref var subContainer in container.Containers.AsSpan())
@@ -344,6 +376,61 @@ public static class RtpcV03ContainerExtension
         return container.Header.ContainerCount + 
                container.Containers.Sum(subContainer => subContainer.CountAllContainerHeaders());
     }
+
+    public static RtpcV03PropertyHeader ReadRtpcV03Attribute(this XAttribute xa)
+    {
+        var hashAttributes = AttributeProperties.Where(ap => ap.Name.Contains("_hash")).ToArray();
+        foreach (ref var hashAttribute in hashAttributes.AsSpan())
+        {
+            hashAttribute.Name = hashAttribute.Name.Replace("_hash", "");
+        }
+
+        ;
+        foreach (var attributeProperty in AttributeProperties.Where(attributeProperty => xa.Name.ToString() == attributeProperty.Name))
+        {
+            var result = new RtpcV03PropertyHeader
+            {
+                NameHash = attributeProperty.NameHash,
+                VariantType = attributeProperty.VariantType
+            };
+
+            if (result.VariantType.IsPrimitive())
+            {
+                var isHash = attributeProperty.IsHash;
+                byte[] data;
+                if (result.VariantType == EVariantType.UInteger32)
+                {
+                    data = BitConverter.GetBytes(uint.Parse(xa.Value, isHash ? NumberStyles.HexNumber : NumberStyles.Integer));
+                }
+                else
+                {
+                    data = BitConverter.GetBytes(float.Parse(xa.Value));
+                }
+
+                result.RawData = data;
+            }
+            else
+            {
+                result.XmlData = xa.Value;
+            }
+
+            return result;
+        }
+        
+        foreach (var attributeProperty in hashAttributes.Where(attributeProperty => xa.Name.ToString() == attributeProperty.Name))
+        {
+            var result = new RtpcV03PropertyHeader
+            {
+                NameHash = attributeProperty.NameHash,
+                VariantType = attributeProperty.VariantType,
+                RawData = BitConverter.GetBytes(HashJenkinsL3.Hash(xa.Value))
+            };
+
+            return result;
+        }
+
+        throw new XmlSchemaException($"{xa} was not found");
+    }
     
     // Container header and body are separate
     public static RtpcV03Container ReadRtpcV03Container(this BinaryReader br, RtpcV03ContainerHeader header)
@@ -396,7 +483,7 @@ public static class RtpcV03ContainerExtension
         }
     }
     
-    public static void Write(this XElement pxe, in RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps, bool isRoot = false)
+    public static void Write(this XElement pxe, in RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
     {
         var xe = new XElement(RtpcV03Container.XmlName);
 
@@ -405,9 +492,42 @@ public static class RtpcV03ContainerExtension
             xe.SetAttributeValue(nameof(container.Flat), container.Flat);
         }
         
-        foreach (var header in container.PropertyHeaders)
+        // var groupedProperties = container.PropertyHeaders
+        //     .GroupBy(h => AttributeProperties.Select(p => p.NameHash).Contains(h.NameHash))
+        //     .ToDictionary(g => g.Key, g => g.ToList());
+        
+        var groupedProperties = container.PropertyHeaders
+            .GroupBy(h => false)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        if (groupedProperties.TryGetValue(true, out var attributeProperties))
         {
-            xe.Write(header, ovMaps);
+            foreach (var attributeProperty in attributeProperties)
+            {
+                var requiredProperty = AttributeProperties.Find(p => p.NameHash == attributeProperty.NameHash);
+
+                var isHash = requiredProperty.Name.Contains("_hash");
+                var propertyData = ovMaps.GetAsString(attributeProperty.RawData, attributeProperty.VariantType, isHash);
+                var attributeName = requiredProperty.Name;
+                
+                if (isHash && Settings.PerformHashLookUp.Value)
+                {
+                    var lookupHash = HashUtils.Lookup(attributeProperty.RawData);
+                    propertyData = string.IsNullOrEmpty(lookupHash) ? propertyData : lookupHash;
+
+                    attributeName = attributeName.Replace("_hash", "");
+                }
+            
+                xe.SetAttributeValue(attributeName, propertyData);
+            }
+        }
+
+        if (groupedProperties.TryGetValue(false, out var propertyHeaders))
+        {
+            foreach (var header in propertyHeaders)
+            {
+                xe.Write(header, ovMaps);
+            }
         }
         
         foreach (var subContainer in container.Containers)
@@ -417,18 +537,52 @@ public static class RtpcV03ContainerExtension
         
         pxe.Add(xe);
     }
+
+    public static void WriteRoot(this XElement pxe, in RtpcV03Container container, in RtpcV03OffsetValueMaps ovMaps)
+    {
+        pxe.Write(container, ovMaps);
+        // var xe = new XElement(RtpcV03Container.XmlName);
+        //
+        // var propertiesToWrite = container.PropertyHeaders.ToList();
+        // if (container.PropertyHeaders.Any(h => h.NameHash == 0x95C1191D))
+        // {
+        //     var propertyHeader = container.PropertyHeaders.First(h => h.NameHash == 0x95C1191D);
+        //     propertiesToWrite.Remove(propertyHeader);
+        //     
+        //     xe.SetAttributeValue("Unknown01", BitConverter.ToUInt32(propertyHeader.RawData));
+        // }
+        //
+        // foreach (var header in propertiesToWrite)
+        // {
+        //     xe.Write(in header, in ovMaps);
+        // }
+        //
+        // foreach (var subContainer in container.Containers)
+        // {
+        //     xe.Write(in subContainer, in ovMaps);
+        // }
+        //
+        // pxe.Add(xe);
+    }
     
     public static RtpcV03Container ReadRtpcV03Container(this XElement xe, bool isRoot = false)
     {
-        var properties = xe.Elements()
+        var propertyElements = xe.Elements()
             .Where(e => e.Name.ToString() != RtpcV03Container.XmlName)
             .ToList();
-        var containers = xe.Elements(RtpcV03Container.XmlName)
+        var containerElements = xe.Elements(RtpcV03Container.XmlName)
             .ToList();
+
+        var properties = propertyElements
+            .Select(cxe => cxe.ReadRtpcV03PropertyHeader())
+            .ToList();
+        // properties.AddRange(xe.Attributes()
+        //         .Where(xa => xa.Name.ToString() != "Flat")
+        //     .Select(pa => pa.ReadRtpcV03Attribute()));
         
         var header = new RtpcV03ContainerHeader
         {
-            ContainerCount = (ushort) containers.Count,
+            ContainerCount = (ushort) containerElements.Count,
             PropertyCount = (ushort) properties.Count
         };
         
@@ -450,24 +604,18 @@ public static class RtpcV03ContainerExtension
             }
         }
 
-        for (var i = 0; i < header.PropertyCount; i++)
-        {
-            var node = properties?[i];
-            if (node == null) continue;
-            
-            result.PropertyHeaders[i] = node.ReadRtpcV03PropertyHeader();
-        }
+        result.PropertyHeaders = properties.ToArray();
 
         for (var i = 0; i < header.ContainerCount; i++)
         {
-            var node = containers?[i];
+            var node = containerElements?[i];
             if (node == null) continue;
             
             result.Containers[i] = node.ReadRtpcV03Container();
             result.ContainerHeaders[i] = result.Containers[i].Header;
         }
 
-        result.ValidProperties = (uint) (properties?.Count(p => p.Name != EVariantType.Unassigned.GetXmlName()) ?? 0);
+        result.ValidProperties = (uint) (propertyElements?.Count(p => p.Name != EVariantType.Unassigned.GetXmlName()) ?? 0);
 
         return result;
     }

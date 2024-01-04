@@ -41,6 +41,11 @@ public static class HashUtils
         DbConnection = new SQLiteConnection(dataSource);
         DbConnection.Open();
     }
+
+    public static string Lookup(byte[] bytes, EHashType hashType = EHashType.Unknown)
+    {
+        return Lookup(BitConverter.ToUInt32(bytes), hashType);
+    }
     
     public static string Lookup(uint hash, EHashType hashType = EHashType.Unknown)
     {

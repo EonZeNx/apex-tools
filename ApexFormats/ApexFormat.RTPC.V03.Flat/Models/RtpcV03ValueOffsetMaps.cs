@@ -182,16 +182,23 @@ public class RtpcV03ValueOffsetMaps
         }
         
         // // Include container attributes
+        // var attributeProperties = RtpcV03ContainerExtension.AttributeProperties;
         // nodes = xd.Descendants(RtpcV03Container.XmlName).ToArray();
         // foreach (var node in nodes)
         // {
+        //     var nodeAttributes = node.Attributes().ToList();
+        //     foreach (var nodeAttribute in nodeAttributes)
+        //     {
+        //         
+        //     }
+        //     
         //     // Name (optional)
         //     var attribute = node.Attribute(XElementExtensions.NameAttributeName);
         //     if (attribute is not null)
         //     {
         //         StringOffsetMap.TryAdd(attribute.Value, 0);
         //     }
-        //
+        //     
         //     // Object ID
         //     var oIdXmlName = EVariantType.ObjectId.GetXmlName();
         //
@@ -202,12 +209,6 @@ public class RtpcV03ValueOffsetMaps
         //         ObjectIdOffsetMap.TryAdd(value, 0);
         //         
         //         continue;
-        //     }
-        //
-        //     // Root container parent is not RtpcV03Container.XmlName
-        //     if (node.Parent is not null && node.Parent.Name == RtpcV03Container.XmlName)
-        //     {
-        //         throw new XmlSchemaException($"{RtpcV03Container.XmlName} does not have {oIdXmlName}");
         //     }
         // }
     }

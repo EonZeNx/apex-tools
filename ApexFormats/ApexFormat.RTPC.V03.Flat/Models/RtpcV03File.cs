@@ -35,7 +35,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         
         var allPropertyHeaders = Container.GetAllPropertyHeaders();
         var uniqueOffsets = allPropertyHeaders
-            .Where(ph => ph.VariantType.IsPrimitive())
+            .Where(ph => !ph.VariantType.IsPrimitive())
             .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
             .Select(g => g.First())
             .ToArray();
@@ -49,21 +49,21 @@ public class RtpcV03File : IApexFile, IXmlFile
     {
         Container.ApplyClassDefinition(in ClassDefinitions, true);
         
-        // var parentIndices = new List<uint>();
-        // var flatContainers = new List<RtpcV03Container>();
-        //
-        // foreach (ref var subContainer in Container.Containers.AsSpan())
-        // {
-        //     if (!subContainer.Flat) continue;
-        //     flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
-        // }
-        //
-        // Container.Containers = flatContainers.ToArray();
-        // Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
+        var parentIndices = new List<uint>();
+        var flatContainers = new List<RtpcV03Container>();
+        
+        foreach (ref var subContainer in Container.Containers.AsSpan())
+        {
+            if (!subContainer.Flat) continue;
+            flatContainers.AddRange(subContainer.Flatten(0xFFFFFFFF, ref parentIndices));
+        }
+        
+        Container.Containers = flatContainers.ToArray();
+        Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
         Container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
         
-        // Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
+        Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 
         var containerId = 1;
         Container.SetContainerNameHash(ref containerId);
@@ -122,10 +122,12 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public void ToXml(string targetPath)
     {
-        // var parentIndexArrayOffset = Container.PropertyHeaders
-        //     .First(h => h.NameHash == 0xCFD7B43E).RawData;
-        // var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
-        // Container.UnFlatten(parentIndexArray);
+        var parentIndexArrayOffset = Container.PropertyHeaders
+            .First(h => h.NameHash == 0xCFD7B43E).RawData;
+        var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
+        Container.UnFlatten(parentIndexArray);
+        
+        Container.FilterRootContainerProperties();
         
         if (Settings.PerformHashLookUp.Value)
         {
@@ -144,7 +146,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(Header.Version), Header.Version);
         xe.SetAttributeValue(nameof(Container.Flat), true);
 
-        xe.Write(Container, OvMaps, true);
+        xe.WriteRoot(Container, OvMaps);
         
         xd.Add(xe);
         
