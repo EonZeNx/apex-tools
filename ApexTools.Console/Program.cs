@@ -8,6 +8,8 @@ namespace ApexTools.Console;
 // Main function for console application
 public class Program
 {
+    public static bool ConsoleExit { get; set; } = false;
+    
     public static void Close(string message = "")
     {
         if (!string.IsNullOrEmpty(message))
@@ -43,6 +45,8 @@ public class Program
         if (args.Length == 0)
         {
             ConsoleHashing.Loop();
+            ConsoleExit = true;
+            
             return;
         }
         
@@ -60,7 +64,7 @@ public class Program
 
     public static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
     {
-        if (!Settings.AutoClose.Value)
+        if (!Settings.AutoClose.Value && !ConsoleExit)
         {
             ApexToolsConsole.GetInput("Press any key to continue...");
         }

@@ -13,7 +13,7 @@ public enum EConsoleInputMode
 
 public static class ConsoleHashing
 {
-    public static string SwitchMode => "-";
+    private static string SwitchMode => "-";
     
     public static void Loop()
     {
@@ -25,14 +25,14 @@ public static class ConsoleHashing
         {
             userCommand = userCommand switch
             {
-                EConsoleInputMode.Hash => InputHash(),
-                EConsoleInputMode.Lookup => InputLookup(),
+                EConsoleInputMode.Hash => HashInput(),
+                EConsoleInputMode.Lookup => LookupInput(),
                 _ => EConsoleInputMode.Exit
             };
         }
     }
 
-    public static EConsoleInputMode InputHash()
+    private static EConsoleInputMode HashInput()
     {
         var userInput = ApexToolsConsole.GetInput("Enter string to hash: ");
         
@@ -47,7 +47,7 @@ public static class ConsoleHashing
         return EConsoleInputMode.Hash;
     }
 
-    public static EConsoleInputMode InputLookup()
+    private static EConsoleInputMode LookupInput()
     {
         var userInput = ApexToolsConsole.GetInput("Enter hash to lookup: ");
         
