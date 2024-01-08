@@ -7,14 +7,14 @@ namespace ApexTools.Core.Utils;
 
 public static class XmlUtils
 {
-    public static string GetAttribute(XmlReader xr, string attribute)
+    public static string GetAttribute(this XmlReader xr, string attribute)
     {
         if (!xr.HasAttributes) throw new XmlException("Missing attributes");
 
         return xr.GetAttribute(attribute) ?? "";
     }
     
-    public static void WriteNameOrNameHash(XmlWriter xw, string nameHash, string name = "")
+    public static void WriteNameOrNameHash(this XmlWriter xw, string nameHash, string name = "")
     {
         if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
         {
@@ -27,7 +27,7 @@ public static class XmlUtils
         }
     }
     
-    public static void WriteNameOrNameHash(XmlWriter xw, uint nameHash, string name = "")
+    public static void WriteNameOrNameHash(this XmlWriter xw, uint nameHash, string name = "")
     {
         if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
         {
@@ -40,7 +40,7 @@ public static class XmlUtils
         }
     }
     
-    public static uint ReadNameIfValid(XmlReader xr)
+    public static uint ReadNameIfValid(this XmlReader xr)
     {
         var name = GetAttribute(xr, "Name");
         if (!string.IsNullOrEmpty(name))

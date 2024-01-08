@@ -2,6 +2,7 @@
 using ApexFormat.ADF.V04.Managers;
 using ApexFormat.IRTPC.V01.Managers;
 using ApexFormat.RTPC.V03.Flat.Managers;
+using ApexFormat.RTPC.V03.Inline;
 using ApexFormat.RTPC.V03.Managers;
 using ApexFormat.SARC.V02.Managers;
 using ApexFormat.SARC.V02.Models;
@@ -35,7 +36,7 @@ public class ApexPathManager
         {
             EFourCc.Aaf => new AafSarcChainManager(FilePath),
             EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
-            EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
+            EFourCc.Irtpc => new RtpcV03InlineManager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
             EFourCc.Sarc => new SarcV02Manager(FilePath),
             EFourCc.Xml => throw new NotImplementedException(),

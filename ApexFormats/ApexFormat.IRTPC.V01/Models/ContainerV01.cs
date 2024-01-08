@@ -128,7 +128,7 @@ public class ContainerV01 : XmlSerializable, IApexSerializable
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
             
         xw.WriteAttributeString(nameof(Version01), $"{Version01}");
         xw.WriteAttributeString(nameof(Version02), $"{Version02}");
