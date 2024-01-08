@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.SQLite;
 using System.Net.Http.Headers;
+using System.Text.Unicode;
 using ApexTools.Core.Config;
 
 namespace ApexTools.Core.Utils.Hash;

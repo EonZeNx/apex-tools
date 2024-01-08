@@ -42,7 +42,8 @@ public class Program
         
         if (args.Length == 0)
         {
-            Close("No arguments passed. Make sure to drag a supported file onto this.");
+            ConsoleHashing.Loop();
+            return;
         }
         
         var validPaths = FilterPaths(args).ToArray();

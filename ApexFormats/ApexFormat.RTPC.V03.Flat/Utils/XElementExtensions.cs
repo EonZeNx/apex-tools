@@ -37,7 +37,7 @@ public static class XElementExtensions
         var nameAttribute = xe.Attribute(NameAttributeName);
         if (nameAttribute is not null)
         {
-            var nameHash = HashJenkinsL3.Hash(nameAttribute.Value);
+            var nameHash = HashJenkinsL3.HashJenkins(nameAttribute.Value);
             return nameHash;
         }
 

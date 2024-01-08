@@ -2,7 +2,7 @@
 
 namespace ApexTools.Core.Utils.Hash;
 
-public class HashJenkinsL3
+public static class HashJenkinsL3
 {
     /// <summary>
     /// Simple string version.
@@ -11,9 +11,9 @@ public class HashJenkinsL3
     /// <param name="index"></param>
     /// <param name="seed"></param>
     /// <returns></returns>
-    public static uint Hash(string data, int index = 0, uint seed = 0)
+    public static uint HashJenkins(this string data, int index = 0, uint seed = 0)
     {
-        return Hash(Encoding.UTF8.GetBytes(data), index, seed);
+        return HashJenkins(Encoding.UTF8.GetBytes(data), index, seed);
     }
 
     /// <summary>
@@ -23,7 +23,7 @@ public class HashJenkinsL3
     /// <param name="index">Index to start at. Default is 0</param>
     /// <param name="seed">Passable seed variable. Default is 0</param>
     /// <returns>Hashed value as a uint</returns>
-    public static uint Hash(byte[] data, int index = 0, uint seed = 0)
+    public static uint HashJenkins(byte[] data, int index = 0, uint seed = 0)
     {
         uint a = 0xDEADBEEF + (uint) data.Length + seed;
         uint b = a;

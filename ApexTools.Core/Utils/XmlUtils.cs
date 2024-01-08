@@ -45,7 +45,7 @@ public static class XmlUtils
         var name = GetAttribute(xr, "Name");
         if (!string.IsNullOrEmpty(name))
         {
-            return ByteUtils.ReverseBytes(HashJenkinsL3.Hash(name));
+            return ByteUtils.ReverseBytes(HashJenkinsL3.HashJenkins(name));
         }
         
         var nameHash = GetAttribute(xr, "NameHash");
