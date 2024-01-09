@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using ApexFormat.ADF.V04.Managers;
-using ApexFormat.IRTPC.V01.Managers;
 using ApexFormat.RTPC.V03.Flat.Managers;
+using ApexFormat.RTPC.V03.Inline;
 using ApexFormat.RTPC.V03.Managers;
 using ApexFormat.SARC.V02.Managers;
 using ApexFormat.SARC.V02.Models;
@@ -28,14 +28,17 @@ public class ApexPathManager
     {
         if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, FileV02.FileListName);
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
-        
-        if (fourCc == EFourCc.Xml) fourCc = TryGetXmlFourCc(FilePath);
+
+        if (fourCc == EFourCc.Xml)
+        {
+            fourCc = TryGetXmlFourCc(FilePath);
+        }
 
         IPathProcessor processor = fourCc switch
         {
             EFourCc.Aaf => new AafSarcChainManager(FilePath),
             EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
-            EFourCc.Irtpc => new IrtpcV01Manager(FilePath),
+            EFourCc.Irtpc => new RtpcV03InlineManager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
             EFourCc.Sarc => new SarcV02Manager(FilePath),
             EFourCc.Xml => throw new NotImplementedException(),
@@ -55,11 +58,22 @@ public class ApexPathManager
         xr.Read();  // Read XML whitespace
         xr.Read();  // Read root element
 
-        if (FileHeaderUtils.FourCcStringMap.ContainsKey(xr.Name.ToUpper()))
+        if (!FileHeaderUtils.FourCcStringMap.TryGetValue(xr.Name.ToUpper(), out var value))
         {
-            return FileHeaderUtils.FourCcStringMap[xr.Name.ToUpper()];
+            throw new MalformedXmlException("XML file is not a valid Apex file");
+            
         }
 
-        throw new MalformedXmlException("XML file is not a valid Apex file");
+        if (value == EFourCc.Rtpc)
+        {
+            // Could be inline
+            var inlineValue = xr.GetAttribute("Inline");
+            if (!string.IsNullOrEmpty(inlineValue))
+            {
+                value = EFourCc.Irtpc;
+            }
+        }
+        
+        return value;
     }
 }
