@@ -1,13 +1,13 @@
 ﻿using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Abstractions;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
 using ApexTools.Core.Extensions;
 using ApexTools.Core.Hash;
+using ApexTools.Core.Interfaces;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 
@@ -97,30 +97,29 @@ public class RtpcV03File : IApexFile, IXmlFile
         bw.Write(Container, VoMaps);
     }
 
-    public void FromXml(string targetPath)
+    public void FromXml(XElement xe)
     {
         LoadClassDefinitions();
         
-        var xd = XDocument.Load(targetPath);
-        VoMaps.Create(xd);
+        VoMaps.Create(xe);
         
-        ApexExtension = xd.Root?.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
+        ApexExtension = xe.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
         Header = new RtpcV03Header
         {
             FourCc = EFourCc.Rtpc,
             Version = 3
         };
         
-        var rtpcNode = xd.Element(XmlName)?.Element(RtpcV03Container.XmlName);
+        var rtpcNode = xe.Element(XmlName)?.Element(RtpcV03Container.XmlName);
         if (rtpcNode is null)
         {
-            throw new XmlSchemaException($"{XmlName} missing from \"{targetPath}\"");
+            throw new XmlSchemaException($"{XmlName} is missing");
         }
         
         Container = rtpcNode.ReadRtpcV03Container(true);
     }
 
-    public void ToXml(string targetPath)
+    public XElement ToXml()
     {
         var parentIndexArrayOffset = Container.PropertyHeaders
             .First(h => h.NameHash == 0xCFD7B43E).RawData;
@@ -139,7 +138,6 @@ public class RtpcV03File : IApexFile, IXmlFile
             Container.Sort();
         }
         
-        var xd = new XDocument();
         var xe = new XElement(XmlName);
         
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
@@ -147,11 +145,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(Container.Flat), true);
 
         xe.WriteRoot(Container, OvMaps);
-        
-        xd.Add(xe);
-        
-        using var xw = XmlWriter.Create(targetPath, new XmlWriterSettings{ Indent = true, IndentChars = "\t" });
-        xd.Save(xw);
+
+        return xe;
     }
 
 

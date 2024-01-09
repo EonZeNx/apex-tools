@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Utils;
+using ApexFormat.RTPC.V03.Flat.Extensions;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Comparers;
 using ApexTools.Core.Extensions;
@@ -96,71 +96,71 @@ public class RtpcV03ValueOffsetMaps
         return values;
     }
 
-    public void Create(XDocument xd)
+    public void Create(XElement xe)
     {
-        var nodes = xd.Descendants(EVariantType.String.GetXmlName()).ToArray();
+        var nodes = xe.Descendants(EVariantType.String.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             StringOffsetMap.TryAdd(node.Value, 0);
         }
 
-        nodes = xd.Descendants(EVariantType.Vector2.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Vector2.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value, 2);
             Vec2OffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Vector3.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Vector3.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value, 3);
             Vec3OffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Vector4.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Vector4.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value, 4);
             Vec4OffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Matrix3X3.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Matrix3X3.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value, 9);
             Mat3OffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Matrix4X4.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Matrix4X4.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value, 16);
             Mat4OffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.UInteger32Array.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.UInteger32Array.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseU32Array(node.Value);
             U32ArrayOffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Float32Array.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Float32Array.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseF32Array(node.Value);
             F32ArrayOffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.ByteArray.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.ByteArray.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var values = ParseByteArray(node.Value);
             ByteArrayOffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.Event.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Event.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var rawValues = node.Value.Split(",");
@@ -173,43 +173,12 @@ public class RtpcV03ValueOffsetMaps
             EventOffsetMap.TryAdd(eventTuples, 0);
         }
         
-        nodes = xd.Descendants(EVariantType.ObjectId.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.ObjectId.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var value = ulong.Parse(node.Value, NumberStyles.HexNumber);
             ObjectIdOffsetMap.TryAdd(value, 0);
         }
-        
-        // // Include container attributes
-        // var attributeProperties = RtpcV03ContainerExtension.AttributeProperties;
-        // nodes = xd.Descendants(RtpcV03Container.XmlName).ToArray();
-        // foreach (var node in nodes)
-        // {
-        //     var nodeAttributes = node.Attributes().ToList();
-        //     foreach (var nodeAttribute in nodeAttributes)
-        //     {
-        //         
-        //     }
-        //     
-        //     // Name (optional)
-        //     var attribute = node.Attribute(XDocumentExtensions.NameAttributeName);
-        //     if (attribute is not null)
-        //     {
-        //         StringOffsetMap.TryAdd(attribute.Value, 0);
-        //     }
-        //     
-        //     // Object ID
-        //     var oIdXmlName = EVariantType.ObjectId.GetXmlName();
-        //
-        //     attribute = node.Attribute(oIdXmlName);
-        //     if (attribute is not null)
-        //     {
-        //         var value = ulong.Parse(attribute.Value, NumberStyles.HexNumber);
-        //         ObjectIdOffsetMap.TryAdd(value, 0);
-        //         
-        //         continue;
-        //     }
-        // }
     }
 }
 
@@ -254,7 +223,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.WriteStringZ(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec2OffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -265,7 +234,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.Write(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec3OffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -276,7 +245,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.Write(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Vec4OffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -287,7 +256,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.Write(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Mat3OffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -298,7 +267,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.Write(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.Mat4OffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -309,7 +278,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             
             bw.Write(key);
         }
-        ;
+        
         var sortedU32ArrayKeys = voMaps.SortNumericArrayKeys(voMaps.U32ArrayOffsetMap.Keys);
         foreach (var key in sortedU32ArrayKeys)
         {
@@ -321,7 +290,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             bw.Write((uint) key.Count);
             bw.Write(key);
         }
-        ;
+        
         sortedF32ArrayKeys = voMaps.SortF32ArrayKeys(voMaps.F32ArrayOffsetMap.Keys);
         foreach (var key in sortedF32ArrayKeys)
         {
@@ -333,7 +302,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             bw.Write((uint) key.Count);
             bw.Write(key);
         }
-        ;
+        
         var sortedByteArrayKeys = voMaps.SortNumericArrayKeys(voMaps.ByteArrayOffsetMap.Keys);
         foreach (var value in sortedByteArrayKeys)
         {
@@ -345,7 +314,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
             bw.Write((uint) value.Count);
             bw.Write(value);
         }
-        ;
+        
         foreach (var value in voMaps.EventOffsetMap.Keys)
         {
             bw.Align(EVariantType.Event.GetAlignment());
@@ -360,7 +329,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
                 bw.Write(valueTuple.Item2);
             }
         }
-        ;
+
         var sortedOIdArrayKeys = voMaps.ObjectIdOffsetMap.Keys.ToList().OrderBy(k => k);
         foreach (var value in sortedOIdArrayKeys)
         {

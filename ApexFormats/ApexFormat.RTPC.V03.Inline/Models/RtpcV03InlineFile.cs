@@ -62,19 +62,11 @@ public class RtpcV03InlineFile : IApexFile, IXmlFile
     
     #region XmlSerializable
 
-    public void FromXml(string path)
+    public void FromXml(XElement xe)
     {
-        var xd = XDocument.Load(path);
+        ApexExtension = xe.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
         
-        ApexExtension = xd.Root?.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
-
-        var root = xd.Root;
-        if (root is null)
-        {
-            throw new XmlSchemaException("Invalid root element");
-        }
-        
-        var containerElements = root.Elements(InlineContainer.XmlName).ToList();
+        var containerElements = xe.Elements(InlineContainer.XmlName).ToList();
         Header.ContainerCount = (ushort) containerElements.Count;
         
         Containers = new InlineContainer[Header.ContainerCount];
@@ -84,9 +76,8 @@ public class RtpcV03InlineFile : IApexFile, IXmlFile
         }
     }
 
-    public void ToXml(string path)
+    public XElement ToXml()
     {
-        var xd = new XDocument();
         var xe = new XElement(XmlName);
         
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
@@ -95,11 +86,8 @@ public class RtpcV03InlineFile : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(RtpcV03InlineHeader.Version02), RtpcV03InlineHeader.Version02);
         
         xe.ToXml(Containers);
-        
-        xd.Add(xe);
-        
-        using var xw = XmlWriter.Create(path, new XmlWriterSettings{ Indent = true, IndentChars = "\t" });
-        xd.Save(xw);
+
+        return xe;
     }
 
     #endregion

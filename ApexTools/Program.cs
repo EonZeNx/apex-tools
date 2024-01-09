@@ -24,12 +24,15 @@ public class Program
     
     public static void Main(string[] args)
     {
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        
+        // Console hash should disrespect auto-close
         if (args.Length == 0)
         {
             ConsoleHash.Start();
             return;
         }
-        
+
         AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
         
         Settings.Load();
@@ -58,5 +61,10 @@ public class Program
         {
             ConsoleUtils.GetInput("Press any key to continue...");
         }
+    }
+    
+    public static void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
+    {
+        ConsoleUtils.GetInput("Press any key to continue...");
     }
 }

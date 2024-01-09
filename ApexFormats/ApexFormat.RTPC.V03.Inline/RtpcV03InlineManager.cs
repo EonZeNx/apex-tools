@@ -1,4 +1,7 @@
-﻿using ApexFormat.RTPC.V03.Inline.Models;
+﻿using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using ApexFormat.RTPC.V03.Inline.Models;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
@@ -48,9 +51,11 @@ public class RtpcV03InlineManager : IPathProcessor
         
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
-
         var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
-        rtpcV03InlineFile.ToXml(targetXmlFilePath);
+        
+        var xd = new XDocument(rtpcV03InlineFile.ToXml());
+        using var xw = XmlWriter.Create(targetXmlFilePath, new XmlWriterSettings{ Indent = true, IndentChars = "\t" });
+        xd.Save(xw);
 
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
@@ -59,17 +64,19 @@ public class RtpcV03InlineManager : IPathProcessor
     {
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
         
+        var xd = XDocument.Load(TargetPathName);
+        if (xd.Root is null) throw new XmlSchemaException("Root element is invalid");
+        
         var rtpcV03InlineFile = new RtpcV03InlineFile();
-        rtpcV03InlineFile.FromXml(TargetPath);
+        rtpcV03InlineFile.FromXml(xd.Root);
         
         ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Rtpc} inline", LogType.Info);
         
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
-
         var targetApexFilePath = Path.Join(targetFilePath, $"{targetFileName}{rtpcV03InlineFile.ApexExtension}");
-        using var bw = new BinaryWriter(new FileStream(targetApexFilePath, FileMode.Create));
         
+        using var bw = new BinaryWriter(new FileStream(targetApexFilePath, FileMode.Create));
         rtpcV03InlineFile.ToApex(bw);
 
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);

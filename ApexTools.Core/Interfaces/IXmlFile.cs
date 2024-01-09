@@ -2,6 +2,5 @@
 
 public interface IXmlFile : IFromXml, IToXml
 {
-    string XmlExtension { get; }
-    static abstract string XmlName { get; }
+    public static abstract string XmlName { get; }
 }

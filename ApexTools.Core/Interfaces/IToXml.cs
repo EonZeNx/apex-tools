@@ -1,6 +1,8 @@
-﻿namespace ApexTools.Core.Interfaces;
+﻿using System.Xml.Linq;
+
+namespace ApexTools.Core.Interfaces;
 
 public interface IToXml
 {
-    void ToXml(string path);
+    XElement ToXml();
 }

@@ -1,6 +1,8 @@
-﻿namespace ApexTools.Core.Interfaces;
+﻿using System.Xml.Linq;
+
+namespace ApexTools.Core.Interfaces;
 
 public interface IFromXml
 {
-    void FromXml(string path);
+    void FromXml(XElement xe);
 }
