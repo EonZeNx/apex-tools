@@ -5,12 +5,12 @@ using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Flat.Managers;
 
-public class Jc4RtpcV03Manager : IPathProcessor
+public class RtpcV03FlatManager : IPathProcessor
 {
     public string TargetPath { get; set; }
     public string TargetPathName => Path.GetFileName(TargetPath);
 
-    public Jc4RtpcV03Manager(string path)
+    public RtpcV03FlatManager(string path)
     {
         TargetPath = path;
     }
@@ -18,24 +18,33 @@ public class Jc4RtpcV03Manager : IPathProcessor
     public void TryProcess()
     {
         var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
-        
-        if (fourCc == EFourCc.Rtpc) FromApexToCustomFile();
-        else if (fourCc == EFourCc.Xml) FromCustomFileToApex();
-        else ApexToolsConsole.LogFailedToLoadError(TargetPathName);
+
+        if (fourCc == EFourCc.Rtpc)
+        {
+            FromApexToCustomFile();
+        }
+        else if (fourCc == EFourCc.Xml)
+        {
+            FromCustomFileToApex();
+        }
+        else
+        {
+            ConsoleUtils.Log($"Invalid path for {GetType().Name} \"{TargetPath}\"", LogType.Error);
+        }
     }
 
     private void FromApexToCustomFile()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "RTPC");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Rtpc} flat", LogType.Info);
         
         using var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open));
         var rtpcV03 = new RtpcV03File
         {
             ApexExtension = Path.GetExtension(TargetPath)
         };
-
         rtpcV03.FromApex(br);
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as XML", LogType.Info);
         
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
@@ -43,16 +52,18 @@ public class Jc4RtpcV03Manager : IPathProcessor
         var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
         rtpcV03.ToXml(targetXmlFilePath);
     
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomFileToApex()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "XML");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
+        
         var rtpcV03 = new RtpcV03File();
         rtpcV03.FromXml(TargetPath);
     
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Rtpc} flat", LogType.Info);
+        
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
 
@@ -61,6 +72,6 @@ public class Jc4RtpcV03Manager : IPathProcessor
         
         rtpcV03.ToApex(bw);
     
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

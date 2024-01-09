@@ -20,7 +20,7 @@ public class Mat3X3 : FloatArray
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
 
         var strArray = new string[3];
         for (var i = 0; i < strArray.Length; i++)
@@ -36,7 +36,7 @@ public class Mat3X3 : FloatArray
 
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var floatString = xr.ReadElementContentAsString();
         var vectorString = floatString.Split(", ");

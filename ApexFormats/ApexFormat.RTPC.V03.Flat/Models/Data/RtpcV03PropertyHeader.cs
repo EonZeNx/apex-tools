@@ -3,7 +3,8 @@ using System.Xml.Linq;
 using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -50,7 +51,7 @@ public static class RtpcV03PropertyHeaderExtension
     public static void LookupNameHash(this ref RtpcV03PropertyHeader propertyHeader)
     {
         const EHashType flags = EHashType.Property | EHashType.Misc;
-        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash, flags);
+        propertyHeader.Name = LookupHashes.Get(propertyHeader.NameHash, flags);
     }
 
     private static IList<float> ParseF32Array(string data, int count = 0)

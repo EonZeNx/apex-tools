@@ -42,7 +42,7 @@ public class Unassigned : PropertyBaseV03
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
         Value = uint.Parse(xr.ReadElementContentAsString());
     }
 
@@ -53,7 +53,7 @@ public class Unassigned : PropertyBaseV03
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
             
         xw.WriteValue(Value);
         xw.WriteEndElement();

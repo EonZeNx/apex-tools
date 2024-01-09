@@ -1,4 +1,6 @@
-﻿namespace ApexTools.Console.Managers;
+﻿using ApexTools.Managers;
+
+namespace ApexTools.Console.Managers;
 
 public class ApexMultiPathManager
 {

@@ -12,7 +12,7 @@ using ApexTools.Core.Config;
 using ApexTools.Core.Exceptions;
 using ApexTools.Core.Utils;
 
-namespace ApexTools.Console.Managers;
+namespace ApexTools.Managers;
 
 public class ApexPathManager
 {
@@ -37,7 +37,7 @@ public class ApexPathManager
         IPathProcessor processor = fourCc switch
         {
             EFourCc.Aaf => new AafSarcChainManager(FilePath),
-            EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new Jc4RtpcV03Manager(FilePath) : new RtpcV03Manager(FilePath),
+            EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.Irtpc => new RtpcV03InlineManager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
             EFourCc.Sarc => new SarcV02Manager(FilePath),

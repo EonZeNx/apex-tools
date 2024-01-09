@@ -2,6 +2,7 @@
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Abstractions.CombinedSerializable;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.AAF.V01.Models;
@@ -9,13 +10,13 @@ namespace ApexFormat.AAF.V01.Models;
 
 /// <summary>
 /// The structure for <see cref="FileV01"/>.
-/// <br/> FourCc - <see cref="EFourCc"/>
-/// <br/> Version - <see cref="uint"/>
-/// <br/> Comment (Length 28, UTF8) - <see cref="string"/>
-/// <br/> Uncompressed Size - <see cref="uint"/>
-/// <br/> Compressed Size - <see cref="uint"/>
-/// <br/> Block count - <see cref="uint"/>
-/// <br/> Block array - <see cref="BlockV01"/>
+/// <br/>FourCc - <see cref="EFourCc"/>
+/// <br/>Version - <see cref="uint"/>
+/// <br/>Comment (Length 28, UTF8) - <see cref="string"/>
+/// <br/>Uncompressed Size - <see cref="uint"/>
+/// <br/>Compressed Size - <see cref="uint"/>
+/// <br/>Block count - <see cref="uint"/>
+/// <br/>Block array - <see cref="BlockV01"/>
 /// </summary>
 public class FileV01 : IApexFile, IApexSerializable, ICustomFileSerializable
 {
@@ -61,10 +62,9 @@ public class FileV01 : IApexFile, IApexSerializable, ICustomFileSerializable
         var uncompressedSize = (uint) BlockArray.Sum(block => block.UncompressedSize);
         bw.Write(uncompressedSize);
         
-        bw.Write(
-            BlockArray.Length == 1
-                ? BlockArray[0].BlockSize
-                : Math.Min(BlockArray.Max(block => block.BlockSize), BlockV01.MaxBlockSize)
+        bw.Write(BlockArray.Length == 1
+            ? BlockArray[0].BlockSize
+            : Math.Min(BlockArray.Max(block => block.BlockSize), BlockV01.MaxBlockSize)
         );
         bw.Write(BlockCount);
         

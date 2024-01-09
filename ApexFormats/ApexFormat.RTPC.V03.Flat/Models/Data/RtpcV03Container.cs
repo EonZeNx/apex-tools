@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
+using ApexTools.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -248,7 +248,7 @@ public static class RtpcV03ContainerExtension
         container.PropertyHeaders = container.PropertyHeaders.Concat(properties).ToArray();
         container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
 
-        container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
+        container.Header.NameHash = ((uint) 0x2A527DAA);
     }
     
     public static void LookupNameHash(ref this RtpcV03Container container)
@@ -337,14 +337,14 @@ public static class RtpcV03ContainerExtension
 
     public static ulong GetObjectId(in this RtpcV03Container container)
     {
-        var header = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0x0584FFCF));
+        var header = container.PropertyHeaders.First(h => h.NameHash == ((uint) 0x0584FFCF).LittleEndian());
         
         return ulong.Parse(header.XmlData, NumberStyles.HexNumber);
     }
     
     public static uint GetClassHash(in this RtpcV03Container container)
     {
-        var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0xE65940D0));
+        var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ((uint) 0xE65940D0).LittleEndian());
         
         return BitConverter.ToUInt32(classHashHeader.RawData);
     }
@@ -358,7 +358,7 @@ public static class RtpcV03ContainerExtension
             {
                 NameHash = h.NameHash,
                 VariantType = h.VariantType,
-                Name = Settings.PerformHashLookUp.Value ? HashUtils.Lookup(h.NameHash) : string.Empty
+                Name = Settings.LookupHashes.Value ? LookupHashes.Get(h.NameHash) : string.Empty
             }).ToList()
         };
 
@@ -510,9 +510,9 @@ public static class RtpcV03ContainerExtension
                 var propertyData = ovMaps.GetAsString(attributeProperty.RawData, attributeProperty.VariantType, isHash);
                 var attributeName = requiredProperty.Name;
                 
-                if (isHash && Settings.PerformHashLookUp.Value)
+                if (isHash && Settings.LookupHashes.Value)
                 {
-                    var lookupHash = HashUtils.Lookup(attributeProperty.RawData);
+                    var lookupHash = LookupHashes.Get(attributeProperty.RawData);
                     propertyData = string.IsNullOrEmpty(lookupHash) ? propertyData : lookupHash;
 
                     attributeName = attributeName.Replace("_hash", "");

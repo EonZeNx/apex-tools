@@ -17,15 +17,24 @@ public class SarcV02Manager : IPathProcessor
 
     public void TryProcess()
     {
-        if (Directory.Exists(TargetPath)) FromCustomDirectoryToApex();
-        else if (FileHeaderUtils.ValidCharacterCode(TargetPath) == EFourCc.Sarc) FromApexToCustomDirectory();
-        else ApexToolsConsole.LogFailedToLoadError(TargetPathName);
+        if (Directory.Exists(TargetPath))
+        {
+            FromCustomDirectoryToApex();
+        }
+        else if (FileHeaderUtils.ValidCharacterCode(TargetPath) == EFourCc.Sarc)
+        {
+            FromApexToCustomDirectory();
+        }
+        else
+        {
+            ConsoleUtils.Log($"Invalid path for {GetType().Name} \"{TargetPath}\"", LogType.Error);
+        }
     }
 
     private void FromApexToCustomDirectory()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "ApexFile");
         var sarcV02File = new FileV02();
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {sarcV02File.FourCc}", LogType.Info);
         
         using var inFileStream = new FileStream(TargetPath, FileMode.Open);
         using var inBinaryReader = new BinaryReader(inFileStream);
@@ -35,7 +44,7 @@ public class SarcV02Manager : IPathProcessor
         inBinaryReader.Dispose();
         inFileStream.Dispose();
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as directory", LogType.Info);
 
         var baseDirectory = Path.GetDirectoryName(TargetPath) ?? "./";
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(TargetPath);
@@ -43,13 +52,14 @@ public class SarcV02Manager : IPathProcessor
         var directoryPath = Path.Combine(baseDirectory, fileWithoutExtension);
         sarcV02File.ToCustomDirectory(directoryPath);
         
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomDirectoryToApex()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "CustomFile");
         var sarcV02File = new FileV02();
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as directory", LogType.Info);
+        
         sarcV02File.FromCustomDirectory(TargetPath);
 
         using var outputFileStream = new FileStream(Path.ChangeExtension(TargetPath, "sarc"), FileMode.Create);
@@ -57,11 +67,11 @@ public class SarcV02Manager : IPathProcessor
         
         sarcV02File.ToApex(outBinaryWriter);
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {sarcV02File.FourCc}", LogType.Info);
         
         outputFileStream.Dispose();
         outBinaryWriter.Dispose();
         
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

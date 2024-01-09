@@ -53,7 +53,7 @@ public class FloatArray : BaseArray<float>
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var floatString = xr.ReadElementContentAsString();
         if (floatString.Length == 0)

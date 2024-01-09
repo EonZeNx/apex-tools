@@ -1,5 +1,4 @@
 ﻿using ApexTools.Core;
-using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -32,7 +31,7 @@ public static class RtpcV03HeaderExtension
     
     public static void Write(this BinaryWriter bw, RtpcV03Header header)
     {
-        bw.Write(ByteUtils.ReverseBytes((uint) header.FourCc));
+        bw.Write(((uint) (uint) header.FourCc));
         bw.Write(header.Version);
     }
 }

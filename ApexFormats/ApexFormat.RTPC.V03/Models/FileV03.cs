@@ -3,6 +3,7 @@ using ApexFormat.RTPC.V03.Models.Properties.Variants;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Abstractions.CombinedSerializable;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models;

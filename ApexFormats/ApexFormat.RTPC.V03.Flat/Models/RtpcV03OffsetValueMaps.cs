@@ -1,6 +1,6 @@
 ﻿using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
-using ApexTools.Core.Utils;
+using ApexTools.Core.Extensions;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 

@@ -19,15 +19,24 @@ public class RtpcV03Manager : IPathProcessor
     public void TryProcess()
     {
         var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
-        
-        if (fourCc == EFourCc.Rtpc) FromApexToCustomFile();
-        else if (fourCc == EFourCc.Xml) FromCustomFileToApex();
-        else ApexToolsConsole.LogFailedToLoadError(TargetPathName);
+
+        if (fourCc == EFourCc.Rtpc)
+        {
+            FromApexToCustomFile();
+        }
+        else if (fourCc == EFourCc.Xml)
+        {
+            FromCustomFileToApex();
+        }
+        else
+        {
+            ConsoleUtils.Log($"Invalid path for {GetType().Name} \"{TargetPath}\"", LogType.Error);
+        }
     }
 
     private void FromApexToCustomFile()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "ApexFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Rtpc}", LogType.Info);
         
         var rtpcV01File = new FileV03();
         using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
@@ -35,28 +44,28 @@ public class RtpcV03Manager : IPathProcessor
             rtpcV01File.FromApex(br);
         }
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as XML", LogType.Info);
 
         var settings = new XmlWriterSettings{ Indent = true, IndentChars = "\t" };
         using var xr = XmlWriter.Create($"{TargetPath}.xml", settings);
         rtpcV01File.ToXml(xr);
         
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomFileToApex()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "CustomFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
 
         var rtpcV01File = new FileV03();
         using var xr = XmlReader.Create(TargetPath);
         rtpcV01File.FromXml(xr);
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Rtpc} flat", LogType.Info);
         
         using var bw = new BinaryWriter(new FileStream($"{TargetPath}.epe", FileMode.Create));
         rtpcV01File.ToApex(bw);
         
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System.Xml;
 using ApexTools.Core.Config;
 using ApexTools.Core.Exceptions;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Hash;
 
 namespace ApexTools.Core.Utils;
 
@@ -16,7 +17,7 @@ public static class XmlUtils
     
     public static void WriteNameOrNameHash(this XmlWriter xw, string nameHash, string name = "")
     {
-        if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
+        if (Settings.OutputNameHash.Value || string.IsNullOrEmpty(name))
         {
             xw.WriteAttributeString("NameHash", $"{nameHash}");
         }
@@ -29,7 +30,7 @@ public static class XmlUtils
     
     public static void WriteNameOrNameHash(this XmlWriter xw, uint nameHash, string name = "")
     {
-        if (Settings.AlwaysOutputHash.Value || string.IsNullOrEmpty(name))
+        if (Settings.OutputNameHash.Value || string.IsNullOrEmpty(name))
         {
             xw.WriteAttributeString("NameHash", $"{ByteUtils.ToHex(nameHash, true)}");
         }
@@ -45,7 +46,7 @@ public static class XmlUtils
         var name = GetAttribute(xr, "Name");
         if (!string.IsNullOrEmpty(name))
         {
-            return ByteUtils.ReverseBytes(HashJenkinsL3.HashJenkins(name));
+            return name.HashJenkins().LittleEndian();
         }
         
         var nameHash = GetAttribute(xr, "NameHash");

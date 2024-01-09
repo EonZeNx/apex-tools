@@ -28,13 +28,9 @@ public class AafSarcChainManager : IPathProcessor
         }
         
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
-        if (fourCc is EFourCc.Aaf or EFourCc.Sarc)
-        {
-            FromApexToCustomDirectory();
-            return;
-        }
-
-        throw new NotSupportedException();
+        if (fourCc is not (EFourCc.Aaf or EFourCc.Sarc)) throw new NotSupportedException();
+        
+        FromApexToCustomDirectory();
     }
 
     private void FromApexToCustomDirectory()

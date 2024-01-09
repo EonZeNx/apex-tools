@@ -1,29 +1,18 @@
 ﻿using System.Text;
 
-namespace ApexTools.Core.Utils.Hash;
+namespace ApexTools.Hash;
 
-public static class HashJenkinsL3
+public static class JenkinsL3
 {
-    /// <summary>
-    /// Simple string version.
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="index"></param>
-    /// <param name="seed"></param>
-    /// <returns></returns>
     public static uint HashJenkins(this string data, int index = 0, uint seed = 0)
     {
-        return HashJenkins(Encoding.UTF8.GetBytes(data), index, seed);
+        return Hash(Encoding.UTF8.GetBytes(data), index, seed);
     }
 
     /// <summary>
     /// This is an implementation of Bob Jenkins Lookup3.
     /// </summary>
-    /// <param name="data">Data to hash as a byte array</param>
-    /// <param name="index">Index to start at. Default is 0</param>
-    /// <param name="seed">Passable seed variable. Default is 0</param>
-    /// <returns>Hashed value as a uint</returns>
-    public static uint HashJenkins(byte[] data, int index = 0, uint seed = 0)
+    public static uint Hash(byte[] data, int index = 0, uint seed = 0)
     {
         uint a = 0xDEADBEEF + (uint) data.Length + seed;
         uint b = a;

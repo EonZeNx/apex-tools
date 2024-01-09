@@ -52,7 +52,7 @@ public class UInt32Array : BaseArray<uint>
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var uintString = xr.ReadElementContentAsString();
         if (uintString.Length == 0)

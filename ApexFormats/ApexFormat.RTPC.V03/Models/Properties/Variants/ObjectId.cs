@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Xml;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
@@ -31,7 +32,7 @@ public class ObjectId : PropertyBaseDeferredV03
         br.BaseStream.Seek(dataOffset, SeekOrigin.Begin);
             
         // Thanks UnknownMiscreant
-        var oid = ByteUtils.ReverseBytes(br.ReadUInt64());
+        var oid = ((uint) br.ReadUInt64());
         var userData = (byte) (oid & byte.MaxValue);
             
         Value = (oid, userData);
@@ -59,13 +60,13 @@ public class ObjectId : PropertyBaseDeferredV03
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var strValue = xr.ReadElementContentAsString();
         var strArray = strValue.Split("=");
 
         var reversedOid = ulong.Parse(strArray[0], NumberStyles.AllowHexSpecifier);
-        var oid = ByteUtils.ReverseBytes(reversedOid);
+        var oid = ((uint) reversedOid);
 
         var userData = byte.Parse(strArray[1], NumberStyles.AllowHexSpecifier);
             
@@ -77,9 +78,9 @@ public class ObjectId : PropertyBaseDeferredV03
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
 
-        var reversedOid = ByteUtils.ReverseBytes(Value.Item1);
+        var reversedOid = ((uint) Value.Item1);
         var stringOid = ByteUtils.ToHex(reversedOid);
 
         var stringUserData = ByteUtils.ToHex(Value.Item2);

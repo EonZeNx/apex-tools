@@ -1,9 +1,8 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
-using ApexTools.Core.Utils;
+using ApexTools.Core.Extensions;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -93,10 +92,10 @@ public static class FRtpcV03ClassExtensions
 {
     public static readonly List<uint> DefaultMemberHashes = new()
     {
-        ByteUtils.ReverseBytes(0xE65940D0), // Class hash
-        ByteUtils.ReverseBytes(0x84B61AD3), // Name
-        ByteUtils.ReverseBytes(0x8C863A7D), // Name hash
-        ByteUtils.ReverseBytes(0x0584FFCF) // Object ID
+        ((uint) 0xE65940D0).LittleEndian(), // Class hash
+        ((uint) 0x84B61AD3).LittleEndian(), // Name
+        ((uint) 0x8C863A7D).LittleEndian(), // Name hash
+        ((uint) 0x0584FFCF).LittleEndian() // Object ID
     };
     
     public static IEnumerable<RtpcV03PropertyHeader> FilterDefaultMembers(IEnumerable<RtpcV03PropertyHeader> headers)
@@ -113,7 +112,7 @@ public static class FRtpcV03ClassExtensions
         
         if (!string.IsNullOrEmpty(definition.Name))
         {
-            xe.SetAttributeValue(XElementExtensions.NameAttributeName, definition.Name);
+            xe.SetAttributeValue(XDocumentExtensions.NameAttributeString, definition.Name);
         }
         
         foreach (var member in definition.Members)

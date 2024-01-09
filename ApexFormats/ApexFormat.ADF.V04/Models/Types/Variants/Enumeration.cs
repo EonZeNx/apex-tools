@@ -1,6 +1,4 @@
-﻿using ApexFormat.ADF.V04.Abstractions;
-
-namespace ApexFormat.ADF.V04.Models.Types.Variants;
+﻿namespace ApexFormat.ADF.V04.Models.Types.Variants;
 
 public class Enumeration : TypeDefV04
 {

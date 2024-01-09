@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using ApexTools.Core.Abstractions.CombinedSerializable;
+using ApexTools.Core.Hash;
 using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
 
 namespace ApexFormat.RTPC.V03.Models.Properties;
 
@@ -22,7 +22,7 @@ public abstract class PropertyBaseV03 : XmlSerializable, IApexSerializable
     {
         get
         {
-            if (string.IsNullOrEmpty(_name)) _name = HashUtils.Lookup(NameHash);
+            if (string.IsNullOrEmpty(_name)) _name = LookupHashes.Get(NameHash);
             return _name;
         }
     }

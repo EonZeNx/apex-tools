@@ -6,8 +6,8 @@ using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 
@@ -61,7 +61,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container.Containers = flatContainers.ToArray();
         Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
-        Container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
+        Container.Header.NameHash = ((uint) 0x2A527DAA).LittleEndian();
         
         Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 
@@ -129,7 +129,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         
         Container.FilterRootContainerProperties();
         
-        if (Settings.PerformHashLookUp.Value)
+        if (Settings.LookupHashes.Value)
         {
             Container.LookupNameHash();
         }
@@ -171,12 +171,12 @@ public class RtpcV03File : IApexFile, IXmlFile
             .Distinct()
             .ToArray();
         
-        if (Settings.PerformHashLookUp.Value)
+        if (Settings.LookupHashes.Value)
         {
             var uniqueSpan = unique.AsSpan();
             foreach (ref var definition in uniqueSpan)
             {
-                definition.Name = HashUtils.Lookup(definition.ClassHash, EHashType.Class);
+                definition.Name = LookupHashes.Get(definition.ClassHash, EHashType.Class);
             }
         }
 

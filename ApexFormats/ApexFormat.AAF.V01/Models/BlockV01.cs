@@ -1,10 +1,10 @@
 ﻿using ApexTools.Core;
 using ApexTools.Core.Abstractions.CombinedSerializable;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 using Ionic.Zlib;
 
 namespace ApexFormat.AAF.V01.Models;
-
 
 /// <summary>
 /// The structure for a Block in an AAF file.

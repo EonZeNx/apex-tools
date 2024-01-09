@@ -53,7 +53,7 @@ public class ByteArray : BaseArray<byte>
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var byteString = xr.ReadElementContentAsString();
         if (byteString.Length == 0)
@@ -71,7 +71,7 @@ public class ByteArray : BaseArray<byte>
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
 
         var array = string.Join(",", Values.Select(ByteUtils.ToHex));
         xw.WriteValue(array);

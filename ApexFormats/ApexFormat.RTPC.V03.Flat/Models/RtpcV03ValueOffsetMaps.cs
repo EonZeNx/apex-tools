@@ -3,11 +3,10 @@ using System.Numerics;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Comparers;
+using ApexTools.Core.Extensions;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 
@@ -193,7 +192,7 @@ public class RtpcV03ValueOffsetMaps
         //     }
         //     
         //     // Name (optional)
-        //     var attribute = node.Attribute(XElementExtensions.NameAttributeName);
+        //     var attribute = node.Attribute(XDocumentExtensions.NameAttributeName);
         //     if (attribute is not null)
         //     {
         //         StringOffsetMap.TryAdd(attribute.Value, 0);

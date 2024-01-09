@@ -38,7 +38,7 @@ public class RtpcV03InlineFile : IApexFile, IXmlFile
             Containers[i].FromApex(br);
         }
 
-        if (Settings.PerformHashLookUp.Value)
+        if (Settings.LookupHashes.Value)
         {
             foreach (ref var container in Containers.AsSpan())
             {

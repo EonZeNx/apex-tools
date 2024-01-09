@@ -1,5 +1,5 @@
 ﻿using ApexTools.Core.Abstractions.CombinedSerializable;
-using ApexTools.Core.Utils;
+using ApexTools.Core.Extensions;
 
 namespace ApexFormat.ADF.V04.Models;
 

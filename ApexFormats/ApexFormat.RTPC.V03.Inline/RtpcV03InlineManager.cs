@@ -18,15 +18,24 @@ public class RtpcV03InlineManager : IPathProcessor
     public void TryProcess()
     {
         var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
-        
-        if (fourCc == EFourCc.Irtpc) FromApexToCustomFile();
-        else if (fourCc == EFourCc.Xml) FromCustomFileToApex();
-        else ApexToolsConsole.LogFailedToLoadError(TargetPathName);
+
+        if (fourCc == EFourCc.Irtpc)
+        {
+            FromApexToCustomFile();
+        }
+        else if (fourCc == EFourCc.Xml)
+        {
+            FromCustomFileToApex();
+        }
+        else
+        {
+            ConsoleUtils.Log($"Invalid path for {GetType().Name} \"{TargetPath}\"", LogType.Error);
+        }
     }
 
     private void FromApexToCustomFile()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "ApexFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Rtpc} inline", LogType.Info);
         
         using var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open));
         var rtpcV03InlineFile = new RtpcV03InlineFile
@@ -35,7 +44,7 @@ public class RtpcV03InlineManager : IPathProcessor
         };
         rtpcV03InlineFile.FromApex(br);
 
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as XML", LogType.Info);
         
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
@@ -43,17 +52,18 @@ public class RtpcV03InlineManager : IPathProcessor
         var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
         rtpcV03InlineFile.ToXml(targetXmlFilePath);
 
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomFileToApex()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "CustomFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
         
         var rtpcV03InlineFile = new RtpcV03InlineFile();
         rtpcV03InlineFile.FromXml(TargetPath);
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Rtpc} inline", LogType.Info);
+        
         var targetFilePath = Path.GetDirectoryName(TargetPath);
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
 
@@ -62,6 +72,6 @@ public class RtpcV03InlineManager : IPathProcessor
         
         rtpcV03InlineFile.ToApex(bw);
 
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

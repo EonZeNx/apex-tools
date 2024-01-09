@@ -2,6 +2,7 @@
 using System.Xml;
 using ApexTools.Core.Abstractions.CombinedSerializable;
 using ApexTools.Core.Abstractions.Serializable;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.SARC.V02.Models;
