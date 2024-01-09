@@ -1,5 +1,4 @@
-﻿using System.Xml;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
@@ -106,7 +105,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         ApexExtension = xe.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
         Header = new RtpcV03Header
         {
-            FourCc = EFourCc.Rtpc,
+            FourCc = EFourCc.RTPC,
             Version = 3
         };
         

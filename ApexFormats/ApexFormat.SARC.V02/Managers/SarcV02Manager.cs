@@ -21,7 +21,7 @@ public class SarcV02Manager : IPathProcessor
         {
             FromCustomDirectoryToApex();
         }
-        else if (FileHeaderUtils.ValidCharacterCode(TargetPath) == EFourCc.Sarc)
+        else if (FileHeaderUtils.ValidCharacterCode(TargetPath) == EFourCc.SARC)
         {
             FromApexToCustomDirectory();
         }

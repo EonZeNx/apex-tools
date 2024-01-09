@@ -19,7 +19,7 @@ public class BlockV01 : IApexSerializable, ICustomFileSerializable
     public uint CompressedSize { get; set; }
     public uint UncompressedSize { get; set; }
     public long NextBlockOffset { get; set; }
-    public EFourCc FourCc => EFourCc.Mawe;
+    public EFourCc FourCc => EFourCc.MAWE;
     // public byte[] CompressedData { get; set; } = Array.Empty<byte>();
     public byte[] UncompressedData { get; set; } = Array.Empty<byte>();
     public long DataOffset { get; set; } = 0;

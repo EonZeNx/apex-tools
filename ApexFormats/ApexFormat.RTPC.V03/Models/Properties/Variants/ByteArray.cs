@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using ApexFormat.RTPC.V03.Models.Properties.CustomArrays;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;

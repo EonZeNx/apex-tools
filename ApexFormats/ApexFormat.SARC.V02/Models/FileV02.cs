@@ -18,7 +18,7 @@ namespace ApexFormat.SARC.V02.Models;
 /// </summary>
 public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializable
 {
-    public EFourCc FourCc => EFourCc.Sarc;
+    public EFourCc FourCc => EFourCc.SARC;
     public uint Version => 0x02;
     public static string FileListName => "@files";
     

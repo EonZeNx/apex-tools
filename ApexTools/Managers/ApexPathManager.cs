@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using System.Xml.Schema;
 using ApexFormat.ADF.V04.Managers;
 using ApexFormat.RTPC.V03.Flat.Managers;
 using ApexFormat.RTPC.V03.Inline;
@@ -9,7 +10,6 @@ using ApexTools.Chain.Managers;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Config;
-using ApexTools.Core.Exceptions;
 using ApexTools.Core.Utils;
 
 namespace ApexTools.Managers;
@@ -29,22 +29,22 @@ public class ApexPathManager
         if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, FileV02.FileListName);
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
 
-        if (fourCc == EFourCc.Xml)
+        if (fourCc == EFourCc.XML)
         {
             fourCc = TryGetXmlFourCc(FilePath);
         }
 
         IPathProcessor processor = fourCc switch
         {
-            EFourCc.Aaf => new AafSarcChainManager(FilePath),
-            EFourCc.Rtpc => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
-            EFourCc.Irtpc => new RtpcV03InlineManager(FilePath),
+            EFourCc.AAF => new AafSarcChainManager(FilePath),
+            EFourCc.RTPC => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
+            EFourCc.IRTPC => new RtpcV03InlineManager(FilePath),
             // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
-            EFourCc.Sarc => new SarcV02Manager(FilePath),
-            EFourCc.Xml => throw new NotImplementedException(),
-            EFourCc.Adf => new AdfV04Manager(FilePath),
-            EFourCc.Tab => throw new NotImplementedException(),
-            EFourCc.Mawe => throw new NotImplementedException(),
+            EFourCc.SARC => new SarcV02Manager(FilePath),
+            EFourCc.XML => throw new NotImplementedException(),
+            EFourCc.ADF => new AdfV04Manager(FilePath),
+            EFourCc.TAB => throw new NotImplementedException(),
+            EFourCc.MAWE => throw new NotImplementedException(),
             _ => throw new NotSupportedException()
         };
         
@@ -60,17 +60,17 @@ public class ApexPathManager
 
         if (!FileHeaderUtils.FourCcStringMap.TryGetValue(xr.Name.ToUpper(), out var value))
         {
-            throw new MalformedXmlException("XML file is not a valid Apex file");
+            throw new XmlSchemaException("XML file is not a valid Apex file");
             
         }
 
-        if (value == EFourCc.Rtpc)
+        if (value == EFourCc.RTPC)
         {
             // Could be inline
             var inlineValue = xr.GetAttribute("Inline");
             if (!string.IsNullOrEmpty(inlineValue))
             {
-                value = EFourCc.Irtpc;
+                value = EFourCc.IRTPC;
             }
         }
         

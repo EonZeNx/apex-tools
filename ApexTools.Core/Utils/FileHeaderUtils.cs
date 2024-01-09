@@ -55,7 +55,7 @@ public static class FileHeaderUtils
             if (IsSupportedCharacterCode(reversedValue)) return FourCcUintMap[reversedValue];
         }
 
-        return EFourCc.Irtpc;
+        return EFourCc.IRTPC;
     }
     
     /// <summary>

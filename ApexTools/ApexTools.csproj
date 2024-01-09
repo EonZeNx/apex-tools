@@ -5,6 +5,9 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Version>0.4.0</Version>
+        <Title>ApexTools</Title>
+        <Authors>EonZeNx</Authors>
     </PropertyGroup>
 
     <ItemGroup>

@@ -19,11 +19,11 @@ public class AafV01Manager : IPathProcessor
     {
         var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
 
-        if (fourCc == EFourCc.Aaf)
+        if (fourCc == EFourCc.AAF)
         {
             FromApexToCustomFile();
         }
-        else if (fourCc == EFourCc.Sarc)
+        else if (fourCc == EFourCc.SARC)
         {
             FromCustomFileToApex();
         }
@@ -35,7 +35,7 @@ public class AafV01Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Aaf}", LogType.Info);
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
         
         var aafV01File = new FileV01();
 
@@ -44,7 +44,7 @@ public class AafV01Manager : IPathProcessor
             aafV01File.FromApex(inBinaryReader);
         }
         
-        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Sarc}", LogType.Info);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
 
         using var outBinaryWriter = new BinaryWriter(new FileStream($"{TargetPath}.sarc", FileMode.Create));
         aafV01File.ToCustomFile(outBinaryWriter);
@@ -54,7 +54,7 @@ public class AafV01Manager : IPathProcessor
     
     private void FromCustomFileToApex()
     {
-        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Sarc}", LogType.Info);
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
         var aafV01File = new FileV01();
         
         using var inFileStream = new FileStream(TargetPath, FileMode.Open);
@@ -63,7 +63,7 @@ public class AafV01Manager : IPathProcessor
         inBinaryReader.Dispose();
         inFileStream.Dispose();
         
-        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Aaf}", LogType.Info);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
 
         using var outFileStream = new FileStream($"{TargetPath}.ee", FileMode.Create);
         using var outBinaryWriter = new BinaryWriter(outFileStream);

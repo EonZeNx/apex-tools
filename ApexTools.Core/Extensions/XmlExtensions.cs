@@ -1,12 +1,12 @@
 ﻿using System.Xml;
+using System.Xml.Schema;
 using ApexTools.Core.Config;
-using ApexTools.Core.Exceptions;
-using ApexTools.Core.Extensions;
+using ApexTools.Core.Utils;
 using ApexTools.Hash;
 
-namespace ApexTools.Core.Utils;
+namespace ApexTools.Core.Extensions;
 
-public static class XmlUtils
+public static class XmlExtensions
 {
     public static string GetAttribute(this XmlReader xr, string attribute)
     {
@@ -56,6 +56,6 @@ public static class XmlUtils
         }
 
         var xli = (IXmlLineInfo) xr;
-        throw new MalformedXmlException($"Property does not have Name or NameHash (Line {xli.LineNumber})");
+        throw new XmlSchemaException($"Property does not have Name or NameHash (Line {xli.LineNumber})");
     }
 }

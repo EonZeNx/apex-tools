@@ -39,8 +39,8 @@ public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerial
     public EntryV02(XmlReader xr, string basePath)
     {
         DataOffset = 0;
-        IsReference = bool.Parse(XmlUtils.GetAttribute(xr, "IsReference"));
-        Size = uint.Parse(XmlUtils.GetAttribute(xr, "Size"));
+        IsReference = bool.Parse(XmlExtensions.GetAttribute(xr, "IsReference"));
+        Size = uint.Parse(XmlExtensions.GetAttribute(xr, "Size"));
             
         FilePath = xr.ReadElementContentAsString().Replace("\\", "/");
         PathLength = (uint) FilePath.Length;

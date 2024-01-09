@@ -33,7 +33,7 @@ public class AdfV04Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Adf}", LogType.Info);
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.ADF}", LogType.Info);
         
         var adfV04File = new FileV04();
 
@@ -62,7 +62,7 @@ public class AdfV04Manager : IPathProcessor
         inBinaryReader.Dispose();
         inFileStream.Dispose();
         
-        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Adf}", LogType.Info);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.ADF}", LogType.Info);
 
         using var outFileStream = new FileStream($"{TargetPath}.ee", FileMode.Create);
         using var outBinaryWriter = new BinaryWriter(outFileStream);

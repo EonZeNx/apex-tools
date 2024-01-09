@@ -11,7 +11,7 @@ public struct RtpcV03Header
 
     public RtpcV03Header()
     {
-        FourCc = EFourCc.Rtpc;
+        FourCc = EFourCc.RTPC;
         Version = 3;
     }
 }

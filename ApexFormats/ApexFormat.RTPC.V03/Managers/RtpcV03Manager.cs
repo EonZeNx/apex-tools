@@ -20,11 +20,11 @@ public class RtpcV03Manager : IPathProcessor
     {
         var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
 
-        if (fourCc == EFourCc.Rtpc)
+        if (fourCc == EFourCc.RTPC)
         {
             FromApexToCustomFile();
         }
-        else if (fourCc == EFourCc.Xml)
+        else if (fourCc == EFourCc.XML)
         {
             FromCustomFileToApex();
         }
@@ -36,7 +36,7 @@ public class RtpcV03Manager : IPathProcessor
 
     private void FromApexToCustomFile()
     {
-        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.Rtpc}", LogType.Info);
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.RTPC}", LogType.Info);
         
         var rtpcV01File = new FileV03();
         using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
@@ -61,7 +61,7 @@ public class RtpcV03Manager : IPathProcessor
         using var xr = XmlReader.Create(TargetPath);
         rtpcV01File.FromXml(xr);
         
-        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.Rtpc} flat", LogType.Info);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.RTPC} flat", LogType.Info);
         
         using var bw = new BinaryWriter(new FileStream($"{TargetPath}.epe", FileMode.Create));
         rtpcV01File.ToApex(bw);

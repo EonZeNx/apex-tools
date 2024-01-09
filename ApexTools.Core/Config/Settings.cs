@@ -34,11 +34,10 @@ public static class Settings
     public static Setting<bool> RtpcSortProperties { get; set; } = Setting<bool>
         .Create(true)
         .SetName(nameof(RtpcSortProperties));
-    
+
     public static Setting<bool> RtpcSkipUnassignedProperties { get; set; } = Setting<bool>
         .Create(true)
-        .SetName(nameof(RtpcSkipUnassignedProperties))
-        .SetDescription("Skip unassigned properties of Runtime Containers (I/RTPC files)");
+        .SetName(nameof(RtpcSkipUnassignedProperties));
 
     public static Setting<bool> RtpcPreferFlat { get; set; } = Setting<bool>
         .Create(true)

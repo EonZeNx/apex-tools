@@ -20,7 +20,7 @@ namespace ApexFormat.AAF.V01.Models;
 /// </summary>
 public class FileV01 : IApexFile, IApexSerializable, ICustomFileSerializable
 {
-    public EFourCc FourCc => EFourCc.Aaf;
+    public EFourCc FourCc => EFourCc.AAF;
     public uint Version => 0x01;
     public string Comment { get; set; } = "AVALANCHEARCHIVEFORMATISCOOL";
     public uint UncompressedSize { get; set; } = 0;
