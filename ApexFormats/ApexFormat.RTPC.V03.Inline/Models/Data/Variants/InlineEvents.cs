@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using System.Globalization;
+using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexTools.Core.Utils;
 using ApexTools.Core.Utils.Hash;
 
@@ -13,6 +15,7 @@ public class InlineEvents : InlineCountable
     
     public override uint Count { get; set; }
 
+    public InlineEvents() {}
     public InlineEvents(InlinePropertyHeader header)
     {
         NameHash = header.NameHash;
@@ -61,5 +64,35 @@ public class InlineEvents : InlineCountable
         xe.SetValue(string.Join(",", Values.Select(e => $"{e.Item1:X8}={e.Item2:X8}")));
 
         return xe;
+    }
+
+    public override void FromXElement(XElement xe)
+    {
+        NameHash = xe.GetNameHash();
+
+        if (string.IsNullOrEmpty(xe.Value))
+        {
+            Values = Array.Empty<(uint, uint)>();
+            Count = 0;
+            
+            return;
+        }
+        
+        var strValues = xe.Value.Split(",");
+        
+        Values = new (uint, uint)[strValues.Length];
+        for (var i = 0; i < strValues.Length; i++)
+        {
+            var eventPair = strValues[i].Split("=");
+            if (eventPair.Length != 2)
+            {
+                throw new XmlSchemaException($"Event pair {eventPair} has too many values, not a valid {VariantType.GetXmlName()}");
+            }
+            
+            var eventTuple = (uint.Parse(eventPair[0], NumberStyles.AllowHexSpecifier), uint.Parse(eventPair[1], NumberStyles.AllowHexSpecifier));
+            Values[i] = eventTuple;
+        }
+        
+        Count = (uint) Values.Length;
     }
 }

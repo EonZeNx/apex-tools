@@ -29,11 +29,11 @@ public class RtpcV03InlineManager : IPathProcessor
         ApexToolsConsole.LogLoading(TargetPathName, "ApexFile");
         
         using var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open));
-        var irtpcV01File = new RtpcV03InlineFile
+        var rtpcV03InlineFile = new RtpcV03InlineFile
         {
             ApexExtension = Path.GetExtension(TargetPath)
         };
-        irtpcV01File.FromApex(br);
+        rtpcV03InlineFile.FromApex(br);
 
         ApexToolsConsole.LogProcessing(TargetPathName);
         
@@ -41,7 +41,7 @@ public class RtpcV03InlineManager : IPathProcessor
         var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
 
         var targetXmlFilePath = Path.Join(targetFilePath, $"{targetFileName}.xml");
-        irtpcV01File.ToXml(targetXmlFilePath);
+        rtpcV03InlineFile.ToXml(targetXmlFilePath);
 
         ApexToolsConsole.LogComplete(TargetPathName);
     }
@@ -50,13 +50,17 @@ public class RtpcV03InlineManager : IPathProcessor
     {
         ApexToolsConsole.LogLoading(TargetPathName, "CustomFile");
         
-        var irtpcV01File = new RtpcV03InlineFile();
-        irtpcV01File.FromXml(TargetPath);
+        var rtpcV03InlineFile = new RtpcV03InlineFile();
+        rtpcV03InlineFile.FromXml(TargetPath);
         
         ApexToolsConsole.LogProcessing(TargetPathName);
+        var targetFilePath = Path.GetDirectoryName(TargetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
+
+        var targetApexFilePath = Path.Join(targetFilePath, $"{targetFileName}{rtpcV03InlineFile.ApexExtension}");
+        using var bw = new BinaryWriter(new FileStream(targetApexFilePath, FileMode.Create));
         
-        using var bw = new BinaryWriter(new FileStream($"{TargetPath}.bin", FileMode.Create));
-        irtpcV01File.ToApex(bw);
+        rtpcV03InlineFile.ToApex(bw);
 
         ApexToolsConsole.LogComplete(TargetPathName);
     }

@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Inline.Interfaces;
 using ApexTools.Core.Utils;
 using ApexTools.Core.Utils.Hash;
@@ -12,6 +13,7 @@ public class InlineFloat : IApexXElementIO
     public static EVariantType VariantType => EVariantType.Float32;
     protected float Value { get; set; }
 
+    public InlineFloat() {}
     public InlineFloat(InlinePropertyHeader header)
     {
         NameHash = header.NameHash;
@@ -49,5 +51,17 @@ public class InlineFloat : IApexXElementIO
         xe.SetValue(Value);
 
         return xe;
+    }
+
+    public void FromXElement(XElement xe)
+    {
+        NameHash = xe.GetNameHash();
+
+        if (!float.TryParse(xe.Value, out var result))
+        {
+            throw new XmlSchemaException($"{xe.Value} is not a valid {VariantType.GetXmlName()}");
+        }
+
+        Value = result;
     }
 }

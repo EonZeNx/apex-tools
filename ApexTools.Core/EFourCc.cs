@@ -9,7 +9,7 @@ public enum EFourCc
     Aaf = 0x41414600,
     Mawe = 0x4557414D,
     Rtpc = 0x52545043,
-    Irtpc = 0x0,
+    Irtpc = 0x010400,
     Sarc = 0x53415243,
     Adf = 0x20464441,
     Tab = 0x54414200,

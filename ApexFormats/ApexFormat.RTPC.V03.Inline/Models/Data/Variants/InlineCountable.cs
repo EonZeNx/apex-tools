@@ -12,4 +12,5 @@ public abstract class InlineCountable : IApexXElementIO
     public abstract void FromApex(BinaryReader br);
     public abstract void ToApex(BinaryWriter bw);
     public abstract XElement ToXElement();
+    public abstract void FromXElement(XElement xe);
 }

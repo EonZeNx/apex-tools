@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexTools.Core.Utils;
 using ApexTools.Core.Utils.Hash;
 
@@ -13,6 +14,7 @@ public class InlineMatrix3X4 : InlineCountable
     
     public override uint Count { get; set; } = 12;
 
+    public InlineMatrix3X4() {}
     public InlineMatrix3X4(InlinePropertyHeader header)
     {
         NameHash = header.NameHash;
@@ -57,5 +59,18 @@ public class InlineMatrix3X4 : InlineCountable
         xe.SetValue(string.Join(",", Values));
 
         return xe;
+    }
+
+    public override void FromXElement(XElement xe)
+    {
+        NameHash = xe.GetNameHash();
+        
+        var strValues = xe.Value.Split(",");
+        Values = Array.ConvertAll(strValues, float.Parse);
+
+        if (Values.Length != Count)
+        {
+            throw new XmlSchemaException($"{xe.Value} has too many values, not a valid {VariantType.GetXmlName()}");
+        }
     }
 }

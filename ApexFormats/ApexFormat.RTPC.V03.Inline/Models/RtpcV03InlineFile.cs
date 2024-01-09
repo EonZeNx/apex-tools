@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Inline.Models.Data;
 using ApexTools.Core.Config;
 using ApexTools.Core.Interfaces;
@@ -63,23 +64,24 @@ public class RtpcV03InlineFile : IApexFile, IXmlFile
 
     public void FromXml(string path)
     {
-        // var containers = new List<ContainerV01>();
-        // var container = new ContainerV01();
-        //
-        // xr.ReadToDescendant(container.XmlName);
-        // while (xr.NodeType == XmlNodeType.Element && xr.Name == container.XmlName)
-        // {
-        //     container = new ContainerV01();
-        //     container.FromXml(xr);
-        //     containers.Add(container);
-        //         
-        //     xr.ReadToNextSibling(container.XmlName);
-        //     if (xr.NodeType == XmlNodeType.EndElement) xr.ReadToNextSibling(container.XmlName);
-        // }
-        // xr.Close();
-        //
-        // Containers = containers.ToArray();
-        // ObjectCount = (ushort) Containers.Length;
+        var xd = XDocument.Load(path);
+        
+        ApexExtension = xd.Root?.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
+
+        var root = xd.Root;
+        if (root is null)
+        {
+            throw new XmlSchemaException("Invalid root element");
+        }
+        
+        var containerElements = root.Elements(InlineContainer.XmlName).ToList();
+        Header.ContainerCount = (ushort) containerElements.Count;
+        
+        Containers = new InlineContainer[Header.ContainerCount];
+        for (var i = 0; i < Header.ContainerCount; i++)
+        {
+            Containers[i] = containerElements[i].FromXml();
+        }
     }
 
     public void ToXml(string path)

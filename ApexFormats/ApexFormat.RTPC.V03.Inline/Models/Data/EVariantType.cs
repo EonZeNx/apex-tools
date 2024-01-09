@@ -27,9 +27,15 @@ public static class VariantTypeExtensions
         {EVariantType.Matrix3X4, "Matrix3X4"},
         {EVariantType.Events, "Events"},
     };
+    public static readonly Dictionary<string, EVariantType> XmlNameVariant = VariantToXml.ToDictionary(x => x.Value, x => x.Key);
     
     public static string GetXmlName(this EVariantType variantType)
     {
         return VariantToXml[variantType];
+    }
+    
+    public static EVariantType GetVariantType(string str)
+    {
+        return XmlNameVariant[str];
     }
 }

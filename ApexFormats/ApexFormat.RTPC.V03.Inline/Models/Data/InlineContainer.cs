@@ -1,11 +1,13 @@
 ﻿using System.Xml.Linq;
+using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Inline.Interfaces;
+using ApexTools.Core.Interfaces;
 using ApexTools.Core.Utils;
 using ApexTools.Core.Utils.Hash;
 
 namespace ApexFormat.RTPC.V03.Inline.Models.Data;
 
-public class InlineContainer : IApexIO, ILookupHash
+public class InlineContainer : IFromApex, IToApex, ILookupHash
 {
     public uint NameHash { get; set; }
     public byte Version01 { get; set; }
@@ -57,9 +59,40 @@ public class InlineContainer : IApexIO, ILookupHash
 
 public static class InlineContainerExtensions
 {
-    public static void FromXml()
+    public static InlineContainer FromXml(this XElement xe)
     {
-        throw new NotImplementedException();
+        var result = new InlineContainer
+        {
+            NameHash = xe.GetNameHash()
+        };
+        
+        var version01Attribute = xe.Attribute(nameof(result.Version01));
+        if (version01Attribute is null)
+        {
+            throw new XmlSchemaException($"{nameof(result.Version01)} is invalid");
+        }
+        result.Version01 = byte.Parse(version01Attribute.Value);
+        
+        var version02Attribute = xe.Attribute(nameof(result.Version02));
+        if (version02Attribute is null)
+        {
+            throw new XmlSchemaException($"{nameof(result.Version02)} is invalid");
+        }
+        result.Version02 = ushort.Parse(version02Attribute.Value);
+
+        var propertyNames = VariantTypeExtensions.VariantToXml.Values.ToList();
+        var propertyElements = xe.Elements()
+            .Where(e => propertyNames.Contains(e.Name.ToString()))
+            .ToList();
+
+        result.PropertyCount = (ushort) propertyElements.Count;
+        result.Properties = new IApexXElementIO[result.PropertyCount];
+        for (var i = 0; i < result.PropertyCount; i++)
+        {
+            result.Properties[i] = propertyElements[i].VariantFromXElement();
+        }
+
+        return result;
     }
     
     public static void ToXml(this XElement xe, InlineContainer container)

@@ -1,9 +1,9 @@
-﻿using ApexFormat.RTPC.V03.Inline.Interfaces;
+﻿using ApexTools.Core.Interfaces;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Inline.Models.Data;
 
-public class InlinePropertyHeader : IApexIO
+public class InlinePropertyHeader : IFromApex
 {
     public uint NameHash { get; private set; }
     public EVariantType VariantType { get; private set; }
@@ -16,11 +16,5 @@ public class InlinePropertyHeader : IApexIO
         
         NameHash = br.ReadUInt32();
         VariantType = (EVariantType) br.ReadByte();
-    }
-
-    public void ToApex(BinaryWriter bw)
-    {
-        bw.Write(NameHash);
-        bw.Write((byte) (uint) VariantType);
     }
 }

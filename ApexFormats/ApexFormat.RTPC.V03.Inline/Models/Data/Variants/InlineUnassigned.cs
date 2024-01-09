@@ -12,6 +12,7 @@ public class InlineUnassigned : IApexXElementIO
     public static EVariantType VariantType => EVariantType.Unassigned;
     public static string XmlName => "Un";
 
+    public InlineUnassigned() {}
     public InlineUnassigned(InlinePropertyHeader header)
     {
         NameHash = header.NameHash;
@@ -42,5 +43,10 @@ public class InlineUnassigned : IApexXElementIO
         xe.WriteNameOrHash(NameHash, Name);
 
         return xe;
+    }
+
+    public void FromXElement(XElement xe)
+    {
+        NameHash = xe.GetNameHash();
     }
 }

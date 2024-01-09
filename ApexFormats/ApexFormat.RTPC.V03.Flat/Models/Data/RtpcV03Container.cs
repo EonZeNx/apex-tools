@@ -423,7 +423,7 @@ public static class RtpcV03ContainerExtension
             {
                 NameHash = attributeProperty.NameHash,
                 VariantType = attributeProperty.VariantType,
-                RawData = BitConverter.GetBytes(HashJenkinsL3.Hash(xa.Value))
+                RawData = BitConverter.GetBytes(xa.Value.HashJenkins())
             };
 
             return result;

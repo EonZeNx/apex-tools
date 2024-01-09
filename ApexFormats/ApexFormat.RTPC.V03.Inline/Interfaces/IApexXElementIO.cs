@@ -1,3 +1,5 @@
-﻿namespace ApexFormat.RTPC.V03.Inline.Interfaces;
+﻿using ApexTools.Core.Interfaces;
 
-public interface IApexXElementIO : IApexIO, IToXElement, ILookupHash {}
+namespace ApexFormat.RTPC.V03.Inline.Interfaces;
+
+public interface IApexXElementIO : IFromApex, IToApex, IToXElement, IFromXElement, ILookupHash {}

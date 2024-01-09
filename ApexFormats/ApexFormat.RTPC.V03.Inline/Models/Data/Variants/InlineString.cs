@@ -13,6 +13,7 @@ public class InlineString : IApexXElementIO
     public static EVariantType VariantType => EVariantType.String;
     protected string Value { get; set; } = string.Empty;
 
+    public InlineString() {}
     public InlineString(InlinePropertyHeader header)
     {
         NameHash = header.NameHash;
@@ -59,5 +60,11 @@ public class InlineString : IApexXElementIO
         xe.SetValue(Value);
 
         return xe;
+    }
+
+    public void FromXElement(XElement xe)
+    {
+        NameHash = xe.GetNameHash();
+        Value = xe.Value;
     }
 }

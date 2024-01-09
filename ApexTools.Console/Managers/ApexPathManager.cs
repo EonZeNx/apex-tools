@@ -1,6 +1,5 @@
 ﻿using System.Xml;
 using ApexFormat.ADF.V04.Managers;
-using ApexFormat.IRTPC.V01.Managers;
 using ApexFormat.RTPC.V03.Flat.Managers;
 using ApexFormat.RTPC.V03.Inline;
 using ApexFormat.RTPC.V03.Managers;
@@ -29,8 +28,11 @@ public class ApexPathManager
     {
         if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, FileV02.FileListName);
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
-        
-        if (fourCc == EFourCc.Xml) fourCc = TryGetXmlFourCc(FilePath);
+
+        if (fourCc == EFourCc.Xml)
+        {
+            fourCc = TryGetXmlFourCc(FilePath);
+        }
 
         IPathProcessor processor = fourCc switch
         {
@@ -56,11 +58,22 @@ public class ApexPathManager
         xr.Read();  // Read XML whitespace
         xr.Read();  // Read root element
 
-        if (FileHeaderUtils.FourCcStringMap.ContainsKey(xr.Name.ToUpper()))
+        if (!FileHeaderUtils.FourCcStringMap.TryGetValue(xr.Name.ToUpper(), out var value))
         {
-            return FileHeaderUtils.FourCcStringMap[xr.Name.ToUpper()];
+            throw new MalformedXmlException("XML file is not a valid Apex file");
+            
         }
 
-        throw new MalformedXmlException("XML file is not a valid Apex file");
+        if (value == EFourCc.Rtpc)
+        {
+            // Could be inline
+            var inlineValue = xr.GetAttribute("Inline");
+            if (!string.IsNullOrEmpty(inlineValue))
+            {
+                value = EFourCc.Irtpc;
+            }
+        }
+        
+        return value;
     }
 }
