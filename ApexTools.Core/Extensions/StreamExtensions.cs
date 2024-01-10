@@ -26,13 +26,18 @@ public static class StreamExtensions
 
         return fullString;
     }
-        
-    public static void WriteStringZ(this BinaryWriter bw, string value)
+    
+    public static void WriteString(this BinaryWriter bw, string value)
     {
         foreach (var character in value)
         {
             bw.Write(character);
         }
+    }
+        
+    public static void WriteStringZ(this BinaryWriter bw, string value)
+    {
+        bw.WriteString(value);
 
         if (value.EndsWith(char.MinValue)) return;
             

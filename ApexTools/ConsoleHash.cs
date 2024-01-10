@@ -2,7 +2,6 @@ using System.Globalization;
 using ApexTools.Core.Extensions;
 using ApexTools.Core.Hash;
 using ApexTools.Core.Utils;
-using ApexTools.Hash;
 
 namespace ApexTools;
 

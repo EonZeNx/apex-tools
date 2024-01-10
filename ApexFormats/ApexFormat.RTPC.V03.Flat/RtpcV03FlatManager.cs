@@ -6,7 +6,7 @@ using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.RTPC.V03.Flat.Managers;
+namespace ApexFormat.RTPC.V03.Flat;
 
 public class RtpcV03FlatManager : IPathProcessor
 {

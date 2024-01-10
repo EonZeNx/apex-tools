@@ -1,7 +1,7 @@
-﻿using ApexTools.Console.Managers;
-using ApexTools.Core.Config;
+﻿using ApexTools.Core.Config;
 using ApexTools.Core.Hash;
 using ApexTools.Core.Utils;
+using ApexTools.Managers;
 
 namespace ApexTools;
 
@@ -46,7 +46,7 @@ public class Program
         var validPaths = FilterPaths(args).ToArray();
         if (!validPaths.Any())
         {
-            Close("No valid paths found.");
+            Close("No valid paths found");
         }
         
         var manager = new ApexMultiPathManager(validPaths);
@@ -65,6 +65,9 @@ public class Program
     
     public static void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
     {
+        ConsoleUtils.Log(((Exception) e.ExceptionObject).StackTrace ?? "Fatal error", LogType.Error);
         ConsoleUtils.GetInput("Press any key to continue...");
+        
+        Environment.Exit(-1);
     }
 }

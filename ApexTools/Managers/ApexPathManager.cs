@@ -1,10 +1,11 @@
 ﻿using System.Xml;
 using System.Xml.Schema;
+using ApexFormat.AAF.V01;
 using ApexFormat.ADF.V04.Managers;
-using ApexFormat.RTPC.V03.Flat.Managers;
+using ApexFormat.RTPC.V03;
+using ApexFormat.RTPC.V03.Flat;
 using ApexFormat.RTPC.V03.Inline;
-using ApexFormat.RTPC.V03.Managers;
-using ApexFormat.SARC.V02.Managers;
+using ApexFormat.SARC.V02;
 using ApexFormat.SARC.V02.Models;
 using ApexTools.Chain.Managers;
 using ApexTools.Core;
@@ -26,7 +27,7 @@ public class ApexPathManager
     // Checks if a file exists, if it does return the filePath, if not check if a directory exists, and return the filePath
     public void ProcessPath()
     {
-        if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, FileV02.FileListName);
+        if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, SarcV02FileConstants.FileListName);
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
 
         if (fourCc == EFourCc.XML)
@@ -36,11 +37,11 @@ public class ApexPathManager
 
         IPathProcessor processor = fourCc switch
         {
-            EFourCc.AAF => new AafSarcChainManager(FilePath),
+            EFourCc.AAF => new AafV01Manager(FilePath),
             EFourCc.RTPC => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.IRTPC => new RtpcV03InlineManager(FilePath),
-            // EFourCc.Irtpc => new IrtpcDv01Manager(FilePath),
-            EFourCc.SARC => new SarcV02Manager(FilePath),
+            // EFourCc.SARC => new SarcV02Manager(FilePath),
+            EFourCc.SARC => new AafV01Manager(FilePath),
             EFourCc.XML => throw new NotImplementedException(),
             EFourCc.ADF => new AdfV04Manager(FilePath),
             EFourCc.TAB => throw new NotImplementedException(),

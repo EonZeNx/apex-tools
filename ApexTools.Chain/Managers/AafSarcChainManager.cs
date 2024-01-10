@@ -2,32 +2,34 @@
 using ApexFormat.SARC.V02.Models;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexTools.Chain.Managers;
 
 /// <summary>
-/// Passes AAF files to SARC and vice versa.
+/// Chains AAF files to SARC and vice versa.
 /// TODO: Do version checking.
 /// </summary>
 public class AafSarcChainManager : IPathProcessor
 {
-    public string FilePath { get; set; }
+    public string TargetPath { get; set; }
+    public string TargetPathName => Path.GetFileName(TargetPath);
 
-    public AafSarcChainManager(string filePath)
+    public AafSarcChainManager(string targetPath)
     {
-        FilePath = filePath;
+        TargetPath = targetPath;
     }
     
     public void TryProcess()
     {
-        if (Directory.Exists(FilePath))
+        if (Directory.Exists(TargetPath))
         {
             FromCustomDirectoryToApex();
             return;
         }
         
-        var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
+        var fourCc = FileHeaderUtils.ValidCharacterCode(TargetPath);
         if (fourCc is not (EFourCc.AAF or EFourCc.SARC)) throw new NotSupportedException();
         
         FromApexToCustomDirectory();
@@ -35,53 +37,67 @@ public class AafSarcChainManager : IPathProcessor
 
     private void FromApexToCustomDirectory()
     {
-        var aafV01File = new FileV01();
-        var sarcV02File = new FileV02();
+        var aafV01File = new AafV01File();
+        var sarcV02File = new SarcV02File();
 
-        using (var inBr = new BinaryReader(new FileStream(FilePath, FileMode.Open)))
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
+        using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
         {
-            aafV01File.FromApex(inBr);
+            aafV01File.FromApex(br);
+        }
+
+        using (var ms = new MemoryStream())
+        {
+            ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
+            
+            using var bw = new BinaryWriter(ms);
+            aafV01File.ToCustomFile(bw);
+
+            ConsoleUtils.Log($"Chained \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
+            
+            using var br = new BinaryReader(ms);
+            br.Seek(0);
+            sarcV02File.FromApex(br);
         }
         
-        using var ms = new MemoryStream();
-        using var br = new BinaryReader(ms);
-        using var bw = new BinaryWriter(ms);
+        var directoryPath = Path.GetDirectoryName(TargetPath) ?? @".\";
+        var filename = Path.GetFileNameWithoutExtension(TargetPath);
+        var sarcV02FilePath = Path.Combine(directoryPath, filename);
         
-        aafV01File.ToCustomFile(bw);
-        br.BaseStream.Seek(0, SeekOrigin.Begin);
-        
-        sarcV02File.FromApex(br);
-        var filepathAsDirectory = Path.GetDirectoryName(FilePath) ?? @".\";
-        var filepathAsFilename = Path.GetFileNameWithoutExtension(FilePath);
-        var sarcV02FilePath = Path.Combine(filepathAsDirectory, filepathAsFilename);
+        ConsoleUtils.Log($"Extracting \"{TargetPathName}\" as files", LogType.Info);
         sarcV02File.ToCustomDirectory(sarcV02FilePath);
         
-        ms.Dispose();
-        br.Dispose();
-        bw.Dispose();
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 
     private void FromCustomDirectoryToApex()
     {
-        using var ms = new MemoryStream();
-        using var br = new BinaryReader(ms);
-        using var bw = new BinaryWriter(ms);
-        
-        var aafV01File = new FileV01();
-        var sarcV02File = new FileV02();
-        
-        sarcV02File.FromCustomDirectory(FilePath);
-        sarcV02File.ToApex(bw);
-        
-        br.BaseStream.Seek(0, SeekOrigin.Begin);
-        aafV01File.FromCustomFile(br);
-        ms.Dispose();
-        br.Dispose();
-        bw.Dispose();
+        var aafV01File = new AafV01File();
+        var sarcV02File = new SarcV02File();
 
-        using (var outBw = new BinaryWriter(new FileStream($"{FilePath}.ee", FileMode.Create)))
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as files", LogType.Info);
+        sarcV02File.FromCustomDirectory(TargetPath);
+        
+        using (var ms = new MemoryStream())
         {
-            aafV01File.ToApex(outBw); 
+            ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
+            
+            using var bw = new BinaryWriter(ms);
+            sarcV02File.ToApex(bw);
+        
+            ConsoleUtils.Log($"Chained \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
+            
+            using var br = new BinaryReader(ms);
+            br.BaseStream.Seek(0, SeekOrigin.Begin);
+            aafV01File.FromCustomFile(br);
         }
+
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
+        using (var bw = new BinaryWriter(new FileStream($"{TargetPath}.ee", FileMode.Create)))
+        {
+            aafV01File.ToApex(bw); 
+        }
+        
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

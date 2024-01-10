@@ -8,14 +8,14 @@ using ApexTools.Core.Utils;
 namespace ApexFormat.SARC.V02.Models;
 
 /// <summary>
-/// The structure for <see cref="EntryV02"/>.
-/// <br/> FilePath Length - <see cref="uint"/>
-/// <br/> FilePath - <see cref="string"/>
-/// <br/> Data offset - <see cref="uint"/>
-/// <br/> Size - <see cref="uint"/>
-/// <br/> Data (Deferred) - <see cref="byte"/>[]
+/// Structure:
+/// <br/>FilePath Length - <see cref="uint"/>
+/// <br/>FilePath - <see cref="string"/>
+/// <br/>Data offset - <see cref="uint"/>
+/// <br/>Size - <see cref="uint"/>
+/// <br/>Data (Deferred) - <see cref="byte"/>[]
 /// </summary>
-public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerializableDeferred
+public class SarcV02Entry : IApexSerializable, ICustomPathSerializable, IToApexSerializableDeferred
 {
     public uint PathLength { get; set; }
     public string FilePath { get; set; } = "";
@@ -34,9 +34,9 @@ public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerial
     }
 
 
-    public EntryV02() {}
+    public SarcV02Entry() {}
 
-    public EntryV02(XmlReader xr, string basePath)
+    public SarcV02Entry(XmlReader xr, string basePath)
     {
         DataOffset = 0;
         IsReference = bool.Parse(XmlExtensions.GetAttribute(xr, "IsReference"));
@@ -139,13 +139,14 @@ public class EntryV02: IApexSerializable, ICustomPathSerializable, IToApexSerial
 
     public void XmlWrite(XmlWriter xw)
     {
-        // Only write references, can just gather contents of folder for internal files
-        // if (!entry.IsReference) return;
-            
-        xw.WriteStartElement("Entry");
-        xw.WriteAttributeString("IsReference", $"{IsReference}");
-        xw.WriteAttributeString("Size", $"{Size}");
-        xw.WriteValue(FilePath);
+        xw.WriteStartElement("entry");
+        if (IsReference)
+        {
+            var reference = IsReference ? 1 : 0;
+            xw.WriteAttributeString("reference", $"{reference}");
+            xw.WriteAttributeString("size", $"{Size}");
+        }
+        xw.WriteAttributeString("value", $"{FilePath}");
         xw.WriteEndElement();
     }
 

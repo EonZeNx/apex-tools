@@ -2,7 +2,7 @@
 using System.Security;
 using System.Xml.Linq;
 using ApexTools.Core.Config;
-using ApexTools.Hash;
+using ApexTools.Core.Hash;
 
 namespace ApexTools.Core.Extensions;
 

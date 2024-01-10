@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace ApexTools.Hash;
+namespace ApexTools.Core.Hash;
 
 public static class JenkinsL3
 {

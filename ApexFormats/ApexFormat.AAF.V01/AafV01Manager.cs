@@ -3,7 +3,7 @@ using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.AAF.V01.Managers;
+namespace ApexFormat.AAF.V01;
 
 public class AafV01Manager : IPathProcessor
 {
@@ -37,17 +37,22 @@ public class AafV01Manager : IPathProcessor
     {
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
         
-        var aafV01File = new FileV01();
-
-        using (var inBinaryReader = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
+        var aafV01File = new AafV01File();
+        using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
         {
-            aafV01File.FromApex(inBinaryReader);
+            aafV01File.FromApex(br);
         }
         
         ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
-
-        using var outBinaryWriter = new BinaryWriter(new FileStream($"{TargetPath}.sarc", FileMode.Create));
-        aafV01File.ToCustomFile(outBinaryWriter);
+        
+        var targetFilePath = Path.GetDirectoryName(TargetPath);
+        var targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
+        var targetSarcFilePath = Path.Join(targetFilePath, $"{targetFileName}.sarc");
+        
+        using (var bw = new BinaryWriter(new FileStream(targetSarcFilePath, FileMode.Create)))
+        {
+            aafV01File.ToCustomFile(bw);
+        }
         
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
@@ -55,19 +60,18 @@ public class AafV01Manager : IPathProcessor
     private void FromCustomFileToApex()
     {
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.SARC}", LogType.Info);
-        var aafV01File = new FileV01();
         
-        using var inFileStream = new FileStream(TargetPath, FileMode.Open);
-        using var inBinaryReader = new BinaryReader(inFileStream);
-        aafV01File.FromCustomFile(inBinaryReader);
-        inBinaryReader.Dispose();
-        inFileStream.Dispose();
+        var aafV01File = new AafV01File();
+        using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
+        {
+            aafV01File.FromCustomFile(br);
+        }
         
         ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
-
-        using var outFileStream = new FileStream($"{TargetPath}.ee", FileMode.Create);
-        using var outBinaryWriter = new BinaryWriter(outFileStream);
-        aafV01File.ToApex(outBinaryWriter);
+        using (var bw = new BinaryWriter(new FileStream($"{TargetPath}{aafV01File.ApexExtension}", FileMode.Create)))
+        {
+            aafV01File.ToApex(bw);
+        }
         
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }

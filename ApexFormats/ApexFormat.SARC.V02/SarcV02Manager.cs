@@ -3,7 +3,7 @@ using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
 
-namespace ApexFormat.SARC.V02.Managers;
+namespace ApexFormat.SARC.V02;
 
 public class SarcV02Manager : IPathProcessor
 {
@@ -33,45 +33,37 @@ public class SarcV02Manager : IPathProcessor
 
     private void FromApexToCustomDirectory()
     {
-        var sarcV02File = new FileV02();
+        var sarcV02File = new SarcV02File();
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {sarcV02File.FourCc}", LogType.Info);
-        
-        using var inFileStream = new FileStream(TargetPath, FileMode.Open);
-        using var inBinaryReader = new BinaryReader(inFileStream);
-        
-        sarcV02File.FromApex(inBinaryReader);
-        
-        inBinaryReader.Dispose();
-        inFileStream.Dispose();
+
+        using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
+        {
+            sarcV02File.FromApex(br);
+        }
         
         ConsoleUtils.Log($"Saving \"{TargetPathName}\" as directory", LogType.Info);
 
         var baseDirectory = Path.GetDirectoryName(TargetPath) ?? "./";
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(TargetPath);
-        
+
         var directoryPath = Path.Combine(baseDirectory, fileWithoutExtension);
         sarcV02File.ToCustomDirectory(directoryPath);
-        
+
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomDirectoryToApex()
     {
-        var sarcV02File = new FileV02();
+        var sarcV02File = new SarcV02File();
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as directory", LogType.Info);
         
         sarcV02File.FromCustomDirectory(TargetPath);
-
-        using var outputFileStream = new FileStream(Path.ChangeExtension(TargetPath, "sarc"), FileMode.Create);
-        using var outBinaryWriter = new BinaryWriter(outputFileStream);
-        
-        sarcV02File.ToApex(outBinaryWriter);
-        
         ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {sarcV02File.FourCc}", LogType.Info);
-        
-        outputFileStream.Dispose();
-        outBinaryWriter.Dispose();
-        
+
+        using (var bw = new BinaryWriter(new FileStream(Path.ChangeExtension(TargetPath, "sarc"), FileMode.Create)))
+        {
+            sarcV02File.ToApex(bw);
+        }
         ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }

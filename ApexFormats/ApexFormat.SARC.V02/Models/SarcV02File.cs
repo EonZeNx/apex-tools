@@ -7,24 +7,32 @@ using ApexTools.Core.Utils;
 
 namespace ApexFormat.SARC.V02.Models;
 
+public static class SarcV02FileConstants
+{
+    public const string FileListName = "@files";
+    public static readonly string[] IgnoreExtensions = {
+        ".xml",
+        ".bak"
+    };
+}
+
 /// <summary>
-/// A <see cref="FileV02"/> file.
-/// <br/> Structure:
-/// <br/> Header Length - <see cref="uint"/>
-/// <br/> FourCC - <see cref="EFourCc"/>
-/// <br/> Version - <see cref="uint"/>
-/// <br/> Data offset - <see cref="uint"/>
-/// <br/> Entries array - <see cref="EntryV02"/>
+/// Structure:
+/// <br/>Header Length - <see cref="uint"/>
+/// <br/>FourCC - <see cref="EFourCc"/>
+/// <br/>Version - <see cref="uint"/>
+/// <br/>Data offset - <see cref="uint"/>
+/// <br/>Entries array - <see cref="SarcV02Entry"/>
 /// </summary>
-public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializable
+public class SarcV02File : IApexFile, IApexSerializable, ICustomDirectorySerializable
 {
     public EFourCc FourCc => EFourCc.SARC;
     public uint Version => 0x02;
-    public static string FileListName => "@files";
+    
     
     public uint HeaderLength { get; set; }
     public uint DataOffset { get; set; }
-    public EntryV02[] Entries { get; set; } = Array.Empty<EntryV02>();
+    public SarcV02Entry[] Entries { get; set; } = Array.Empty<SarcV02Entry>();
 
 
     #region ApexSerializable
@@ -41,10 +49,10 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
         
         DataOffset = br.ReadUInt32();
         
-        var entries = new List<EntryV02>();
+        var entries = new List<SarcV02Entry>();
         while (br.Position() < 4 + DataOffset)
         {
-            var entry = new EntryV02();
+            var entry = new SarcV02Entry();
             entry.FromApex(br);
             entries.Add(entry);
         }
@@ -83,7 +91,7 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
 
     public void FromCustomDirectory(string basePath)
     {
-        var xmlFileList = Path.Combine(basePath, $"{FileListName}.xml");
+        var xmlFileList = Path.Combine(basePath, $"{SarcV02FileConstants.FileListName}.xml");
         if (!File.Exists(xmlFileList)) throw new FileNotFoundException($"File list '{xmlFileList}' was not found.");
         
         using var xr = XmlReader.Create(xmlFileList);
@@ -94,12 +102,12 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
     {
         if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
 
-        var xmlFileList = Path.Combine(basePath, $"{FileListName}.xml");
+        var xmlFileList = Path.Combine(basePath, $"{SarcV02FileConstants.FileListName}.xml");
         
         var settings = new XmlWriterSettings{Indent = true, IndentChars = "\t"};
         using var xw = XmlWriter.Create(xmlFileList, settings);
         
-        xw.WriteStartElement("ApexFile");
+        xw.WriteStartElement("sarc");
         XmlWriteIgnores(xw);
         XmlWriteEntries(xw, basePath);
         xw.WriteEndElement();
@@ -114,7 +122,7 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
 
     private void XmlWriteEntries(XmlWriter xw, string directoryPath)
     {
-        xw.WriteStartElement("Files");
+        xw.WriteStartElement("files");
             
         foreach (var entry in Entries)
         {
@@ -128,9 +136,13 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
     private static void XmlWriteIgnores(XmlWriter xw)
     {
         // Ignore these extensions when deserializing the folder
-        xw.WriteStartElement("Ignore");
-        xw.WriteElementString("Extension", ".xml");
-        xw.WriteElementString("Extension", ".bak");
+        xw.WriteStartElement("ignore");
+        foreach (var ignoreExtension in SarcV02FileConstants.IgnoreExtensions)
+        {
+            xw.WriteStartElement("extension");
+            xw.WriteAttributeString("value", ignoreExtension);
+            xw.WriteEndElement();
+        }
         xw.WriteEndElement();
     }
 
@@ -142,7 +154,7 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
     {
         if (Path.HasExtension(basePath)) basePath = Path.GetDirectoryName(basePath) ?? basePath;
             
-        var entries = new List<EntryV02>();
+        var entries = new List<SarcV02Entry>();
         xr.ReadToDescendant("Entry");
 
         do
@@ -150,7 +162,7 @@ public class FileV02 : IApexFile, IApexSerializable, ICustomDirectorySerializabl
             if (xr.NodeType != XmlNodeType.Element) continue;
             if (xr.Name != "Entry") break;
 
-            var entry = new EntryV02(xr, basePath);
+            var entry = new SarcV02Entry(xr, basePath);
             entries.Add(entry);
         } while (xr.ReadToNextSibling("Entry"));
         xr.ReadEndElement();

@@ -1,8 +1,8 @@
 ﻿using System.Xml;
 using System.Xml.Schema;
 using ApexTools.Core.Config;
+using ApexTools.Core.Hash;
 using ApexTools.Core.Utils;
-using ApexTools.Hash;
 
 namespace ApexTools.Core.Extensions;
 
