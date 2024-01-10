@@ -2,6 +2,6 @@
 
 namespace ApexTools.Core.Abstractions.CombinedSerializable;
 
-public interface ICustomPathSerializable : IFromCustomPathSerializable, IToCustomPathSerializable
+public interface ICustomPathSerializable : IFromCustomPath, IToCustomPath
 {
 }

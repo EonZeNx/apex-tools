@@ -24,7 +24,9 @@ public class Program
     
     public static void Main(string[] args)
     {
+#if !DEBUG
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+#endif
         
         // Console hash should disrespect auto-close
         if (args.Length == 0)
@@ -65,7 +67,11 @@ public class Program
     
     public static void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
     {
-        ConsoleUtils.Log(((Exception) e.ExceptionObject).StackTrace ?? "Fatal error", LogType.Error);
+        var exception = (Exception) e.ExceptionObject;
+        
+        ConsoleUtils.Log($"{exception}: {exception.Message}", LogType.Error);
+        ConsoleUtils.Log(exception.StackTrace ?? "No stack trace", LogType.Error);
+        
         ConsoleUtils.GetInput("Press any key to continue...");
         
         Environment.Exit(-1);

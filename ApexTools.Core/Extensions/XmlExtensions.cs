@@ -46,7 +46,7 @@ public static class XmlExtensions
         var name = GetAttribute(xr, "Name");
         if (!string.IsNullOrEmpty(name))
         {
-            return name.HashJenkins().LittleEndian();
+            return name.HashJenkins().ReverseEndian();
         }
         
         var nameHash = GetAttribute(xr, "NameHash");

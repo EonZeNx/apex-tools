@@ -92,10 +92,10 @@ public static class FRtpcV03ClassExtensions
 {
     public static readonly List<uint> DefaultMemberHashes = new()
     {
-        ((uint) 0xE65940D0).LittleEndian(), // Class hash
-        ((uint) 0x84B61AD3).LittleEndian(), // Name
-        ((uint) 0x8C863A7D).LittleEndian(), // Name hash
-        ((uint) 0x0584FFCF).LittleEndian() // Object ID
+        ((uint) 0xE65940D0).ReverseEndian(), // Class hash
+        ((uint) 0x84B61AD3).ReverseEndian(), // Name
+        ((uint) 0x8C863A7D).ReverseEndian(), // Name hash
+        ((uint) 0x0584FFCF).ReverseEndian() // Object ID
     };
     
     public static IEnumerable<RtpcV03PropertyHeader> FilterDefaultMembers(IEnumerable<RtpcV03PropertyHeader> headers)

@@ -1,6 +1,6 @@
 ﻿namespace ApexTools.Core.Abstractions.Serializable;
 
-public interface IToCustomPathSerializable
+public interface IToCustomPath
 {
     public void ToCustomFile(string basePath);
 }

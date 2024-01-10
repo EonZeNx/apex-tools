@@ -27,7 +27,10 @@ public class ApexPathManager
     // Checks if a file exists, if it does return the filePath, if not check if a directory exists, and return the filePath
     public void ProcessPath()
     {
-        if (Directory.Exists(FilePath)) FilePath = Path.Combine(FilePath, SarcV02FileConstants.FileListName);
+        if (Directory.Exists(FilePath))
+        {
+            FilePath = Path.Combine(FilePath, $"{SarcV02FileConstants.FileListName}.xml");
+        }
         var fourCc = FileHeaderUtils.ValidCharacterCode(FilePath);
 
         if (fourCc == EFourCc.XML)
@@ -40,8 +43,7 @@ public class ApexPathManager
             EFourCc.AAF => new AafV01Manager(FilePath),
             EFourCc.RTPC => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.IRTPC => new RtpcV03InlineManager(FilePath),
-            // EFourCc.SARC => new SarcV02Manager(FilePath),
-            EFourCc.SARC => new AafV01Manager(FilePath),
+            EFourCc.SARC => new SarcV02Manager(FilePath),
             EFourCc.XML => throw new NotImplementedException(),
             EFourCc.ADF => new AdfV04Manager(FilePath),
             EFourCc.TAB => throw new NotImplementedException(),

@@ -42,7 +42,7 @@ public static class ConsoleHash
 
         var hash = userInput.HashJenkins();
         ConsoleUtils.Log($"Hex (big endian):    {hash:X8}", ConsoleColor.White);
-        ConsoleUtils.Log($"Hex (little endian): {hash.LittleEndian():X8}", ConsoleColor.White);
+        ConsoleUtils.Log($"Hex (little endian): {hash.ReverseEndian():X8}", ConsoleColor.White);
         ConsoleUtils.Log($"UInt32:              {hash}", ConsoleColor.White);
 
         return ECommand.Hash;

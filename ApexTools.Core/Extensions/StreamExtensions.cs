@@ -13,6 +13,13 @@ public static class StreamExtensions
     
     #region StringZ
     
+    public static string ReadStringOfLength(this BinaryReader br, uint length)
+    {
+        var fullString = Encoding.UTF8.GetString(br.ReadBytes((int) length));
+
+        return fullString;
+    }
+    
     public static string ReadStringZ(this BinaryReader br)
     {
         var fullString = "";

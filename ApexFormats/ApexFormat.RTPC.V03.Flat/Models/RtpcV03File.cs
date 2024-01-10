@@ -60,7 +60,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container.Containers = flatContainers.ToArray();
         Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
-        Container.Header.NameHash = ((uint) 0x2A527DAA).LittleEndian();
+        Container.Header.NameHash = ((uint) 0x2A527DAA).ReverseEndian();
         
         Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 

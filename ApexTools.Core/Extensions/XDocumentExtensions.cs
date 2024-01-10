@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Security;
+using System.Xml;
 using System.Xml.Linq;
 using ApexTools.Core.Config;
 using ApexTools.Core.Hash;
@@ -27,6 +28,21 @@ public static class XDocumentExtensions
         {
             xe.SetAttributeValue(NameAttributeString, name);
         }
+    }
+    
+    public static string GetAttribute(this XElement xe, string name)
+    {
+        var attribute = xe.Attribute(name);
+        if (attribute is null) throw new XmlException("Missing attributes");
+
+        return attribute.Value;
+    }
+    
+    public static string TryGetAttribute(this XElement xe, string name)
+    {
+        var attribute = xe.Attribute(name);
+
+        return attribute?.Value ?? string.Empty;
     }
 
     public static uint GetNameHash(this XElement xe)
