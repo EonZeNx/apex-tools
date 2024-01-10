@@ -1,4 +1,5 @@
-﻿using ApexTools.Core.Abstractions.CombinedSerializable;
+﻿using System.Xml.Linq;
+using ApexTools.Core.Abstractions.CombinedSerializable;
 using ApexTools.Core.Extensions;
 using ApexTools.Core.Interfaces;
 
@@ -9,13 +10,16 @@ namespace ApexFormat.AAF.V01.Models;
 /// <br/>Header - <see cref="AafV01Header"/>
 /// <br/>ChunkArray - <see cref="AafV01Chunk"/>
 /// </summary>
-public class AafV01File : IApexFile, ICustomFileSerializable
+public class AafV01File : IApexFile, ICustomFileSerializable, IToXml
 {
     public string ApexExtension { get; set; } = ".aaf";
     
     public AafV01Header Header = new();
     public AafV01Chunk[] ChunkArray { get; set; } = Array.Empty<AafV01Chunk>();
 
+    public static string XmlName => "aaf";
+
+    
     #region ApexSerializable
 
     public void FromApex(BinaryReader br)
@@ -74,4 +78,13 @@ public class AafV01File : IApexFile, ICustomFileSerializable
     }
 
     #endregion
+
+    
+    public XElement ToXml()
+    {
+        var xe = new XElement(XmlName);
+        xe.SetAttributeValue("extension", ApexExtension);
+
+        return xe;
+    }
 }

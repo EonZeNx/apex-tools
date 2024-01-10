@@ -40,7 +40,7 @@ public class ApexPathManager
 
         IPathProcessor processor = fourCc switch
         {
-            EFourCc.AAF => new AafV01Manager(FilePath),
+            EFourCc.AAF => new AafSarcChainManager(FilePath),
             EFourCc.RTPC => Settings.RtpcPreferFlat.Value ? new RtpcV03FlatManager(FilePath) : new RtpcV03Manager(FilePath),
             EFourCc.IRTPC => new RtpcV03InlineManager(FilePath),
             EFourCc.SARC => new SarcV02Manager(FilePath),

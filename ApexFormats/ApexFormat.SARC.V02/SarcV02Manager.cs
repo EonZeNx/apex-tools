@@ -44,7 +44,7 @@ public class SarcV02Manager : IPathProcessor
             sarcV02File.FromApex(br);
         }
         
-        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as files", LogType.Info);
+        ConsoleUtils.Log($"Extracting \"{TargetPathName}\" files", LogType.Info);
 
         var baseDirectory = Path.GetDirectoryName(TargetPath) ?? "./";
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(TargetPath);

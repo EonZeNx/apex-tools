@@ -37,7 +37,11 @@ public class AafV01Manager : IPathProcessor
     {
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.AAF}", LogType.Info);
         
-        var aafV01File = new AafV01File();
+        var aafV01File = new AafV01File
+        {
+            ApexExtension = Path.GetExtension(TargetPath)
+        };
+
         using (var br = new BinaryReader(new FileStream(TargetPath, FileMode.Open)))
         {
             aafV01File.FromApex(br);
