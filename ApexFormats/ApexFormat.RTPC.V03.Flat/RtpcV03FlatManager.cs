@@ -64,7 +64,7 @@ public class RtpcV03FlatManager : IPathProcessor
     {
         ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
         
-        var xd = XDocument.Load(TargetPathName);
+        var xd = XDocument.Load(TargetPath);
         if (xd.Root is null) throw new XmlSchemaException("Root element is invalid");
         
         var rtpcV03 = new RtpcV03File();

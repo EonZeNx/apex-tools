@@ -109,7 +109,7 @@ public class RtpcV03File : IApexFile, IXmlFile
             Version = 3
         };
         
-        var rtpcNode = xe.Element(XmlName)?.Element(RtpcV03Container.XmlName);
+        var rtpcNode = xe.Element(RtpcV03Container.XmlName);
         if (rtpcNode is null)
         {
             throw new XmlSchemaException($"{XmlName} is missing");

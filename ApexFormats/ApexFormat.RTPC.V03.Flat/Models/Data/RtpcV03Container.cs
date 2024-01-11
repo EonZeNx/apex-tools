@@ -200,6 +200,8 @@ public static class RtpcV03ContainerExtension
     {
         var properties = new List<RtpcV03PropertyHeader>();
         
+        // Following order is specific
+        
         { // Indices
             var indicesProperty = new RtpcV03PropertyHeader
             {
@@ -212,6 +214,26 @@ public static class RtpcV03ContainerExtension
             
             voMaps.U32ArrayOffsetMap.Add(parentIndices, 0);
         }
+        
+        { // Object ID
+            var oIdArray = container.Containers.Select(c => c.GetObjectId()).ToArray();
+            var byteArray = oIdArray.SelectMany(BitConverter.GetBytes).ToArray();
+            var hexByteArray = byteArray.Select(b => $"{b:X2}");
+            
+            var oIdArrayProperty = new RtpcV03PropertyHeader
+            {
+                NameHash = 0x8F1D6E5A,
+                RawData = new byte[4],
+                VariantType = EVariantType.ByteArray,
+                XmlData = string.Join(",", hexByteArray)
+            };
+            properties.Add(oIdArrayProperty);
+            
+            voMaps.ByteArrayOffsetMap.Add(byteArray, 0);
+        }
+
+        // Existing properties (should only be 0x95C1191D / unknown 01)
+        properties = properties.Concat(container.PropertyHeaders).ToList();
 
         { // Class hash
             var classHashArray = container.Containers.Select(c => c.GetClassHash()).ToArray();
@@ -227,27 +249,10 @@ public static class RtpcV03ContainerExtension
             voMaps.U32ArrayOffsetMap.Add(classHashArray, 0);
         }
 
-        { // Object ID
-            var oIdArray = container.Containers.Select(c => c.GetObjectId()).ToArray();
-            var byteArray = oIdArray.SelectMany(BitConverter.GetBytes).ToArray();
-            var hexByteArray = byteArray.Select(b => $"{b:X2}");
-            
-            var classHashArrayProperty = new RtpcV03PropertyHeader
-            {
-                NameHash = 0x0584FFCF,
-                RawData = new byte[4],
-                VariantType = EVariantType.ByteArray,
-                XmlData = string.Join(",", hexByteArray)
-            };
-            properties.Add(classHashArrayProperty);
-            
-            voMaps.ByteArrayOffsetMap.Add(byteArray, 0);
-        }
-
-        container.PropertyHeaders = container.PropertyHeaders.Concat(properties).ToArray();
+        container.PropertyHeaders = properties.ToArray();
         container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
 
-        container.Header.NameHash = ((uint) 0x2A527DAA);
+        container.Header.NameHash = ((uint) 0x2A527DAA).ReverseEndian();
     }
     
     public static void LookupNameHash(ref this RtpcV03Container container)
