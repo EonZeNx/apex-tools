@@ -7,6 +7,11 @@
         <PackageId>ApexFormat.RTPC.V03</PackageId>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <DebugSymbols>False</DebugSymbols>
+        <DebugType>None</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\ApexTools.Core\ApexTools.Core.csproj" />
     </ItemGroup>

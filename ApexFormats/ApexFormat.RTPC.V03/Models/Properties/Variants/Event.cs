@@ -7,7 +7,7 @@ namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
 public class Event : PropertyBaseDeferredV03
 {
     public override string XmlName => "Event";
-    public override EVariantType VariantType => EVariantType.Event;
+    public override EVariantType VariantType => EVariantType.Events;
     public override bool Primitive => false;
     public override int Alignment => 4;
 

@@ -21,7 +21,6 @@ public class RtpcV03File : IApexFile, IXmlFile
     
     public string ApexExtension { get; set; } = ".rtpc";
     public static string XmlName => "RTPC";
-    public string XmlExtension => ".xml";
 
     public void FromApex(BinaryReader br)
     {
@@ -32,9 +31,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container = br.ReadRtpcV03Container(containerHeader);
         Container.Flat = true;
         
-        var allPropertyHeaders = Container.GetAllPropertyHeaders();
-        var uniqueOffsets = allPropertyHeaders
-            .Where(ph => !ph.VariantType.IsPrimitive())
+        var uniqueOffsets = Container.GetAllPropertyHeaders()
+            .Where(header => !header.VariantType.IsPrimitive())
             .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
             .Select(g => g.First())
             .ToArray();
@@ -120,9 +118,12 @@ public class RtpcV03File : IApexFile, IXmlFile
 
     public XElement ToXml()
     {
-        var parentIndexArrayOffset = Container.PropertyHeaders
-            .First(h => h.NameHash == 0xCFD7B43E).RawData;
-        var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
+        var parentIndexArrayHeader = Container.PropertyHeaders
+            .First(h => h.NameHash == 0xCFD7B43E);
+        var parentIndexArrayOffset = BitConverter.ToUInt32(parentIndexArrayHeader.RawData);
+        var parentIndexArrayOffsetReversed = parentIndexArrayOffset.ReverseEndian();
+        
+        var parentIndexArray = OvMaps.OffsetU32ArrayMap[parentIndexArrayOffset];
         Container.UnFlatten(parentIndexArray);
         
         Container.FilterRootContainerProperties();

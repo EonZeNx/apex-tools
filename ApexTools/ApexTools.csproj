@@ -10,6 +10,11 @@
         <Authors>EonZeNx</Authors>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <DebugSymbols>False</DebugSymbols>
+        <DebugType>None</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\ApexFormats\ApexFormat.AAF.V01\ApexFormat.AAF.V01.csproj" />
       <ProjectReference Include="..\ApexFormats\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj" />

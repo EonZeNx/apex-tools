@@ -70,8 +70,6 @@ public class Program
         var exception = (Exception) e.ExceptionObject;
         
         ConsoleUtils.Log($"{exception}: {exception.Message}", LogType.Error);
-        ConsoleUtils.Log(exception.StackTrace ?? "No stack trace", LogType.Error);
-        
         ConsoleUtils.GetInput("Press any key to continue...");
         
         Environment.Exit(-1);

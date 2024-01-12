@@ -160,7 +160,7 @@ public class RtpcV03ValueOffsetMaps
             ByteArrayOffsetMap.TryAdd(values, 0);
         }
         
-        nodes = xe.Descendants(EVariantType.Event.GetXmlName()).ToArray();
+        nodes = xe.Descendants(EVariantType.Events.GetXmlName()).ToArray();
         foreach (var node in nodes)
         {
             var rawValues = node.Value.Split(",");
@@ -317,7 +317,7 @@ public static class RtpcV03ValueOffsetMapsExtensions
         
         foreach (var value in voMaps.EventOffsetMap.Keys)
         {
-            bw.Align(EVariantType.Event.GetAlignment());
+            bw.Align(EVariantType.Events.GetAlignment());
             
             var offset = (uint) bw.Position();
             voMaps.EventOffsetMap[value] = offset;

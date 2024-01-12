@@ -114,7 +114,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
                 EVariantType.ByteArray => new ByteArray(header),
                 EVariantType.Deprecated => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
                 EVariantType.ObjectId => new ObjectId(header),
-                EVariantType.Event => new Event(header),
+                EVariantType.Events => new Event(header),
                 EVariantType.Total => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
                 _ => throw new ArgumentOutOfRangeException($"RTPC v01 variant type is '{header.VariantType}'")
             };
