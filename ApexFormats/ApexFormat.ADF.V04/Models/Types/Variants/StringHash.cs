@@ -1,5 +1,4 @@
-﻿using ApexFormat.ADF.V04.Abstractions;
-using ApexTools.Core.Utils;
+﻿using ApexTools.Core.Extensions;
 
 namespace ApexFormat.ADF.V04.Models.Types.Variants;
 

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Version>0.4.0</Version>
+        <Title>ApexTools</Title>
+        <Authors>EonZeNx</Authors>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <DebugSymbols>False</DebugSymbols>
+        <DebugType>None</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ApexFormats\ApexFormat.AAF.V01\ApexFormat.AAF.V01.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.ADF.V04\ApexFormat.ADF.V04.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03.Flat\ApexFormat.RTPC.V03.Flat.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03.Inline\ApexFormat.RTPC.V03.Inline.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.RTPC.V03\ApexFormat.RTPC.V03.csproj" />
+      <ProjectReference Include="..\ApexFormats\ApexFormat.SARC.V02\ApexFormat.SARC.V02.csproj" />
+      <ProjectReference Include="..\ApexTools.Chain\ApexTools.Chain.csproj" />
+      <ProjectReference Include="..\ApexTools.Core\ApexTools.Core.csproj" />
+    </ItemGroup>
+
+</Project>

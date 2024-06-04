@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
@@ -41,7 +42,7 @@ public class F32 : PropertyBaseV03
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
         Value = float.Parse(xr.ReadElementContentAsString());
     }
 
@@ -50,7 +51,7 @@ public class F32 : PropertyBaseV03
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
             
         xw.WriteValue(Value);
         xw.WriteEndElement();

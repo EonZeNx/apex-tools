@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
@@ -21,7 +22,7 @@ public class Mat4X4 : FloatArray
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
 
         var strArray = new string[4];
         for (var i = 0; i < strArray.Length; i++)
@@ -37,7 +38,7 @@ public class Mat4X4 : FloatArray
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var floatString = xr.ReadElementContentAsString();
         var vectorString = floatString.Split(", ");

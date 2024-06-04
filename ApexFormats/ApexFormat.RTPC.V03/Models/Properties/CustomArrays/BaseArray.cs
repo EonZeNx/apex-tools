@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.CustomArrays;
@@ -50,7 +51,7 @@ public abstract class BaseArray<T> : PropertyBaseDeferredV03
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
 
         var array = string.Join(",", Values);
         xw.WriteValue(array);

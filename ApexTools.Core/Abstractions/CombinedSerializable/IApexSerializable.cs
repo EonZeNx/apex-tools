@@ -1,7 +1,7 @@
-﻿using ApexTools.Core.Abstractions.Serializable;
+﻿using ApexTools.Core.Interfaces;
 
 namespace ApexTools.Core.Abstractions.CombinedSerializable;
 
-public interface IApexSerializable : IFromApexSerializable, IToApexSerializable
+public interface IApexSerializable : IFromApex, IToApex
 {
 }

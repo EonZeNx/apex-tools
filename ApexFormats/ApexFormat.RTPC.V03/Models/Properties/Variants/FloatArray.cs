@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using ApexFormat.RTPC.V03.Models.Properties.CustomArrays;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
@@ -53,7 +54,7 @@ public class FloatArray : BaseArray<float>
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
             
         var floatString = xr.ReadElementContentAsString();
         if (floatString.Length == 0)

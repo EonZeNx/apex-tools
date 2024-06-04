@@ -9,6 +9,11 @@
         <RootNamespace>ApexFormat.RTPC.V03.Flat</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <DebugSymbols>False</DebugSymbols>
+        <DebugType>None</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\ApexTools.Core\ApexTools.Core.csproj" />
       <ProjectReference Include="..\ApexFormat.RTPC.V03\ApexFormat.RTPC.V03.csproj" />

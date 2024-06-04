@@ -45,17 +45,23 @@ public static class FileHeaderUtils
             var lastI = i - 4;
             var inputArray = input.AsSpan()[lastI..i];
             var value = BitConverter.ToUInt32(inputArray);
-                
-            if (IsSupportedCharacterCode(value)) return FourCcUintMap[value];
+
+            if (IsSupportedCharacterCode(value))
+            {
+                return FourCcUintMap[value];
+            }
 
             var reversedInputArray = inputArray.ToArray();
             Array.Reverse(reversedInputArray);
             var reversedValue = BitConverter.ToUInt32(reversedInputArray);
 
-            if (IsSupportedCharacterCode(reversedValue)) return FourCcUintMap[reversedValue];
+            if (IsSupportedCharacterCode(reversedValue))
+            {
+                return FourCcUintMap[reversedValue];
+            }
         }
 
-        return EFourCc.Irtpc;
+        return EFourCc.IRTPC;
     }
     
     /// <summary>

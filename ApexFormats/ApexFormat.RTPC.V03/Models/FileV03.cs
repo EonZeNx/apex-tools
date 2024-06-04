@@ -3,6 +3,7 @@ using ApexFormat.RTPC.V03.Models.Properties.Variants;
 using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Abstractions.CombinedSerializable;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models;
@@ -16,7 +17,7 @@ namespace ApexFormat.RTPC.V03.Models;
 public class FileV03 : XmlSerializable, IApexFile, IApexSerializable
 {
     public override string XmlName => "RTPC";
-    public EFourCc FourCc => EFourCc.Rtpc;
+    public EFourCc FourCc => EFourCc.RTPC;
     public uint Version => 0x03;
     
     public ContainerV03 Root { get; set; } = new();

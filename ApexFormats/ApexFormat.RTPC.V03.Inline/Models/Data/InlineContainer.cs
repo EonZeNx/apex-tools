@@ -1,9 +1,9 @@
 ﻿using System.Xml.Linq;
 using System.Xml.Schema;
 using ApexFormat.RTPC.V03.Inline.Interfaces;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 using ApexTools.Core.Interfaces;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
 
 namespace ApexFormat.RTPC.V03.Inline.Models.Data;
 
@@ -21,7 +21,7 @@ public class InlineContainer : IFromApex, IToApex, ILookupHash
 
     public void LookupHash()
     {
-        Name = HashUtils.Lookup(NameHash);
+        Name = LookupHashes.Get(NameHash);
 
         foreach (ref var property in Properties.AsSpan())
         {

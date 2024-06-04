@@ -1,11 +1,10 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Utils;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -201,6 +200,8 @@ public static class RtpcV03ContainerExtension
     {
         var properties = new List<RtpcV03PropertyHeader>();
         
+        // Following order is specific
+        
         { // Indices
             var indicesProperty = new RtpcV03PropertyHeader
             {
@@ -213,6 +214,26 @@ public static class RtpcV03ContainerExtension
             
             voMaps.U32ArrayOffsetMap.Add(parentIndices, 0);
         }
+        
+        { // Object ID
+            var oIdArray = container.Containers.Select(c => c.GetObjectId()).ToArray();
+            var byteArray = oIdArray.SelectMany(BitConverter.GetBytes).ToArray();
+            var hexByteArray = byteArray.Select(b => $"{b:X2}");
+            
+            var oIdArrayProperty = new RtpcV03PropertyHeader
+            {
+                NameHash = 0x8F1D6E5A,
+                RawData = new byte[4],
+                VariantType = EVariantType.ByteArray,
+                XmlData = string.Join(",", hexByteArray)
+            };
+            properties.Add(oIdArrayProperty);
+            
+            voMaps.ByteArrayOffsetMap.Add(byteArray, 0);
+        }
+
+        // Existing properties (should only be 0x95C1191D / unknown 01)
+        properties = properties.Concat(container.PropertyHeaders).ToList();
 
         { // Class hash
             var classHashArray = container.Containers.Select(c => c.GetClassHash()).ToArray();
@@ -228,27 +249,10 @@ public static class RtpcV03ContainerExtension
             voMaps.U32ArrayOffsetMap.Add(classHashArray, 0);
         }
 
-        { // Object ID
-            var oIdArray = container.Containers.Select(c => c.GetObjectId()).ToArray();
-            var byteArray = oIdArray.SelectMany(BitConverter.GetBytes).ToArray();
-            var hexByteArray = byteArray.Select(b => $"{b:X2}");
-            
-            var classHashArrayProperty = new RtpcV03PropertyHeader
-            {
-                NameHash = 0x0584FFCF,
-                RawData = new byte[4],
-                VariantType = EVariantType.ByteArray,
-                XmlData = string.Join(",", hexByteArray)
-            };
-            properties.Add(classHashArrayProperty);
-            
-            voMaps.ByteArrayOffsetMap.Add(byteArray, 0);
-        }
-
-        container.PropertyHeaders = container.PropertyHeaders.Concat(properties).ToArray();
+        container.PropertyHeaders = properties.ToArray();
         container.Header.PropertyCount = (ushort) container.PropertyHeaders.Length;
 
-        container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
+        container.Header.NameHash = ((uint) 0x2A527DAA).ReverseEndian();
     }
     
     public static void LookupNameHash(ref this RtpcV03Container container)
@@ -337,14 +341,14 @@ public static class RtpcV03ContainerExtension
 
     public static ulong GetObjectId(in this RtpcV03Container container)
     {
-        var header = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0x0584FFCF));
+        var header = container.PropertyHeaders.First(h => h.NameHash == ((uint) 0x0584FFCF).ReverseEndian());
         
         return ulong.Parse(header.XmlData, NumberStyles.HexNumber);
     }
     
     public static uint GetClassHash(in this RtpcV03Container container)
     {
-        var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ByteUtils.ReverseBytes(0xE65940D0));
+        var classHashHeader = container.PropertyHeaders.First(h => h.NameHash == ((uint) 0xE65940D0).ReverseEndian());
         
         return BitConverter.ToUInt32(classHashHeader.RawData);
     }
@@ -358,7 +362,7 @@ public static class RtpcV03ContainerExtension
             {
                 NameHash = h.NameHash,
                 VariantType = h.VariantType,
-                Name = Settings.PerformHashLookUp.Value ? HashUtils.Lookup(h.NameHash) : string.Empty
+                Name = Settings.LookupHashes.Value ? LookupHashes.Get(h.NameHash) : string.Empty
             }).ToList()
         };
 
@@ -510,9 +514,9 @@ public static class RtpcV03ContainerExtension
                 var propertyData = ovMaps.GetAsString(attributeProperty.RawData, attributeProperty.VariantType, isHash);
                 var attributeName = requiredProperty.Name;
                 
-                if (isHash && Settings.PerformHashLookUp.Value)
+                if (isHash && Settings.LookupHashes.Value)
                 {
-                    var lookupHash = HashUtils.Lookup(attributeProperty.RawData);
+                    var lookupHash = LookupHashes.Get(attributeProperty.RawData);
                     propertyData = string.IsNullOrEmpty(lookupHash) ? propertyData : lookupHash;
 
                     attributeName = attributeName.Replace("_hash", "");

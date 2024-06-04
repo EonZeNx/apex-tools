@@ -1,5 +1,5 @@
 ﻿using ApexTools.Core;
-using ApexTools.Core.Utils;
+using ApexTools.Core.Extensions;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -12,7 +12,7 @@ public struct RtpcV03Header
 
     public RtpcV03Header()
     {
-        FourCc = EFourCc.Rtpc;
+        FourCc = EFourCc.RTPC;
         Version = 3;
     }
 }
@@ -32,7 +32,7 @@ public static class RtpcV03HeaderExtension
     
     public static void Write(this BinaryWriter bw, RtpcV03Header header)
     {
-        bw.Write(ByteUtils.ReverseBytes((uint) header.FourCc));
+        bw.Write(((uint) header.FourCc).ReverseEndian());
         bw.Write(header.Version);
     }
 }

@@ -7,19 +7,17 @@ namespace ApexTools.Core.Config;
 /// Struct for generic settings, containing a value and a description
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Setting<T>
+public class Setting<T> where T : notnull
 {
     public string Name;
+    public string XmlName;
     public T Value;
-    public string Description;
-
-    public static string XmlName => "Setting";
     
     public Setting(T value)
     {
         Name = string.Empty;
+        XmlName = string.Empty;
         Value = value;
-        Description = string.Empty;
     }
 
     public static Setting<T> Create(T value)
@@ -27,16 +25,20 @@ public class Setting<T>
         return new Setting<T>(value);
     }
 
-    public Setting<T> SetName(string name)
+    public Setting<T> SetName(string name, bool updateXmlName = true)
     {
         Name = name;
+        if (updateXmlName)
+        {
+            XmlName = name;
+        }
 
         return this;
     }
 
-    public Setting<T> SetDescription(string description)
+    public Setting<T> SetXmlName(string xmlName)
     {
-        Description = description;
+        XmlName = xmlName;
 
         return this;
     }
@@ -44,58 +46,24 @@ public class Setting<T>
 
 public static class SettingExtensions
 {
-    public static void WriteSetting<T>(this XContainer parentXContainer, Setting<T> setting)
+    public static void WriteSetting<T>(this XContainer parentXContainer, Setting<T> setting) where T : notnull
     {
-        var settingXElement = new XElement(Setting<T>.XmlName);
-        
-        var nameXElement = new XElement(nameof(setting.Name))
-        {
-            Value = setting.Name
-        };
-        
-        var descriptionXElement = new XElement(nameof(setting.Description))
-        {
-            Value = setting.Description
-        };
+        var settingXElement = new XElement(setting.XmlName);
 
-        var valueXElement = new XElement(nameof(setting.Value))
-        {
-            Value = $"{setting.Value}"
-        };
-        
-        settingXElement.Add(nameXElement);
-        settingXElement.Add(descriptionXElement);
-        settingXElement.Add(valueXElement);
+        settingXElement.SetValue(setting.Value);
         
         parentXContainer.Add(settingXElement);
     }
     
-    public static T LoadSetting<T>(this XContainer xContainer, Setting<T> setting)
+    public static T LoadSetting<T>(this XContainer xContainer, Setting<T> setting) where T : notnull
     {
-        var settingNode = xContainer.Element(Setting<T>.XmlName);
-        var settingNameNode = settingNode?.Element(nameof(setting.Name));
-        
-        while (settingNode is not null)
+        var settingNode = xContainer.Element(setting.XmlName);
+        if (settingNode is null)
         {
-            if (settingNameNode?.Value == setting.Name) break;
-            if (settingNode.NextNode is null) break;
-            
-            settingNode = (XElement) settingNode.NextNode;
-            settingNameNode = settingNode?.Element(nameof(setting.Name));
-        }
-
-        if (settingNode is null || settingNameNode?.Value != setting.Name)
-        {
-            throw new XmlSchemaException($"Could not load {setting.Name}, missing setting node");
-        }
-
-        var valueNode = settingNode.Element(nameof(setting.Value));
-        if (valueNode is null)
-        {
-            throw new XmlSchemaException($"Could not load {setting.Name}, missing value node");
+            throw new XmlSchemaException($"Missing {setting.XmlName} setting");
         }
         
-        var value = valueNode.Value;
+        var value = settingNode.Value;
         try
         {
             return (T) Convert.ChangeType(value, typeof(T));

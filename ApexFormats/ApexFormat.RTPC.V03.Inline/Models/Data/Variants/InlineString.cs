@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using System.Xml.Linq;
 using ApexFormat.RTPC.V03.Inline.Interfaces;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 
 namespace ApexFormat.RTPC.V03.Inline.Models.Data.Variants;
 
@@ -21,7 +21,7 @@ public class InlineString : IApexXElementIO
 
     public void LookupHash()
     {
-        Name = HashUtils.Lookup(NameHash);
+        Name = LookupHashes.Get(NameHash);
     }
 
     public void FromApex(BinaryReader br)

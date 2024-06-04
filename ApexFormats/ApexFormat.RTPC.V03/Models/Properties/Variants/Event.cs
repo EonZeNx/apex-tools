@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
@@ -6,7 +7,7 @@ namespace ApexFormat.RTPC.V03.Models.Properties.Variants;
 public class Event : PropertyBaseDeferredV03
 {
     public override string XmlName => "Event";
-    public override EVariantType VariantType => EVariantType.Event;
+    public override EVariantType VariantType => EVariantType.Events;
     public override bool Primitive => false;
     public override int Alignment => 4;
 
@@ -67,7 +68,7 @@ public class Event : PropertyBaseDeferredV03
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
         Value = Array.Empty<(uint, uint)>();
         
         var value = xr.ReadElementContentAsString();
@@ -100,7 +101,7 @@ public class Event : PropertyBaseDeferredV03
         xw.WriteStartElement(XmlName);
             
         // Write Name if valid
-        XmlUtils.WriteNameOrNameHash(xw, NameHash, Name);
+        xw.WriteNameOrNameHash(NameHash, Name);
             
         var strArray = new string[Value.Length];
         for (var i = 0; i < Value.Length; i++)

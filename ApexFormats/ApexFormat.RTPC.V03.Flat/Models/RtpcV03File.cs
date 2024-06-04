@@ -1,13 +1,12 @@
-﻿using System.Xml;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using System.Xml.Schema;
-using ApexFormat.RTPC.V03.Flat.Abstractions;
 using ApexFormat.RTPC.V03.Flat.Models.Data;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
+using ApexTools.Core.Interfaces;
 
 namespace ApexFormat.RTPC.V03.Flat.Models;
 
@@ -22,7 +21,6 @@ public class RtpcV03File : IApexFile, IXmlFile
     
     public string ApexExtension { get; set; } = ".rtpc";
     public static string XmlName => "RTPC";
-    public string XmlExtension => ".xml";
 
     public void FromApex(BinaryReader br)
     {
@@ -33,9 +31,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container = br.ReadRtpcV03Container(containerHeader);
         Container.Flat = true;
         
-        var allPropertyHeaders = Container.GetAllPropertyHeaders();
-        var uniqueOffsets = allPropertyHeaders
-            .Where(ph => !ph.VariantType.IsPrimitive())
+        var uniqueOffsets = Container.GetAllPropertyHeaders()
+            .Where(header => !header.VariantType.IsPrimitive())
             .GroupBy(ph => BitConverter.ToUInt32(ph.RawData))
             .Select(g => g.First())
             .ToArray();
@@ -61,7 +58,7 @@ public class RtpcV03File : IApexFile, IXmlFile
         Container.Containers = flatContainers.ToArray();
         Container.ContainerHeaders = flatContainers.Select(c => c.Header).ToArray();
         Container.Header.ContainerCount = (ushort) Container.Containers.Length;
-        Container.Header.NameHash = ByteUtils.ReverseBytes(0x2A527DAA);
+        Container.Header.NameHash = ((uint) 0x2A527DAA).ReverseEndian();
         
         Container.CreateRootFlattenedProperties(ref VoMaps, in parentIndices);
 
@@ -97,39 +94,41 @@ public class RtpcV03File : IApexFile, IXmlFile
         bw.Write(Container, VoMaps);
     }
 
-    public void FromXml(string targetPath)
+    public void FromXml(XElement xe)
     {
         LoadClassDefinitions();
         
-        var xd = XDocument.Load(targetPath);
-        VoMaps.Create(xd);
+        VoMaps.Create(xe);
         
-        ApexExtension = xd.Root?.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
+        ApexExtension = xe.Attribute(nameof(ApexExtension))?.Value ?? ApexExtension;
         Header = new RtpcV03Header
         {
-            FourCc = EFourCc.Rtpc,
+            FourCc = EFourCc.RTPC,
             Version = 3
         };
         
-        var rtpcNode = xd.Element(XmlName)?.Element(RtpcV03Container.XmlName);
+        var rtpcNode = xe.Element(RtpcV03Container.XmlName);
         if (rtpcNode is null)
         {
-            throw new XmlSchemaException($"{XmlName} missing from \"{targetPath}\"");
+            throw new XmlSchemaException($"{XmlName} is missing");
         }
         
         Container = rtpcNode.ReadRtpcV03Container(true);
     }
 
-    public void ToXml(string targetPath)
+    public XElement ToXml()
     {
-        var parentIndexArrayOffset = Container.PropertyHeaders
-            .First(h => h.NameHash == 0xCFD7B43E).RawData;
-        var parentIndexArray = OvMaps.OffsetU32ArrayMap[BitConverter.ToUInt32(parentIndexArrayOffset)];
+        var parentIndexArrayHeader = Container.PropertyHeaders
+            .First(h => h.NameHash == 0xCFD7B43E);
+        var parentIndexArrayOffset = BitConverter.ToUInt32(parentIndexArrayHeader.RawData);
+        var parentIndexArrayOffsetReversed = parentIndexArrayOffset.ReverseEndian();
+        
+        var parentIndexArray = OvMaps.OffsetU32ArrayMap[parentIndexArrayOffset];
         Container.UnFlatten(parentIndexArray);
         
         Container.FilterRootContainerProperties();
         
-        if (Settings.PerformHashLookUp.Value)
+        if (Settings.LookupHashes.Value)
         {
             Container.LookupNameHash();
         }
@@ -139,7 +138,6 @@ public class RtpcV03File : IApexFile, IXmlFile
             Container.Sort();
         }
         
-        var xd = new XDocument();
         var xe = new XElement(XmlName);
         
         xe.SetAttributeValue(nameof(ApexExtension), ApexExtension);
@@ -147,11 +145,8 @@ public class RtpcV03File : IApexFile, IXmlFile
         xe.SetAttributeValue(nameof(Container.Flat), true);
 
         xe.WriteRoot(Container, OvMaps);
-        
-        xd.Add(xe);
-        
-        using var xw = XmlWriter.Create(targetPath, new XmlWriterSettings{ Indent = true, IndentChars = "\t" });
-        xd.Save(xw);
+
+        return xe;
     }
 
 
@@ -171,12 +166,12 @@ public class RtpcV03File : IApexFile, IXmlFile
             .Distinct()
             .ToArray();
         
-        if (Settings.PerformHashLookUp.Value)
+        if (Settings.LookupHashes.Value)
         {
             var uniqueSpan = unique.AsSpan();
             foreach (ref var definition in uniqueSpan)
             {
-                definition.Name = HashUtils.Lookup(definition.ClassHash, EHashType.Class);
+                definition.Name = LookupHashes.Get(definition.ClassHash, EHashType.Class);
             }
         }
 

@@ -6,6 +6,7 @@ using ApexFormat.RTPC.V03.Utils;
 using ApexTools.Core.Abstractions.CombinedSerializable;
 using ApexTools.Core.Abstractions.Serializable;
 using ApexTools.Core.Config;
+using ApexTools.Core.Extensions;
 using ApexTools.Core.Utils;
 
 namespace ApexFormat.RTPC.V03.Models;
@@ -113,7 +114,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
                 EVariantType.ByteArray => new ByteArray(header),
                 EVariantType.Deprecated => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
                 EVariantType.ObjectId => new ObjectId(header),
-                EVariantType.Event => new Event(header),
+                EVariantType.Events => new Event(header),
                 EVariantType.Total => throw new InvalidEnumArgumentException($"RTPC v01 variant type is '{header.VariantType}'"),
                 _ => throw new ArgumentOutOfRangeException($"RTPC v01 variant type is '{header.VariantType}'")
             };
@@ -139,8 +140,6 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
         {
             Containers[i].FromApex(br);
         }
-        
-        SortContainers();
     }
 
     #endregion
@@ -205,15 +204,6 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
             Array.Sort(Properties, new PropertyV03Comparer());
         }
     }
-    
-    public void SortContainers()
-    {
-        // Sort properties using NameHash
-        if (Settings.RtpcSortContainers.Value)
-        {
-            Array.Sort(Containers, new ContainerV03Comparer());
-        }
-    }
 
     #endregion
 
@@ -225,7 +215,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     
     public override void FromXml(XmlReader xr)
     {
-        NameHash = XmlUtils.ReadNameIfValid(xr);
+        NameHash = xr.ReadNameIfValid();
 
         while (xr.Read())
         { if (xr.NodeType != XmlNodeType.Whitespace) break; }
@@ -239,12 +229,7 @@ public class ContainerV03 : XmlSerializable, IApexSerializable, IFromApexHeaderS
     {
         xw.WriteStartElement(XmlName);
         
-        XmlUtils.WriteNameOrNameHash(xw, HexNameHash, Name);
-
-        if (Settings.OutputValueOffset.Value)
-        {
-            xw.WriteAttributeString("Offset", $"{Offset}");
-        }
+        xw.WriteNameOrNameHash(HexNameHash, Name);
         
         foreach (var property in Properties) property.ToXml(xw);
         foreach (var container in Containers) container.ToXml(xw);

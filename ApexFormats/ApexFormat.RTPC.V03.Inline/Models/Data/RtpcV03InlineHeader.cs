@@ -1,5 +1,4 @@
-﻿using ApexTools.Core.Exceptions;
-using ApexTools.Core.Interfaces;
+﻿using ApexTools.Core.Interfaces;
 
 namespace ApexFormat.RTPC.V03.Inline.Models.Data;
 
@@ -12,8 +11,8 @@ public class RtpcV03InlineHeader : IFromApex, IToApex
 
     public void FromApex(BinaryReader br)
     {
-        if (br.ReadByte() != Version01) throw new InvalidFileVersion();
-        if (br.ReadUInt16() != Version02) throw new InvalidFileVersion();
+        if (br.ReadByte() != Version01) throw new FileLoadException();
+        if (br.ReadUInt16() != Version02) throw new FileLoadException();
         
         ContainerCount = br.ReadUInt16();
     }

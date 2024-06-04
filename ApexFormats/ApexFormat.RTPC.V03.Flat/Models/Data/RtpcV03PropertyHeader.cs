@@ -1,9 +1,10 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-using ApexFormat.RTPC.V03.Flat.Utils;
+using ApexFormat.RTPC.V03.Flat.Extensions;
 using ApexFormat.RTPC.V03.Models.Properties;
 using ApexTools.Core.Config;
-using ApexTools.Core.Utils.Hash;
+using ApexTools.Core.Extensions;
+using ApexTools.Core.Hash;
 
 namespace ApexFormat.RTPC.V03.Flat.Models.Data;
 
@@ -16,20 +17,31 @@ public struct RtpcV03PropertyHeader
     public string XmlData = string.Empty;
     public string Name = string.Empty;
 
-    public override string ToString()
-    {
-        var bytes = string.Join("", RawData.Select(b => $"{b:X2}"));
-        var data = !string.IsNullOrEmpty(XmlData) ? XmlData : bytes;
-        return $"{NameHash:X8}: {VariantType} = {data}";
-    }
-
-    public static int SizeOf() => 4 + 4 + 1;
-
     public RtpcV03PropertyHeader()
     {
         NameHash = 0;
         RawData = new byte[4];
         VariantType = EVariantType.Unassigned;
+    }
+    
+    public uint DataAsOffset() => BitConverter.ToUInt32(RawData);
+
+    public static int SizeOf() => 4 + 4 + 1;
+    
+    public override string ToString()
+    {
+        var rawData = BitConverter.ToUInt32(RawData);
+        var data = !string.IsNullOrEmpty(XmlData) ? XmlData : $"{rawData:X8}";
+        return $"{NameHash:X8}: {VariantType} = {data}/{rawData}";
+    }
+}
+
+public class RtpcV03PropertyHeaderComparer : IComparer<RtpcV03PropertyHeader>
+{
+    public int Compare(RtpcV03PropertyHeader x, RtpcV03PropertyHeader y)
+    {
+        var result = BitConverter.ToUInt32(y.RawData) - BitConverter.ToUInt32(x.RawData);
+        return (int) result;
     }
 }
 
@@ -50,7 +62,7 @@ public static class RtpcV03PropertyHeaderExtension
     public static void LookupNameHash(this ref RtpcV03PropertyHeader propertyHeader)
     {
         const EHashType flags = EHashType.Property | EHashType.Misc;
-        propertyHeader.Name = HashUtils.Lookup(propertyHeader.NameHash, flags);
+        propertyHeader.Name = LookupHashes.Get(propertyHeader.NameHash, flags);
     }
 
     private static IList<float> ParseF32Array(string data, int count = 0)
@@ -144,7 +156,7 @@ public static class RtpcV03PropertyHeaderExtension
                 var oidValue = ulong.Parse(header.XmlData, NumberStyles.HexNumber);
                 bw.Write(voMaps.ObjectIdOffsetMap[oidValue]);
                 break;
-            case EVariantType.Event:
+            case EVariantType.Events:
                 var strValues = header.XmlData.Split(",");
                 var eventArray = strValues
                     .Select(sv => sv.Split("=")
@@ -226,7 +238,7 @@ public static class RtpcV03PropertyHeaderExtension
                 var objectId = ovMaps.OffsetObjectIdMap[uint32Data];
                 xe.SetValue($"{objectId:X16}");
                 break;
-            case EVariantType.Event:
+            case EVariantType.Events:
                 var eventPairArray = ovMaps.OffsetEventMap[uint32Data];
                 var eventPairStringArray = eventPairArray.Select(ep => $"{ep.Item1:X8}={ep.Item2:X8}");
                 var eventString = string.Join(",", eventPairStringArray);
@@ -269,7 +281,7 @@ public static class RtpcV03PropertyHeaderExtension
             case EVariantType.ByteArray:
             case EVariantType.Deprecated:
             case EVariantType.ObjectId:
-            case EVariantType.Event:
+            case EVariantType.Events:
             case EVariantType.Total:
             default:
                 result.XmlData = xe.Value;

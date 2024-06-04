@@ -27,7 +27,7 @@ namespace ApexFormat.ADF.V04.Models;
 /// </summary>
 public class FileV04 : IApexFile, IApexSerializable, ICustomFileSerializable
 {
-    public EFourCc FourCc => EFourCc.Adf;
+    public EFourCc FourCc => EFourCc.ADF;
     public uint Version => 0x04;
 
     public FileHeaderV04 Header { get; set; } = new ();

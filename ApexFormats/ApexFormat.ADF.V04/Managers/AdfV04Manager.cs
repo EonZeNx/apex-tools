@@ -1,4 +1,5 @@
 ﻿using ApexFormat.ADF.V04.Models;
+using ApexTools.Core;
 using ApexTools.Core.Abstractions;
 using ApexTools.Core.Utils;
 
@@ -16,14 +17,23 @@ public class AdfV04Manager : IPathProcessor
 
     public void TryProcess()
     {
-        if (Path.GetExtension(TargetPath) is ".wtunec" or ".vmodc") FromApexToCustomFile();
-        else if (Path.GetExtension(TargetPath) == ".xml") FromCustomFileToApex();
-        else ApexToolsConsole.LogFailedToLoadError(TargetPathName);
+        if (Path.GetExtension(TargetPath) is ".wtunec" or ".vmodc")
+        {
+            FromApexToCustomFile();
+        }
+        else if (Path.GetExtension(TargetPath) == ".xml")
+        {
+            FromCustomFileToApex();
+        }
+        else
+        {
+            ConsoleUtils.Log($"Invalid path for {GetType().Name} \"{TargetPath}\"", LogType.Error);
+        }
     }
 
     private void FromApexToCustomFile()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "ApexFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as {EFourCc.ADF}", LogType.Info);
         
         var adfV04File = new FileV04();
 
@@ -32,13 +42,17 @@ public class AdfV04Manager : IPathProcessor
             adfV04File.FromApex(inBinaryReader);
         }
 
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as XML", LogType.Info);
+        
         using var outBinaryWriter = new BinaryWriter(new FileStream($"{TargetPath}.sarc", FileMode.Create));
         adfV04File.ToCustomFile(outBinaryWriter);
+        
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
     
     private void FromCustomFileToApex()
     {
-        ApexToolsConsole.LogLoading(TargetPathName, "CustomFile");
+        ConsoleUtils.Log($"Loading \"{TargetPathName}\" as XML", LogType.Info);
         
         var adfV04File = new FileV04();
         
@@ -48,12 +62,12 @@ public class AdfV04Manager : IPathProcessor
         inBinaryReader.Dispose();
         inFileStream.Dispose();
         
-        ApexToolsConsole.LogProcessing(TargetPathName);
+        ConsoleUtils.Log($"Saving \"{TargetPathName}\" as {EFourCc.ADF}", LogType.Info);
 
         using var outFileStream = new FileStream($"{TargetPath}.ee", FileMode.Create);
         using var outBinaryWriter = new BinaryWriter(outFileStream);
         adfV04File.ToApex(outBinaryWriter);
         
-        ApexToolsConsole.LogComplete(TargetPathName);
+        ConsoleUtils.Log($"Completed \"{TargetPathName}\"", LogType.Success);
     }
 }
